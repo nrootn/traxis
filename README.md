@@ -1,20 +1,23 @@
-traxis
-=======
-
-## Digital Framework for Track Analysis of HEP Particle Events
-
-Created for 4th Year Engineering Science Capstone Design Project.
-
-Python-based toolkit with GUI that computes track momentum and optical density of tracks on digitized bubble chamber images.
-
-## How to Install:
+#traxis
+>####A Digital Framework for Track Analysis of HEP Particle Events
 
 
-## Project Dependencies:
+###Description
+
+>Created for 4th Year Engineering Science Capstone Design Project.
+
+>Python-based toolkit with GUI that computes track momentum and optical density of tracks on digitized bubble chamber images.
+
+###How to Install:
 
 
-## Authors:
+###Project Dependencies:
 
-Nooruddin Ahmed
-Syed Haider Abidi
-Christopher Dydula
+
+###Authors:
+
+>Nooruddin Ahmed
+
+>Syed Haider Abidi
+
+>Christopher Dydula
