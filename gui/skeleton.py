@@ -1,9 +1,9 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from skeletonui import Ui_gui_main
 
 
-class ImageDialog(QDialog):
+class ImageDialog(QMainWindow):
     def __init__(self):
         super(ImageDialog, self).__init__()
         
