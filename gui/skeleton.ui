@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>576</height>
+    <height>574</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,34 +21,18 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>811</width>
-     <height>431</height>
+     <width>1024</width>
+     <height>341</height>
     </rect>
-   </property>
-  </widget>
-  <widget class="QProgressBar" name="progressBar">
-   <property name="geometry">
-    <rect>
-     <x>824</x>
-     <y>552</y>
-     <width>181</width>
-     <height>15</height>
-    </rect>
-   </property>
-   <property name="value">
-    <number>24</number>
-   </property>
-   <property name="textVisible">
-    <bool>false</bool>
    </property>
   </widget>
   <widget class="QFrame" name="zoom">
    <property name="geometry">
     <rect>
-     <x>406</x>
-     <y>427</y>
+     <x>610</x>
+     <y>347</y>
      <width>411</width>
-     <height>40</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -60,8 +44,8 @@
    <widget class="QPushButton" name="zoominButton">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>10</y>
+      <x>363</x>
+      <y>2</y>
       <width>31</width>
       <height>19</height>
      </rect>
@@ -73,11 +57,14 @@
    <widget class="QSlider" name="zoomSlider">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>10</y>
+      <x>223</x>
+      <y>2</y>
       <width>131</width>
       <height>19</height>
      </rect>
+    </property>
+    <property name="sliderPosition">
+     <number>50</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -86,8 +73,8 @@
    <widget class="QPushButton" name="zoomoutButton">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>10</y>
+      <x>183</x>
+      <y>2</y>
       <width>31</width>
       <height>19</height>
      </rect>
@@ -99,11 +86,19 @@
    <widget class="QTextEdit" name="zoomEdit">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>10</y>
-      <width>71</width>
-      <height>19</height>
+      <x>113</x>
+      <y>1</y>
+      <width>61</width>
+      <height>20</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>6</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
     </property>
     <property name="verticalScrollBarPolicy">
      <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -112,15 +107,15 @@
      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:6pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt;&quot;&gt;100.00%&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="zoomLabel">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>10</y>
+      <x>34</x>
+      <y>2</y>
       <width>71</width>
       <height>19</height>
      </rect>
@@ -129,14 +124,20 @@ p, li { white-space: pre-wrap; }
      <string>Specify zoom:</string>
     </property>
    </widget>
+   <zorder>zoominButton</zorder>
+   <zorder>zoomSlider</zorder>
+   <zorder>zoomoutButton</zorder>
+   <zorder>zoomEdit</zorder>
+   <zorder>zoomLabel</zorder>
+   <zorder>consoleWidget</zorder>
   </widget>
   <widget class="QGroupBox" name="calcBox">
    <property name="geometry">
     <rect>
-     <x>820</x>
-     <y>10</y>
+     <x>7</x>
+     <y>350</y>
      <width>191</width>
-     <height>271</height>
+     <height>221</height>
     </rect>
    </property>
    <property name="title">
@@ -145,8 +146,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>34</y>
+      <x>34</x>
+      <y>20</y>
       <width>121</width>
       <height>23</height>
      </rect>
@@ -158,8 +159,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>130</y>
+      <x>35</x>
+      <y>100</y>
       <width>121</width>
       <height>23</height>
      </rect>
@@ -171,8 +172,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>178</y>
+      <x>35</x>
+      <y>140</y>
       <width>121</width>
       <height>23</height>
      </rect>
@@ -184,8 +185,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>226</y>
+      <x>35</x>
+      <y>180</y>
       <width>121</width>
       <height>23</height>
      </rect>
@@ -197,8 +198,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton_5">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>82</y>
+      <x>35</x>
+      <y>60</y>
       <width>71</width>
       <height>23</height>
      </rect>
@@ -210,8 +211,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>114</x>
-      <y>84</y>
+      <x>113</x>
+      <y>60</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -223,14 +224,21 @@ p, li { white-space: pre-wrap; }
      <enum>Qt::ScrollBarAlwaysOff</enum>
     </property>
    </widget>
+   <zorder>pushButton</zorder>
+   <zorder>pushButton_2</zorder>
+   <zorder>pushButton_3</zorder>
+   <zorder>pushButton_4</zorder>
+   <zorder>pushButton_5</zorder>
+   <zorder>textEdit</zorder>
+   <zorder>verticalLayoutWidget</zorder>
   </widget>
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>820</x>
-     <y>290</y>
-     <width>191</width>
-     <height>251</height>
+     <x>208</x>
+     <y>350</y>
+     <width>201</width>
+     <height>221</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -253,10 +261,10 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="geometry">
     <rect>
-     <x>3</x>
-     <y>439</y>
-     <width>811</width>
-     <height>131</height>
+     <x>420</x>
+     <y>350</y>
+     <width>601</width>
+     <height>221</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -281,19 +289,30 @@ p, li { white-space: pre-wrap; }
     <attribute name="title">
      <string>Console</string>
     </attribute>
-   </widget>
-   <widget class="QWidget" name="x">
-    <attribute name="title">
-     <string/>
-    </attribute>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>178</y>
+       <width>181</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="value">
+      <number>24</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
    </widget>
   </widget>
   <zorder>consoleWidget</zorder>
   <zorder>graphicsView</zorder>
-  <zorder>progressBar</zorder>
-  <zorder>zoom</zorder>
   <zorder>calcBox</zorder>
   <zorder>tabWidget</zorder>
+  <zorder>zoom</zorder>
+  <zorder>horizontalSpacer_4</zorder>
  </widget>
  <resources/>
  <connections/>
