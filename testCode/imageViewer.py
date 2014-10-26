@@ -5,15 +5,10 @@ class ImageViewer(QtWidgets.QWidget):
 		super(ImageViewer, self).__init__(parent)
 
 		self.scaleFactor = 1.0
-		self.imageLabel = QtWidgets.QLabel()
-		self.imageLabel.setBackgroundRole(QtGui.QPalette.Base)
-		self.imageLabel.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
-		self.imageLabel.setScaledContents(True)
-		self.imageLabel.setPixmap(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'))
                 
 		self.scene = QtWidgets.QGraphicsScene()
 		self.view = QtWidgets.QGraphicsView(self.scene)
-		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'), None)
+		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/home/chris/Pictures/electrode.png'), None)
 		self.scene.addItem(self.pixmap_item)
 		self.pixmap_item.mousePressEvent = self.pixelSelect
 		self.click_positions = []
@@ -43,19 +38,15 @@ class ImageViewer(QtWidgets.QWidget):
 		for point in self.click_positions:
 			self.scene.addEllipse(point.x(), point.y(), 2, 2, pen)
 		self.click_positions = []
+
 	def zoomIn(self):
 		self.scaleImage(1.25)
 
 	def zoomOut(self):
 		self.scaleImage(0.8)
 
-	#def normalSize(self):
-	#	self.imageLabel.adjustSize()
-	#	self.scaleFactor = 1.0
-
 	def scaleImage(self, factor):
 		self.scaleFactor *= factor
-		self.imageLabel.resize(self.scaleFactor * self.imageLabel.pixmap().size())
 		
 		self.view.scale(factor,factor)
 		self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
