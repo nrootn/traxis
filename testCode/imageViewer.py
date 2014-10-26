@@ -17,6 +17,9 @@ class ImageViewer(QtWidgets.QWidget):
 		self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
 		self.scrollArea.setWidget(self.view)
 
+		self.openButton = QtWidgets.QPushButton('Open Image', self)
+		self.openButton.clicked.connect(self.open)
+
 		self.zoomInButton = QtWidgets.QPushButton('Zoom In', self)
 		self.zoomInButton.clicked.connect(self.zoomIn)
 		self.zoomOutButton = QtWidgets.QPushButton('Zoom Out', self)
@@ -24,6 +27,7 @@ class ImageViewer(QtWidgets.QWidget):
 
 		layout = QtWidgets.QVBoxLayout()
 		layout.addWidget(self.scrollArea)
+		layout.addWidget(self.openButton)
 		layout.addWidget(self.zoomInButton)
 		layout.addWidget(self.zoomOutButton)
 
@@ -38,6 +42,18 @@ class ImageViewer(QtWidgets.QWidget):
 		for point in self.click_positions:
 			self.scene.addEllipse(point.x(), point.y(), 2, 2, pen)
 		self.click_positions = []
+
+	def open(self):
+		fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", QtCore.QDir.currentPath())
+		if fileName:
+			qimage = QtGui.QImage()
+			image = qimage.load(fileName[0])
+			if not image:
+				QtWidgets.QMessageBox.information(self, "Image Viewer", "Cannot load {}.".format(fileName))
+				return
+			self.pixmap_item.setPixmap(QtGui.QPixmap.fromImage(qimage))
+
+
 
 	def zoomIn(self):
 		self.scaleImage(1.25)
