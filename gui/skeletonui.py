@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'skeleton.ui'
 #
-# Created: Sat Oct 25 21:14:17 2014
-#      by: PyQt5 UI code generator 5.3.2
+# Created: Sat Oct 25 22:15:47 2014
+#      by: PyQt5 UI code generator 5.3.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,7 +14,6 @@ class Ui_gui_main(object):
         gui_main.setObjectName("gui_main")
         gui_main.setEnabled(True)
         gui_main.resize(1024, 576)
-        gui_main.setCursor(QtGui.QCursor(QtCore.Qt.UpArrowCursor))
         self.graphicsView = QtWidgets.QGraphicsView(gui_main)
         self.graphicsView.setGeometry(QtCore.QRect(0, 0, 811, 431))
         self.graphicsView.setObjectName("graphicsView")
