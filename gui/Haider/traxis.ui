@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>665</height>
+    <width>983</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -22,14 +22,14 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="mainLayout">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="TopBtnLayout">
         <item>
-         <widget class="QTableWidget" name="tableWidget">
+         <widget class="QTableWidget" name="PointInfo">
           <property name="minimumSize">
            <size>
-            <width>400</width>
+            <width>375</width>
             <height>0</height>
            </size>
           </property>
@@ -90,20 +90,7 @@
          </widget>
         </item>
         <item>
-         <widget class="Line" name="line">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777192</height>
-           </size>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Line" name="line_2">
+         <widget class="Line" name="vLine_div2">
           <property name="maximumSize">
            <size>
             <width>16777215</width>
@@ -116,11 +103,11 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="AllBtnLayout">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
+           <layout class="QVBoxLayout" name="tech_calc_btnLayoy">
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="label_tech">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -133,7 +120,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_4">
+             <widget class="QPushButton" name="btn_reset">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -149,7 +136,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="Zoom_2">
+             <widget class="QSlider" name="sld_zoom">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -174,7 +161,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="label_calc">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -187,7 +174,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QPushButton" name="btn_trackMom">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -203,7 +190,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="btn_optDen">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -214,12 +201,12 @@
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculate Optical Density&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Calc optical density</string>
+               <string>Calc Optical Density</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_6">
+             <widget class="QPushButton" name="btn_angle">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -238,7 +225,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_2">
+             <spacer name="vSpacer_tech_calcLayout">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -272,9 +259,9 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
+           <layout class="QVBoxLayout" name="usrSel_layout">
             <item>
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="label_userSle">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -287,7 +274,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="btn_placeMar">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -303,29 +290,21 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="Zoom">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777192</height>
-               </size>
-              </property>
-              <property name="cursor">
-               <cursorShape>ArrowCursor</cursorShape>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;dL input&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
+             <layout class="QFormLayout" name="dlForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="setDlLabel">
+                <property name="text">
+                 <string>set DL</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="setDlLineEdit"/>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="btn_drwAngle">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -341,7 +320,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <spacer name="vSpacer_userSel">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -361,12 +340,33 @@
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Console</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextBrowser" name="textBrowser">
+              <property name="minimumSize">
+               <size>
+                <width>250</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
        </layout>
       </item>
       <item>
-       <spacer name="verticalSpacer_3">
+       <spacer name="vSpace_pic_topbtnLayou">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -385,7 +385,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLabel" name="label1">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="picLabel">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -415,7 +422,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
+     <width>983</width>
      <height>22</height>
     </rect>
    </property>
