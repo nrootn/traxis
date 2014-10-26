@@ -5,16 +5,22 @@ class ImageViewer(QtWidgets.QWidget):
 		super(ImageViewer, self).__init__(parent)
 
 		self.scaleFactor = 1.0
-
 		self.imageLabel = QtWidgets.QLabel()
 		self.imageLabel.setBackgroundRole(QtGui.QPalette.Base)
 		self.imageLabel.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 		self.imageLabel.setScaledContents(True)
-		self.imageLabel.setPixmap(QtGui.QPixmap('/home/chris/Pictures/electrode.png'))
+		self.imageLabel.setPixmap(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'))
+                
+		self.scene = QtWidgets.QGraphicsScene()
+		self.view = QtWidgets.QGraphicsView(self.scene)
+		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'), None)
+		self.scene.addItem(self.pixmap_item)
+		self.pixmap_item.mousePressEvent = self.pixelSelect
+		self.click_positions = []
 
 		self.scrollArea = QtWidgets.QScrollArea()
 		self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
-		self.scrollArea.setWidget(self.imageLabel)
+		self.scrollArea.setWidget(self.view)
 
 		self.zoomInButton = QtWidgets.QPushButton('Zoom In', self)
 		self.zoomInButton.clicked.connect(self.zoomIn)
@@ -28,6 +34,15 @@ class ImageViewer(QtWidgets.QWidget):
 
 		self.setLayout(layout)
 
+	def pixelSelect(self, event):
+		self.click_positions.append(event.pos())
+		if len(self.click_positions) < 4:
+			return
+		pen = QtGui.QPen(QtCore.Qt.red)
+		self.scene.addPolygon(QtGui.QPolygonF(self.click_positions), pen)
+		for point in self.click_positions:
+			self.scene.addEllipse(point.x(), point.y(), 2, 2, pen)
+		self.click_positions = []
 	def zoomIn(self):
 		self.scaleImage(1.25)
 
@@ -41,7 +56,8 @@ class ImageViewer(QtWidgets.QWidget):
 	def scaleImage(self, factor):
 		self.scaleFactor *= factor
 		self.imageLabel.resize(self.scaleFactor * self.imageLabel.pixmap().size())
-
+		
+		self.view.scale(factor,factor)
 		self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
 		self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
 
