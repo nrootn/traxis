@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'traxis.ui'
 #
-# Created: Sun Oct 26 00:47:13 2014
+# Created: Sun Oct 26 02:18:45 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_traxis(object):
     def setupUi(self, traxis):
         traxis.setObjectName("traxis")
-        traxis.resize(983, 650)
+        traxis.resize(1060, 665)
         traxis.setMaximumSize(QtCore.QSize(100000, 1000000))
         self.centralWidget = QtWidgets.QWidget(traxis)
         self.centralWidget.setObjectName("centralWidget")
@@ -53,8 +53,6 @@ class Ui_traxis(object):
         self.vLine_div2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.vLine_div2.setObjectName("vLine_div2")
         self.TopBtnLayout.addWidget(self.vLine_div2)
-        self.AllBtnLayout = QtWidgets.QHBoxLayout()
-        self.AllBtnLayout.setObjectName("AllBtnLayout")
         self.tech_calc_btnLayoy = QtWidgets.QVBoxLayout()
         self.tech_calc_btnLayoy.setObjectName("tech_calc_btnLayoy")
         self.label_tech = QtWidgets.QLabel(self.centralWidget)
@@ -92,13 +90,7 @@ class Ui_traxis(object):
         self.tech_calc_btnLayoy.addWidget(self.btn_angle)
         spacerItem = QtWidgets.QSpacerItem(16777215, 16777192, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.tech_calc_btnLayoy.addItem(spacerItem)
-        self.AllBtnLayout.addLayout(self.tech_calc_btnLayoy)
-        self.line_3 = QtWidgets.QFrame(self.centralWidget)
-        self.line_3.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
-        self.AllBtnLayout.addWidget(self.line_3)
+        self.TopBtnLayout.addLayout(self.tech_calc_btnLayoy)
         self.usrSel_layout = QtWidgets.QVBoxLayout()
         self.usrSel_layout.setObjectName("usrSel_layout")
         self.label_userSle = QtWidgets.QLabel(self.centralWidget)
@@ -124,7 +116,13 @@ class Ui_traxis(object):
         self.usrSel_layout.addWidget(self.btn_drwAngle)
         spacerItem1 = QtWidgets.QSpacerItem(16777215, 16777192, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.usrSel_layout.addItem(spacerItem1)
-        self.AllBtnLayout.addLayout(self.usrSel_layout)
+        self.TopBtnLayout.addLayout(self.usrSel_layout)
+        self.line_3 = QtWidgets.QFrame(self.centralWidget)
+        self.line_3.setMaximumSize(QtCore.QSize(16777215, 16777192))
+        self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.TopBtnLayout.addWidget(self.line_3)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.label = QtWidgets.QLabel(self.centralWidget)
@@ -134,7 +132,9 @@ class Ui_traxis(object):
         self.textBrowser.setMinimumSize(QtCore.QSize(250, 0))
         self.textBrowser.setObjectName("textBrowser")
         self.verticalLayout_3.addWidget(self.textBrowser)
-        self.AllBtnLayout.addLayout(self.verticalLayout_3)
+        self.TopBtnLayout.addLayout(self.verticalLayout_3)
+        self.AllBtnLayout = QtWidgets.QHBoxLayout()
+        self.AllBtnLayout.setObjectName("AllBtnLayout")
         self.TopBtnLayout.addLayout(self.AllBtnLayout)
         self.mainLayout.addLayout(self.TopBtnLayout)
         spacerItem2 = QtWidgets.QSpacerItem(16777215, 16777192, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -154,7 +154,7 @@ class Ui_traxis(object):
         self.verticalLayout.addLayout(self.mainLayout)
         traxis.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(traxis)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 983, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1060, 22))
         self.menuBar.setObjectName("menuBar")
         traxis.setMenuBar(self.menuBar)
         self.mainToolBar = QtWidgets.QToolBar(traxis)
