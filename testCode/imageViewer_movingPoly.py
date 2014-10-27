@@ -9,12 +9,11 @@ class ImageViewer(QtWidgets.QWidget):
 		self.imageLabel.setBackgroundRole(QtGui.QPalette.Base)
 		self.imageLabel.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 		self.imageLabel.setScaledContents(True)
-		self.imageLabel.setPixmap(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'))
+		self.imageLabel.setPixmap(QtGui.QPixmap('./test.png'))
                 
 		self.scene = QtWidgets.QGraphicsScene()
 		self.view = QtWidgets.QGraphicsView(self.scene)
-		#self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/Users/Haider/Documents/University/ECS471/traxis/testCode/img017b.png'), None)
-		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'), None)
+		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('./test.png'), None)
 		self.scene.addItem(self.pixmap_item)
 		self.pixmap_item.mousePressEvent = self.pixelSelect
 		self.click_positions = []

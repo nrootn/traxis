@@ -15,7 +15,7 @@ class MainWidget(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.view)
         self.setLayout(layout)
-        self.pixmap_item = QGraphicsPixmapItem(QtGui.QPixmap('/Users/Haider/untitled/img017b.png'), None)
+        self.pixmap_item = QGraphicsPixmapItem(QtGui.QPixmap('./test.png'), None)
         self.scene.addItem(self.pixmap_item)
         self.pixmap_item.mousePressEvent = self.pixelSelect
         self.click_positions = []
