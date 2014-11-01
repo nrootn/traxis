@@ -8,7 +8,7 @@ class ImageViewer(QtWidgets.QWidget):
                 
 		self.scene = QtWidgets.QGraphicsScene()
 		self.view = QtWidgets.QGraphicsView(self.scene)
-		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('/home/chris/Pictures/electrode.png'), None)
+		self.pixmap_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap('./test.png'), None)
 		self.scene.addItem(self.pixmap_item)
 		self.pixmap_item.mousePressEvent = self.pixelSelect
 		self.click_positions = []
