@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import  QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import QDir
-from mainUi import Ui_traxis as skeletonGUI
+from skeleton import Ui_skeleton as skeletonGUI
 
 ## Inherit from the base Skeleton Gui class and implement the logic here
 ## makes the code independant from the gui and its changes
@@ -11,9 +11,9 @@ class mainGUI(skeletonGUI):
         super(skeletonGUI, self).__init__()
 
     # Initalization and connection of buttons
-    def setupUi(self, traxis):
-        skeletonGUI.setupUi(self, traxis)
-        
+    def setupUi(self, skeleton):
+        skeletonGUI.setupUi(self, skeleton)
+
         # display a simple bkg image
         self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene)
@@ -24,7 +24,7 @@ class mainGUI(skeletonGUI):
         self.scrollArea.setWidget(self.view)
         self.open()
 
-    
+
     ## TODO:: Chris to comment this
     ## to open the file
     def open(self):
@@ -35,5 +35,5 @@ class mainGUI(skeletonGUI):
         if not image:
             QMessageBox.information(self, "Image Viewer", "Cannot load {}.".format(fileName))
             return
-	
+
         self.pixmap_item.setPixmap(QPixmap.fromImage(qimage))
