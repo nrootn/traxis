@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1060</width>
+    <width>1070</width>
     <height>665</height>
    </rect>
   </property>
@@ -26,70 +26,6 @@
       <item>
        <layout class="QHBoxLayout" name="TopBtnLayout">
         <item>
-         <widget class="QTableWidget" name="PointInfo">
-          <property name="minimumSize">
-           <size>
-            <width>375</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>400</width>
-            <height>16777192</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Points selected on the track&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>New Row</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>Point</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>X Value</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Y Value</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item>
          <widget class="Line" name="vLine_div2">
           <property name="maximumSize">
            <size>
@@ -99,6 +35,27 @@
           </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_pointLabe">
+          <item>
+           <widget class="QLabel" name="label_points">
+            <property name="text">
+             <string>Points on picture</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="listWidget_points"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
@@ -130,6 +87,13 @@
             </property>
             <property name="text">
              <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_Zoom">
+            <property name="text">
+             <string>Zoom</string>
             </property>
            </widget>
           </item>
@@ -244,6 +208,13 @@
          </layout>
         </item>
         <item>
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="usrSel_layout">
           <item>
            <widget class="QLabel" name="label_userSle">
@@ -276,8 +247,17 @@
           </item>
           <item>
            <layout class="QFormLayout" name="dlForm">
+            <property name="labelAlignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="formAlignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="setDlLabel">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
               <property name="text">
                <string>set DL</string>
               </property>
@@ -339,16 +319,16 @@
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="ConsoleLayout">
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_console">
             <property name="text">
              <string>Console</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QTextBrowser" name="textBrowser">
+           <widget class="QTextBrowser" name="textBrowser_consoleOutput">
             <property name="minimumSize">
              <size>
               <width>250</width>
@@ -358,9 +338,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="AllBtnLayout"/>
         </item>
        </layout>
       </item>
@@ -421,7 +398,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1060</width>
+     <width>1070</width>
      <height>22</height>
     </rect>
    </property>
