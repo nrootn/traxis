@@ -43,7 +43,7 @@
           <item>
            <widget class="QLabel" name="label_points">
             <property name="text">
-             <string>Points on picture</string>
+             <string>Items on picture</string>
             </property>
            </widget>
           </item>
@@ -250,7 +250,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Place a new marker on the track&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>Place track marker</string>
+             <string>Place Track Marker</string>
             </property>
            </widget>
           </item>
@@ -268,7 +268,7 @@
                <enum>Qt::LeftToRight</enum>
               </property>
               <property name="text">
-               <string>set DL</string>
+               <string>Set DL</string>
               </property>
              </widget>
             </item>
@@ -289,7 +289,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Draw reference for angle&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>Draw angle ref.</string>
+             <string>Draw Angle Reference</string>
             </property>
            </widget>
           </item>

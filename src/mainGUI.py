@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import  QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import  QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QFileDialog, QMessageBox, QGraphicsEllipseItem
 from PyQt5.QtGui import QPixmap, QImage, QPen, QPolygonF
 from PyQt5.QtCore import QDir, Qt, QRectF, QPointF
 from skeleton import Ui_skeleton as skeletonGUI
@@ -38,13 +38,22 @@ class mainGUI(skeletonGUI):
 		self.pixmap_item.mousePressEvent = self.pixelSelect
 
 		# connect the list widgest 
-		self.listWidget_points.keyPressEvent = self.testkeyPressEvent
+		self.listWidget_points.keyPressEvent = self.keyPressEvent
 
 		# Connect the reset button
 		self.btn_reset.clicked.connect(self.resetImage)
- 
+
+		# Connect the calculate track momentum button
+		self.btn_trackMom.clicked.connect(self.calcTrackMom)
+
+		# connect if values are drawn
+		self.setDlLineEdit.textEdited.connect(self.changedLCircles)
+		
 		# For debugging
 		self.nUserClickOnPicture = 0
+		self.hasTrackMomentumCalc = False
+
+		self.test = QGraphicsEllipseItem(3,5,10,10)
 		
 	# This functions draws the ellipse
 	def pixelSelect(self, event):
@@ -55,7 +64,7 @@ class mainGUI(skeletonGUI):
 			self.nUserClickOnPicture += 1
 			if self.nUserClickOnPicture == 5:
 				self.nUserClickOnPicture = 0;
-				self.textBrowser_consoleOutput.append("HELP - To place track marker, first select Place Track Marker button")  
+				self.displayMessage("HELP - To place track marker, first select Place Track Marker button")
 			return
 
 		# select the colour of ellipse draw
@@ -76,10 +85,11 @@ class mainGUI(skeletonGUI):
 
 		# add the drawn point to the map
 		itemList = self.scene.items()
-		# the most current draw item is on the top of the list		  
+		# the most current draw item is on the top of the list			
 		self.mapNametoPoint['Point '+str(self.nEllipseDrawn)] = itemList[0]
 
-	def testkeyPressEvent(self, event):
+	# this function is called with a key is pressed on the QListWidget
+	def keyPressEvent(self, event):
 		dx = 0
 		dy = 0
 		if event.key() == Qt.Key_W:
@@ -90,8 +100,29 @@ class mainGUI(skeletonGUI):
 			dx = 1	
 		elif event.key() == Qt.Key_A:
 			dx = -1
-		print(self.listWidget_points.currentItem().text())
-		self.mapNametoPoint[self.listWidget_points.currentItem().text()].moveBy(dx, dy)
+		elif event.key() == Qt.Key_Backspace:
+			self.deletePoint(self.listWidget_points.currentItem().text())
+			self.listWidget_points.takeItem(self.listWidget_points.currentRow())
+			return
+		
+		## move the point
+		if(self.listWidget_points.currentItem()):
+			self.movePoint(self.listWidget_points.currentItem().text(), dx, dy)
+				
+
+	# moves the point given by pointName, by dx and dy
+	def movePoint(self, pointName, dx, dy):
+		self.mapNametoPoint[pointName].moveBy(dx, dy)
+
+	# moves the point given by pointName, by dx and dy
+	def deletePoint(self, pointName):
+		itemList = self.scene.items()
+		for i in itemList:
+			# don't remove the actual image
+			if(i == self.mapNametoPoint[pointName]):
+				self.scene.removeItem(i)
+		del self.mapNametoPoint[pointName]
+
 
 	## TODO:: Chris to comment this
 	## to open the file
@@ -111,7 +142,7 @@ class mainGUI(skeletonGUI):
 
 	## to reset the image
 	def resetImage(self):
-		# to reset any transformation on the image		  
+		# to reset any transformation on the image			
 		self.view.resetTransform()
 		
 		# remove any drawn image
@@ -150,3 +181,105 @@ class mainGUI(skeletonGUI):
 	def adjustScrollBar(self, scrollBar, factor):
 		scrollBar.setValue(int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep()/2))) 
 
+	# to display messages
+	def displayMessage(self, msg):
+		self.textBrowser_consoleOutput.append(msg)  
+		
+	
+	# calculate track momement and draw the circle
+	def calcTrackMom(self):
+		if len(self.mapNametoPoint) < 3:
+			self.displayMessage("ERROR - Less than 3 points to fit")
+			return
+
+		pointList = []
+		for key, value in self.mapNametoPoint.items():
+			pointList.append(value)
+		
+		# get the track center and radius
+
+		self.fittedX0 = 50
+		self.fittedY0 = 50
+		self.fittedR0 = 50
+		
+		# Draw the fitted circles
+		pen = QPen(Qt.green)
+		# size of ellipse drawn	
+		# this contains the drawing rectangle
+		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0, self.fittedR0)
+		# translate it such that center of the box matches the position clicked
+		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+		self.scene.addEllipse(drawRec, pen)
+
+		# Store the ellipse draw for later modifications
+		itemList = self.scene.items()
+		# the most current draw item is on the top of the list			
+		self.nominalFittedCenter = itemList[0]
+
+		# try to draw the dL curves
+		try:
+			self.dL = float(self.setDlLineEdit.text())
+		except ValueError:
+			self.displayMessage("ERROR - dL is not a float")
+			return
+
+		# upper limit on the circle
+		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)		
+		# draw a dotted line
+		pen.setStyle(Qt.DashDotLine);
+		# translate it such that center of the box matches the position clicked
+		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+		self.scene.addEllipse(drawRec, pen)
+
+		# Store the ellipse draw for later modifications
+		itemList = self.scene.items()
+		# the most current draw item is on the top of the list			
+		self.upperFittedCenter = itemList[0]
+
+		# lower limit circle
+		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)		
+		# draw a dotted line
+		pen.setStyle(Qt.DashDotLine);
+		# translate it such that center of the box matches the position clicked
+		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+		self.scene.addEllipse(drawRec, pen)
+
+		# Store the ellipse draw for later modifications
+		itemList = self.scene.items()
+		# the most current draw item is on the top of the list			
+		self.lowerFittedCenter = itemList[0]
+
+		# for debugging purpose
+		self.hasTrackMomentumCalc = True
+
+
+	def changedLCircles(self, value):
+		if not self.hasTrackMomentumCalc:
+			return
+
+		try:
+			self.dL = float(value)
+		except ValueError:
+			self.displayMessage("ERROR - dL is not a float")
+			return
+
+		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)		
+		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+		self.upperFittedCenter.setRect(drawRec)
+		
+		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)		
+		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+
+		self.lowerFittedCenter.setRect(drawRec)
+
+		self.scene.update()
+		
+	
+
+
+
+
+
+
+
+		
