@@ -82,6 +82,8 @@ class mainGUI(skeletonGUI):
 		# update the widget
 		self.nEllipseDrawn += 1
 		self.listWidget_points.addItem('Point %s' % self.nEllipseDrawn)
+		self.listWidget_points.setCurrentRow(self.listWidget_points.count()-1)
+		self.listWidget_points.setFocus()
 
 		# add the drawn point to the map
 		itemList = self.scene.items()
@@ -100,6 +102,26 @@ class mainGUI(skeletonGUI):
 			dx = 1	
 		elif event.key() == Qt.Key_A:
 			dx = -1
+		elif event.key() == Qt.Key_Down:
+			current_row = self.listWidget_points.currentRow()
+			num_rows = self.listWidget_points.count()
+			if current_row == -1 or current_row == num_rows-1:
+				return
+			else:
+				self.listWidget_points.setCurrentRow(current_row+1)
+		elif event.key() == Qt.Key_Up:
+			current_row = self.listWidget_points.currentRow()
+			if current_row == -1 or current_row == 0:
+				return
+			else:
+				self.listWidget_points.setCurrentRow(current_row-1)
+		elif event.key() == Qt.Key_Z:
+			self.zoomIn()
+		elif event.key() == Qt.Key_X:
+			self.zoomOut()
+		# for testing
+		elif event.key() == Qt.Key_P:
+			print(self.listWidget_points.currentRow())
 		elif event.key() == Qt.Key_Backspace:
 			self.deletePoint(self.listWidget_points.currentItem().text())
 			self.listWidget_points.takeItem(self.listWidget_points.currentRow())
