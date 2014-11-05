@@ -26,7 +26,7 @@ def circleFit(qgei_point_list):
 	"""Given a list of QGraphicsEllipseItem's, qgei_point_list, return """
 
 	# convert list of qgei's to arrays of x_coordinates and y_coordinates
-	x_array, y_array = createXYArrays(point_list)
+	x_array, y_array = createXYArrays(qgei_point_list)
 
 	# use the means of the x coorindates, y_coordinates and "radii" as initial guesses for the circle centre coordinates and radius
 	x_m = x_array.mean()
@@ -39,7 +39,7 @@ def circleFit(qgei_point_list):
 	fit_model = odr.Model(implicitCircle, implicit=True)
 	fit_odr = odr.ODR(fit_data, fit_model, beta0=beta0)
 	fit_out = fit_odr.run()
-
+	fit_out = fit_odr.restart(1000)
 	centre_x, centre_y, radius = fit_out.beta
 	delta_c_x = fit_out.sd_beta[0]
 	delta_c_y = fit_out.sd_beta[1]
