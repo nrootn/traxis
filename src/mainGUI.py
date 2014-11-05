@@ -64,7 +64,7 @@ class mainGUI(skeletonGUI):
         self.btn_trackMom.clicked.connect(self.calcTrackMom)
 
         # Set up button to calculate optical density.
-        # self.btn_optDen.clicked.connect(self.calcOptDen)
+        self.btn_optDen.clicked.connect(self.calcOptDen)
 
         # Set up text field that specifies dL (user-specified width).
         self.setDlLineEdit.textEdited.connect(self.changedLCircles)
@@ -185,8 +185,7 @@ class mainGUI(skeletonGUI):
             qimage = QImage()
             image = qimage.load(fileName[0])
         if not image:
-            QMessageBox.information(
-                self, "Image Viewer", "Cannot load {}.".format(fileName))
+            self.displayMessage("Cannot load {}.".format(fileName))
             return
 
         # Create a pixmap from the loaded image.
@@ -283,7 +282,7 @@ class mainGUI(skeletonGUI):
 
         # Define outer circle.
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+            self.fittedX0, self.fittedY0, self.fittedR0 + 2 * self.dL, self.fittedR0 + 2 * self.dL)
         # Draw a dotted line.
         pen.setStyle(Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
@@ -297,7 +296,7 @@ class mainGUI(skeletonGUI):
 
         # Deine inner circle.
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+            self.fittedX0, self.fittedY0, self.fittedR0 - 2 * self.dL, self.fittedR0 - 2 * self.dL)
         # Draw a dotted line.
         pen.setStyle(Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
@@ -312,6 +311,34 @@ class mainGUI(skeletonGUI):
         # Used for debugging purposes.
         self.hasTrackMomentumCalc = True
 
+    def calcOptDen(self):
+        """The following function is used to calculate optical density of
+        drawn points on image with a specified dL."""
+
+        # Need a minimum of 3 points to fit a circle.
+        if len(self.mapNametoPoint) < 3:
+            self.displayMessage("ERROR - Less than 3 points to fit.")
+            return
+
+        pointList = []
+        for key, value in self.mapNametoPoint.items():
+            pointList.append(value)
+
+        # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
+        self.tmp_circle = [50, 50, 50]
+
+        # Draw dL curves if dL is specified.
+        try:
+            self.dL = float(self.setDlLineEdit.text())
+        except ValueError:
+            self.displayMessage("ERROR - dL is not a float")
+            return
+
+        # Call function to compute optical density.
+        self.optDens, self.errOptDens = calcOptDensity(self, self.pixmap_item, pointList, self.tmp_circle, self.dL)
+        # Used for debugging.
+        self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
+
     def changedLCircles(self, value):
         if not self.hasTrackMomentumCalc:
             return
@@ -323,12 +350,12 @@ class mainGUI(skeletonGUI):
             return
 
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+            self.fittedX0, self.fittedY0, self.fittedR0 + 2 * self.dL, self.fittedR0 + 2 * self.dL)
         drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
         self.outerFittedCenter.setRect(drawRec)
 
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+            self.fittedX0, self.fittedY0, self.fittedR0 - 2 * self.dL, self.fittedR0 - 2 * self.dL)
         drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
 
         self.innerFittedCenter.setRect(drawRec)

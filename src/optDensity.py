@@ -1,13 +1,18 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QGraphicsEllipseItem as qgei
 
+from mainGUI import *
 
+
+# Input: gui - mainGUI class to be used ONLY for printing messages
 # Input: Img - image to be analyzed [QPixmap]
 # Input: P - list of points [QGraphicsEllipseItem]
 # Input: Circle - list of tuples [(x,dx),(y,dy),(r,dr)]
 # Input: dL - float specifying track width
 # Output: tuple with calculated optical density and associated error
 def calcOptDensity(gui, Img, P, Circle, dL):
+
+    gui.displayMessage("Computing optical density...")
 
     # SHELL: does nothing atm
     optDens = 0.0
@@ -16,13 +21,11 @@ def calcOptDensity(gui, Img, P, Circle, dL):
     return (optDens, errOptDens)
 
 
-if __name__ == "__main__":
-    # List of qgei points
-    pts = [qgei(36, 14, 10, 10),
-           qgei(36, 10, 10, 10),
-           qgei(19, 28, 10, 10),
-           qgei(18, 31, 10, 10),
-           qgei(33, 18, 10, 10),
-           qgei(26, 26, 10, 10)]
-
-    #
+# if __name__ == "__main__":
+# List of qgei points
+#     pts = [qgei(36, 14, 10, 10),
+#            qgei(36, 10, 10, 10),
+#            qgei(19, 28, 10, 10),
+#            qgei(18, 31, 10, 10),
+#            qgei(33, 18, 10, 10),
+#            qgei(26, 26, 10, 10)]

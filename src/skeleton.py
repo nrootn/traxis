@@ -294,8 +294,8 @@ class Ui_skeleton(object):
     # sets the label and what is displayed when the button is clicked
     def retranslateUi(self, skeleton):
         _translate = QtCore.QCoreApplication.translate
-        skeleton.setWindowTitle(_translate("skeleton", "skeleton"))
-        self.label_points.setText(_translate("skeleton", "Items on picture"))
+        skeleton.setWindowTitle(_translate("skeleton", "Traxis"))
+        self.label_points.setText(_translate("skeleton", "Track Markers"))
         self.label_tech.setText(_translate("skeleton", "Reset Analysis"))
         self.btn_reset.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Reset all the selected points and calculated variables</p></body></html>"))
@@ -305,19 +305,19 @@ class Ui_skeleton(object):
         self.btn_trackMom.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Calculate Track momentum</p></body></html>"))
         self.btn_trackMom.setText(
-            _translate("skeleton", "Caculate Track Momemetum"))
+            _translate("skeleton", "Calculate Track Momemetum"))
         self.btn_optDen.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Calculate Optical Density</p></body></html>"))
         self.btn_optDen.setText(
-            _translate("skeleton", "Caculate Optical Density"))
+            _translate("skeleton", "Calculate Optical Density"))
         self.btn_angle.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Calculate Opening Angle</p></body></html>"))
-        self.btn_angle.setText(_translate("skeleton", "Caculate Angle"))
-        self.label_userSle.setText(_translate("skeleton", "User selection"))
+        self.btn_angle.setText(_translate("skeleton", "Calculate Angle"))
+        self.label_userSle.setText(_translate("skeleton", "User Input"))
         self.btn_placeMar.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Place a new marker on the track</p></body></html>"))
         self.btn_placeMar.setText(_translate("skeleton", "Place Track Marker"))
-        self.setDlLabel.setText(_translate("skeleton", "set DL"))
+        self.setDlLabel.setText(_translate("skeleton", "Set DL"))
         self.btn_drwAngle.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Draw reference for angle</p><p><br/></p></body></html>"))
         self.btn_drwAngle.setText(
