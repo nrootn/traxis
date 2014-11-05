@@ -195,7 +195,7 @@ class Ui_skeleton(object):
 
         # Spacer Item
         spacerItem1 = QtWidgets.QSpacerItem(
-            100, 100, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.usrSel_layout.addItem(spacerItem1)
 
         # add the layout to the main button layout
@@ -223,7 +223,7 @@ class Ui_skeleton(object):
         # Acutal output
         self.textBrowser_consoleOutput = QtWidgets.QTextBrowser(
             self.centralWidget)
-        self.textBrowser_consoleOutput.setMinimumSize(QtCore.QSize(250, 0))
+        self.textBrowser_consoleOutput.setMinimumSize(QtCore.QSize(100, 0))
         self.textBrowser_consoleOutput.setObjectName(
             "textBrowser_consoleOutput")
         self.ConsoleLayout.addWidget(self.textBrowser_consoleOutput)
@@ -264,7 +264,7 @@ class Ui_skeleton(object):
         self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.scrollArea.setMinimumSize(
             QtCore.QSize(0, skeleton.size().height() / 1.5))
-        #self.scrollArea.setMaximumSize(QtCore.QSize(16777215, 16777192))
+        self.scrollArea.setMaximumSize(QtCore.QSize(16777215, 16777192))
         self.scrollArea.setWidgetResizable(True)
         self.mainLayout.addWidget(self.scrollArea)
         # ------- END OF ADDITION -------
@@ -333,3 +333,4 @@ class Ui_skeleton(object):
         self.btn_ZoomOut.setToolTip(_translate(
             "skeleton", "<html><head/><body><p>Zoom out from the picture</p></body></html>"))
         self.btn_ZoomOut.setText(_translate("skeleton", "Zoom Out"))
+

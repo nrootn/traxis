@@ -12,7 +12,7 @@ __author__ = "Syed Haider Abidi, Chris Dydula, and Nooruddin Ahmed"
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsPixmapItem
 from PyQt5.QtWidgets import QFileDialog, QGraphicsEllipseItem
 from PyQt5.QtGui import QPixmap, QImage, QPen
-from PyQt5.QtCore import QDir, Qt, QRectF, QPointF
+from PyQt5.QtCore import QDir, Qt, QRectF, QPointF, QSize
 
 # External methods
 from skeleton import Ui_skeleton as skeletonGUI
@@ -78,6 +78,8 @@ class mainGUI(skeletonGUI):
         self.hasDrawndLCurves = False
 
         self.test = QGraphicsEllipseItem(3, 5, 10, 10)
+
+        self.centralWidget.resizeEvent = (self.resizeEvent)
 
     def pixelSelect(self, event):
         """The following function draws a point (ellipse) when called with
@@ -430,3 +432,7 @@ class mainGUI(skeletonGUI):
         self.innerFittedCenter.setRect(drawRec)
 
         self.scene.update()
+
+    def resizeEvent(self,event):
+        self.scrollArea.setMinimumSize(
+            QSize(0, self.centralWidget.size().height() / 1.75))

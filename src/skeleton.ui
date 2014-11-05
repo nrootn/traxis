@@ -25,6 +25,9 @@
      <layout class="QVBoxLayout" name="mainLayout">
       <item>
        <layout class="QHBoxLayout" name="TopBtnLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetFixedSize</enum>
+        </property>
         <item>
          <widget class="Line" name="vLine_div2">
           <property name="maximumSize">
