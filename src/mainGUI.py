@@ -17,6 +17,7 @@ from PyQt5.QtCore import QDir, Qt, QRectF, QPointF
 # External methods
 from skeleton import Ui_skeleton as skeletonGUI
 from optDensity import calcOptDensity
+from circleFit import circleFit
 
 
 class mainGUI(skeletonGUI):
@@ -306,17 +307,19 @@ class mainGUI(skeletonGUI):
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
+            print('x: ', value.rect().center().x(), ' y: ', value.rect().center().y())
 
         # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
-        self.fittedX0 = 50
-        self.fittedY0 = 50
-        self.fittedR0 = 50
+        fitted_circle = circleFit(pointList)
+        self.fittedX0 = fitted_circle[0][0]
+        self.fittedY0 = fitted_circle[1][0]
+        self.fittedR0 = fitted_circle[2][0]
 
         # Set colour of circle to be drawn.
         pen = QPen(Qt.green)
         # Create a drawing rectangle for the circle.
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0, self.fittedR0)
+            self.fittedX0, self.fittedY0, 2 * self.fittedR0, 2 * self.fittedR0)
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
         # Draw circle with specified colour.
@@ -343,7 +346,7 @@ class mainGUI(skeletonGUI):
         pen = QPen(Qt.green)
         # Define outer circle.
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+            self.fittedX0, self.fittedY0, 2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
         # Draw a dotted line.
         pen.setStyle(Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
@@ -357,7 +360,7 @@ class mainGUI(skeletonGUI):
 
         # Deine inner circle.
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+            self.fittedX0, self.fittedY0,  2 * (self.fittedR0 - self.dL), 2 * (self.fittedR0 - self.dL))
         # Draw a dotted line.
         pen.setStyle(Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
@@ -392,12 +395,12 @@ class mainGUI(skeletonGUI):
             return
 
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+            self.fittedX0, self.fittedY0,  2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
         drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
         self.outerFittedCenter.setRect(drawRec)
 
         drawRec = QRectF(
-            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+            self.fittedX0, self.fittedY0, 2 * (self.fittedR0 - self.dL), 2 * (self.fittedR0 - self.dL))
         drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
 
         self.innerFittedCenter.setRect(drawRec)
