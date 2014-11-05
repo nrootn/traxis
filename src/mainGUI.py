@@ -45,17 +45,19 @@ class mainGUI(skeletonGUI):
         self.btn_openImage.clicked.connect(self.openImage)
 
         # Set up button to zoom in/out on image.
+        self.zoomFactor = 1
         self.btn_ZoomIn.clicked.connect(self.zoomIn)
         self.btn_ZoomOut.clicked.connect(self.zoomOut)
 
         # Set up point drawing at mousepress on image.
-        self.sizeOfEllipse = 10
+        self.sizeOfEllipse = 5
+        self.widthOfEllipse = 2.5
         self.nEllipseDrawn = 0
         self.mapNametoPoint = {}
         self.pixmap_item.mousePressEvent = self.pixelSelect
 
         # Set up navigation of point list.
-        self.listWidget_points.keyPressEvent = self.keyPressEvent
+        self.centralWidget.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
         self.btn_reset.clicked.connect(self.resetImage)
@@ -72,6 +74,7 @@ class mainGUI(skeletonGUI):
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
         self.hasTrackMomentumCalc = False
+        self.hasDrawndLCurves = False
 
         self.test = QGraphicsEllipseItem(3, 5, 10, 10)
 
@@ -92,8 +95,16 @@ class mainGUI(skeletonGUI):
 
         # Set colour of ellipse to be drawn.
         pen = QPen(Qt.red)
+        pen.setWidth(self.widthOfEllipse)
+        # set a mimimum width
+        if(self.widthOfEllipse < 1):
+            pen.setWidth(1)
+
         # Set size of ellipse to be drawn.
         size = self.sizeOfEllipse
+        # set a mimimum size
+        if(size < 2):
+            size = 2
 
         # Create a drawing rectangle for the ellipse.
         drawRec = QRectF(event.pos().x(), event.pos().y(), size, size)
@@ -213,10 +224,18 @@ class mainGUI(skeletonGUI):
         self.textBrowser_consoleOutput.clear()
 
         # Reset the number of points.
+        self.sizeOfEllipse = 5
+        self.widthOfEllipse = 2.5
         self.nEllipseDrawn = 0
 
         # Clear the list of points.
         self.listWidget_points.clear()
+
+        self.zoomFactor = 1
+        self.nUserClickOnPicture = 0
+        self.hasTrackMomentumCalc = False
+        self.hasDrawndLCurves = False
+
 
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
@@ -227,10 +246,39 @@ class mainGUI(skeletonGUI):
         self.scaleImage(0.8)
 
     def scaleImage(self, factor):
-        """The following helper function scales images."""
+        """The following helper function scales images and points."""
+        self.zoomFactor = self.zoomFactor * factor
         self.view.scale(factor, factor)
         self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
         self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+
+        # scale the point as well
+        self.sizeOfEllipse /= factor
+        self.widthOfEllipse /= factor
+        pen = QPen(Qt.red)
+        pen.setWidth(self.widthOfEllipse)
+
+        # set a mimimum width
+        if(self.widthOfEllipse < 1):
+            pen.setWidth(1)
+
+        # Set size of ellipse to be drawn.
+        size = self.sizeOfEllipse
+        
+        # set a mimimum side
+        if(size < 2):
+            size = 2
+
+        # now recale the point
+        for key, value in self.mapNametoPoint.items():
+            drawRec = QRectF(
+                value.rect().x(), value.rect().y(), size, size)
+            drawRec.moveCenter(QPointF(value.rect().center().x(), value.rect().center().y()))
+            value.setRect(drawRec)
+            value.setPen(pen)
+
+        self.scene.update()
+        
 
     def adjustScrollBar(self, scrollBar, factor):
         """The following helper function adjusts size of scrollbar."""
@@ -248,6 +296,11 @@ class mainGUI(skeletonGUI):
         # Need a minimum of 3 points to fit a circle.
         if len(self.mapNametoPoint) < 3:
             self.displayMessage("ERROR - Less than 3 points to fit.")
+            return
+
+        # if track momentum already calculated 
+        # simply return
+        if self.hasTrackMomentumCalc:
             return
 
         pointList = []
@@ -274,6 +327,12 @@ class mainGUI(skeletonGUI):
         # The latest drawn item is on the top of the list.
         self.nominalFittedCenter = itemList[0]
 
+        self.drawdlCurves()
+        self.hasTrackMomentumCalc = True
+        
+
+    def drawdlCurves(self):
+        """The following helper function draws the dL curves."""        
         # Draw dL curves if dL is specified.
         try:
             self.dL = float(self.setDlLineEdit.text())
@@ -281,6 +340,7 @@ class mainGUI(skeletonGUI):
             self.displayMessage("ERROR - dL is not a float")
             return
 
+        pen = QPen(Qt.green)
         # Define outer circle.
         drawRec = QRectF(
             self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
@@ -310,11 +370,20 @@ class mainGUI(skeletonGUI):
         self.innerFittedCenter = itemList[0]
 
         # Used for debugging purposes.
-        self.hasTrackMomentumCalc = True
+        self.hasDrawndLCurves = True
 
     def changedLCircles(self, value):
+        """The following helper function changes the diameter of the dl curves."""        
+        
+        # if track momentum has not been calculated 
+        # simply return
         if not self.hasTrackMomentumCalc:
             return
+        
+        # if orginal dL curves have not been drawn
+        # create them
+        if not self.hasDrawndLCurves:
+            self.drawdlCurves()
 
         try:
             self.dL = float(value)
