@@ -1,19 +1,20 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
+
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from mainGUI import mainGUI
 
 
-
-# simple wrapper to display the GUI
+# Simple wrapper class that creates window to display GUI
 class ImageDialog(QMainWindow):
+
     def __init__(self):
         super(ImageDialog, self).__init__()
-        
+
         self.ui = mainGUI()
         self.ui.setupUi(self)
 
 
-# to start the app
+# Main block that executes the application
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = ImageDialog()

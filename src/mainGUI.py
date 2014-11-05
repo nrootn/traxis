@@ -1,307 +1,336 @@
-import sys
-from PyQt5.QtWidgets import  QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QFileDialog, QMessageBox, QGraphicsEllipseItem
-from PyQt5.QtGui import QPixmap, QImage, QPen, QPolygonF
+
+#!/usr/bin/env python
+"""
+Main GUI class that inherits from base skeleton GUI class and implements
+logic that connects buttons and functions together. Defines interrnal
+methods to carry out various UI actions (zoom, opening images, etc.)
+and calls external functions that have been imported below.
+"""
+
+__author__ = "Syed Haider Abidi, Chris Dydula, and Nooruddin Ahmed"
+
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsPixmapItem
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QGraphicsEllipseItem
+from PyQt5.QtGui import QPixmap, QImage, QPen
 from PyQt5.QtCore import QDir, Qt, QRectF, QPointF
+
+# External methods
 from skeleton import Ui_skeleton as skeletonGUI
+from optDensity import calcOptDensity
 
-## Inherit from the base Skeleton Gui class and implement the logic here
-## makes the code independant from the gui and its changes
+
 class mainGUI(skeletonGUI):
-	def __init__(self):
-		super(skeletonGUI, self).__init__()
 
-	# Initalization and connection of buttons
-	def setupUi(self, skeleton):
-		skeletonGUI.setupUi(self, skeleton)
+    def __init__(self):
+        super(skeletonGUI, self).__init__()
 
-		# display a simple bkg image
-		self.scene = QGraphicsScene()
-		self.view = QGraphicsView(self.scene)
+    def setupUi(self, skeleton):
+        """The following function initializes skeleton GUI and connects
+        buttons to various internal and external methods."""
 
-		# load a blank image as a workaround to a bug inside QT
-		# It will not load an image if a blank is not loaded
-		self.pixmap_item = QGraphicsPixmapItem(QPixmap('bkgPicture.png'), None)
-		self.scene.addItem(self.pixmap_item)
-		self.scrollArea.setWidget(self.view)
+        skeletonGUI.setupUi(self, skeleton)
 
-		# connect open button
-		self.btn_openImage.clicked.connect(self.openImage)
+        # Creates QGraphicsScene to be used to display images.
+        self.scene = QGraphicsScene()
+        self.view = QGraphicsView(self.scene)
 
-		# Connect the zoom button		 
-		self.btn_ZoomIn.clicked.connect(self.zoomIn)
-		self.btn_ZoomOut.clicked.connect(self.zoomOut)
+        # Load a blank image by default. This is required by QT
+        # to be able to load images after.
+        self.pixmap_item = QGraphicsPixmapItem(
+            QPixmap('bkgPicture.png'), None)
+        self.scene.addItem(self.pixmap_item)
+        self.scrollArea.setWidget(self.view)
 
-		# Connecting the drawing of points
-		self.sizeOfEllipse = 10
-		self.nEllipseDrawn = 0
-		self.mapNametoPoint = {}
-		self.pixmap_item.mousePressEvent = self.pixelSelect
+        # Set up button to load images.
+        self.btn_openImage.clicked.connect(self.openImage)
 
-		# connect the list widgest 
-		self.listWidget_points.keyPressEvent = self.keyPressEvent
+        # Set up button to zoom in/out on image.
+        self.btn_ZoomIn.clicked.connect(self.zoomIn)
+        self.btn_ZoomOut.clicked.connect(self.zoomOut)
 
-		# Connect the reset button
-		self.btn_reset.clicked.connect(self.resetImage)
+        # Set up point drawing at mousepress on image.
+        self.sizeOfEllipse = 10
+        self.nEllipseDrawn = 0
+        self.mapNametoPoint = {}
+        self.pixmap_item.mousePressEvent = self.pixelSelect
 
-		# Connect the calculate track momentum button
-		self.btn_trackMom.clicked.connect(self.calcTrackMom)
+        # Set up navigation of point list.
+        self.listWidget_points.keyPressEvent = self.keyPressEvent
 
-		# connect if values are drawn
-		self.setDlLineEdit.textEdited.connect(self.changedLCircles)
-		
-		# For debugging
-		self.nUserClickOnPicture = 0
-		self.hasTrackMomentumCalc = False
+        # Set up button to reset the tool.
+        self.btn_reset.clicked.connect(self.resetImage)
 
-		self.test = QGraphicsEllipseItem(3,5,10,10)
-		
-	# This functions draws the ellipse
-	def pixelSelect(self, event):
-		# Place an event only if place button is checked
-		if not self.btn_placeMar.isChecked():
-			# count the number of times user has click on the picture
-			# if more than 5 times, display a help message
-			self.nUserClickOnPicture += 1
-			if self.nUserClickOnPicture == 5:
-				self.nUserClickOnPicture = 0;
-				self.displayMessage("HELP - To place track marker, first select Place Track Marker button")
-			return
+        # Set up button to calculate track momentum.
+        self.btn_trackMom.clicked.connect(self.calcTrackMom)
 
-		# select the colour of ellipse draw
-		pen = QPen(Qt.red)
-		# size of ellipse drawn
-		size = self.sizeOfEllipse 
-		
-		# add the ellipse
-		# this contains the drawing rectangle
-		drawRec = QRectF(event.pos().x(), event.pos().y(), size, size)
-		# translate it such that center of the box matches the position clicked
-		drawRec.moveCenter(QPointF(event.pos().x(), event.pos().y()))
-		self.scene.addEllipse(drawRec, pen)
+        # Set up button to calculate optical density.
+        # self.btn_optDen.clicked.connect(self.calcOptDen)
 
-		# update the widget
-		self.nEllipseDrawn += 1
-		self.listWidget_points.addItem('Point %s' % self.nEllipseDrawn)
-		self.listWidget_points.setCurrentRow(self.listWidget_points.count()-1)
-		self.listWidget_points.setFocus()
+        # Set up text field that specifies dL (user-specified width).
+        self.setDlLineEdit.textEdited.connect(self.changedLCircles)
 
-		# add the drawn point to the map
-		itemList = self.scene.items()
-		# the most current draw item is on the top of the list			
-		self.mapNametoPoint['Point '+str(self.nEllipseDrawn)] = itemList[0]
+        # Used for debugging purposes.
+        self.nUserClickOnPicture = 0
+        self.hasTrackMomentumCalc = False
 
-	# this function is called with a key is pressed on the QListWidget
-	def keyPressEvent(self, event):
-		dx = 0
-		dy = 0
-		if event.key() == Qt.Key_W:
-			dy = -1
-		elif event.key() == Qt.Key_S:
-			dy = 1
-		elif event.key() == Qt.Key_D:
-			dx = 1	
-		elif event.key() == Qt.Key_A:
-			dx = -1
-		elif event.key() == Qt.Key_Down:
-			current_row = self.listWidget_points.currentRow()
-			num_rows = self.listWidget_points.count()
-			if current_row == -1 or current_row == num_rows-1:
-				return
-			else:
-				self.listWidget_points.setCurrentRow(current_row+1)
-		elif event.key() == Qt.Key_Up:
-			current_row = self.listWidget_points.currentRow()
-			if current_row == -1 or current_row == 0:
-				return
-			else:
-				self.listWidget_points.setCurrentRow(current_row-1)
-		elif event.key() == Qt.Key_Z:
-			self.zoomIn()
-		elif event.key() == Qt.Key_X:
-			self.zoomOut()
-		# for testing
-		elif event.key() == Qt.Key_P:
-			print(self.listWidget_points.currentRow())
-		elif event.key() == Qt.Key_Backspace:
-			self.deletePoint(self.listWidget_points.currentItem().text())
-			self.listWidget_points.takeItem(self.listWidget_points.currentRow())
-			return
-		
-		## move the point
-		if(self.listWidget_points.currentItem()):
-			self.movePoint(self.listWidget_points.currentItem().text(), dx, dy)
-				
+        self.test = QGraphicsEllipseItem(3, 5, 10, 10)
 
-	# moves the point given by pointName, by dx and dy
-	def movePoint(self, pointName, dx, dy):
-		self.mapNametoPoint[pointName].moveBy(dx, dy)
+    def pixelSelect(self, event):
+        """The following function draws a point (ellipse) when called with
+        a mousePressEvent at specified event location."""
 
-	# moves the point given by pointName, by dx and dy
-	def deletePoint(self, pointName):
-		itemList = self.scene.items()
-		for i in itemList:
-			# don't remove the actual image
-			if(i == self.mapNametoPoint[pointName]):
-				self.scene.removeItem(i)
-		del self.mapNametoPoint[pointName]
+        # Place an event only if 'place marker' button has been pressed.
+        if not self.btn_placeMar.isChecked():
+            # Count the number of times user has clicked on the picture.
+            # If more than 3 times, display a help message.
+            self.nUserClickOnPicture += 1
+            if self.nUserClickOnPicture == 3:
+                self.nUserClickOnPicture = 0
+                self.displayMessage(
+                    "HELP - To place track marker, first select 'Place Track Marker' button")
+            return
 
+        # Set colour of ellipse to be drawn.
+        pen = QPen(Qt.red)
+        # Set size of ellipse to be drawn.
+        size = self.sizeOfEllipse
 
-	## TODO:: Chris to comment this
-	## to open the file
-	def openImage(self):
-		fileName = QFileDialog.getOpenFileName(self.centralWidget, "Open File", QDir.currentPath())
-		if fileName:
-			qimage = QImage()
-			image = qimage.load(fileName[0])
-		if not image:
-			QMessageBox.information(self, "Image Viewer", "Cannot load {}.".format(fileName))
-			return
-		self.pixmap_item.setPixmap(QPixmap.fromImage(qimage))
-		
-		# reset everything when a new image is loaded
-		self.resetImage()
+        # Create a drawing rectangle for the ellipse.
+        drawRec = QRectF(event.pos().x(), event.pos().y(), size, size)
+        # Translate top left corner of rectangle to match the clicked position.
+        drawRec.moveCenter(QPointF(event.pos().x(), event.pos().y()))
+        # Draw ellipse with specified colour.
+        self.scene.addEllipse(drawRec, pen)
 
+        # Update the widget containing the list of points.
+        self.nEllipseDrawn += 1
+        self.listWidget_points.addItem('Point %s' % self.nEllipseDrawn)
+        self.listWidget_points.setCurrentRow(
+            self.listWidget_points.count() - 1)
+        self.listWidget_points.setFocus()
 
-	## to reset the image
-	def resetImage(self):
-		# to reset any transformation on the image			
-		self.view.resetTransform()
-		
-		# remove any drawn image
-		itemList = self.scene.items()
-		for i in itemList:
-			# don't remove the actual image
-			if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
-				continue
-			self.scene.removeItem(i)
+        # The latest drawn item is on the top of the list. Add to point list.
+        itemList = self.scene.items()
+        self.mapNametoPoint[
+            'Point ' + str(self.nEllipseDrawn)] = itemList[0]
 
-		# reset any text on the console
-		self.textBrowser_consoleOutput.clear()
+    def keyPressEvent(self, event):
+        """The following function handles keypressEvents used to select and
+        manipulate points in the QListWidget."""
 
-		# reset the number of points drawn
-		self.nEllipseDrawn = 0
+        # WASD to move individual points around.
+        dx = 0
+        dy = 0
+        if event.key() == Qt.Key_W:
+            dy = -1
+        elif event.key() == Qt.Key_S:
+            dy = 1
+        elif event.key() == Qt.Key_D:
+            dx = 1
+        elif event.key() == Qt.Key_A:
+            dx = -1
+        # Up/Down to select points in list.
+        elif event.key() == Qt.Key_Down:
+            current_row = self.listWidget_points.currentRow()
+            num_rows = self.listWidget_points.count()
+            if current_row == -1 or current_row == num_rows - 1:
+                return
+            else:
+                self.listWidget_points.setCurrentRow(current_row + 1)
+        elif event.key() == Qt.Key_Up:
+            current_row = self.listWidget_points.currentRow()
+            if current_row == -1 or current_row == 0:
+                return
+            else:
+                self.listWidget_points.setCurrentRow(current_row - 1)
+        # Z/X to zoom in/zoom out.
+        elif event.key() == Qt.Key_Z:
+            self.zoomIn()
+        elif event.key() == Qt.Key_X:
+            self.zoomOut()
+        # Used for debugging purposes.
+        elif event.key() == Qt.Key_P:
+            print(self.listWidget_points.currentRow())
+        elif event.key() == Qt.Key_Backspace:
+            self.deletePoint(self.listWidget_points.currentItem().text())
+            self.listWidget_points.takeItem(
+                self.listWidget_points.currentRow())
+            return
 
-		# clear the list of points
-		self.listWidget_points.clear()
-		
+        # Update point location
+        if(self.listWidget_points.currentItem()):
+            self.movePoint(
+                self.listWidget_points.currentItem().text(), dx, dy)
 
-	# Action button for Zoom in
-	def zoomIn(self):
-		self.scaleImage(1.25)
-	
-	# Action button for Zoom out
-	def zoomOut(self):
-		self.scaleImage(0.8)
+    def movePoint(self, pointName, dx, dy):
+        """The following function moves given point by [dx,dy]"""
+        self.mapNametoPoint[pointName].moveBy(dx, dy)
 
-	# Functions that scales the image
-	def scaleImage(self, factor):
-		self.view.scale(factor,factor)
-		self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
-		self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+    def deletePoint(self, pointName):
+        """The following function deletes given point"""
+        itemList = self.scene.items()
+        for i in itemList:
+            if(i == self.mapNametoPoint[pointName]):
+                self.scene.removeItem(i)
+        del self.mapNametoPoint[pointName]
 
-	# to change the scroll bar size
-	def adjustScrollBar(self, scrollBar, factor):
-		scrollBar.setValue(int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep()/2))) 
+    def openImage(self):
+        """The following function opens a file dialog and then loads 
+        user-specified image."""
 
-	# to display messages
-	def displayMessage(self, msg):
-		self.textBrowser_consoleOutput.append(msg)  
-		
-	
-	# calculate track momement and draw the circle
-	def calcTrackMom(self):
-		if len(self.mapNametoPoint) < 3:
-			self.displayMessage("ERROR - Less than 3 points to fit")
-			return
+        # Load image through FileDialog
+        fileName = QFileDialog.getOpenFileName(
+            self.centralWidget, "Open File", QDir.currentPath())
+        if fileName:
+            qimage = QImage()
+            image = qimage.load(fileName[0])
+        if not image:
+            QMessageBox.information(
+                self, "Image Viewer", "Cannot load {}.".format(fileName))
+            return
 
-		pointList = []
-		for key, value in self.mapNametoPoint.items():
-			pointList.append(value)
-		
-		# get the track center and radius
+        # Create a pixmap from the loaded image.
+        self.pixmap_item.setPixmap(QPixmap.fromImage(qimage))
 
-		self.fittedX0 = 50
-		self.fittedY0 = 50
-		self.fittedR0 = 50
-		
-		# Draw the fitted circles
-		pen = QPen(Qt.green)
-		# size of ellipse drawn	
-		# this contains the drawing rectangle
-		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0, self.fittedR0)
-		# translate it such that center of the box matches the position clicked
-		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
-		self.scene.addEllipse(drawRec, pen)
+        # Reset any image transformations.
+        self.resetImage()
 
-		# Store the ellipse draw for later modifications
-		itemList = self.scene.items()
-		# the most current draw item is on the top of the list			
-		self.nominalFittedCenter = itemList[0]
+    def resetImage(self):
+        """The following function resets image transformations,
+        and clears point list and console output."""
 
-		# try to draw the dL curves
-		try:
-			self.dL = float(self.setDlLineEdit.text())
-		except ValueError:
-			self.displayMessage("ERROR - dL is not a float")
-			return
+        # Clear image transformations.
+        self.view.resetTransform()
 
-		# upper limit on the circle
-		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)		
-		# draw a dotted line
-		pen.setStyle(Qt.DashDotLine);
-		# translate it such that center of the box matches the position clicked
-		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
-		self.scene.addEllipse(drawRec, pen)
+        # Clear drawn points.
+        itemList = self.scene.items()
+        for i in itemList:
+            if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
+                continue
+            self.scene.removeItem(i)
 
-		# Store the ellipse draw for later modifications
-		itemList = self.scene.items()
-		# the most current draw item is on the top of the list			
-		self.upperFittedCenter = itemList[0]
+        # Clear console output.
+        self.textBrowser_consoleOutput.clear()
 
-		# lower limit circle
-		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)		
-		# draw a dotted line
-		pen.setStyle(Qt.DashDotLine);
-		# translate it such that center of the box matches the position clicked
-		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
-		self.scene.addEllipse(drawRec, pen)
+        # Reset the number of points.
+        self.nEllipseDrawn = 0
 
-		# Store the ellipse draw for later modifications
-		itemList = self.scene.items()
-		# the most current draw item is on the top of the list			
-		self.lowerFittedCenter = itemList[0]
+        # Clear the list of points.
+        self.listWidget_points.clear()
 
-		# for debugging purpose
-		self.hasTrackMomentumCalc = True
+    def zoomIn(self):
+        """The following function zooms image by 125% when called."""
+        self.scaleImage(1.25)
 
+    def zoomOut(self):
+        """The following function zooms image by 80% when called."""
+        self.scaleImage(0.8)
 
-	def changedLCircles(self, value):
-		if not self.hasTrackMomentumCalc:
-			return
+    def scaleImage(self, factor):
+        """The following helper function scales images."""
+        self.view.scale(factor, factor)
+        self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
+        self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
 
-		try:
-			self.dL = float(value)
-		except ValueError:
-			self.displayMessage("ERROR - dL is not a float")
-			return
+    def adjustScrollBar(self, scrollBar, factor):
+        """The following helper function adjusts size of scrollbar."""
+        scrollBar.setValue(
+            int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep() / 2)))
 
-		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)		
-		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
-		self.upperFittedCenter.setRect(drawRec)
-		
-		drawRec = QRectF(self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)		
-		drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+    def displayMessage(self, msg):
+        """The following function is used to write messages to console."""
+        self.textBrowser_consoleOutput.append(msg)
 
-		self.lowerFittedCenter.setRect(drawRec)
+    def calcTrackMom(self):
+        """The following function is used to calculate track momentum of
+        drawn points on image and then draw a fitted circle to them."""
 
-		self.scene.update()
-		
-	
+        # Need a minimum of 3 points to fit a circle.
+        if len(self.mapNametoPoint) < 3:
+            self.displayMessage("ERROR - Less than 3 points to fit.")
+            return
 
+        pointList = []
+        for key, value in self.mapNametoPoint.items():
+            pointList.append(value)
 
+        # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
+        self.fittedX0 = 50
+        self.fittedY0 = 50
+        self.fittedR0 = 50
 
+        # Set colour of circle to be drawn.
+        pen = QPen(Qt.green)
+        # Create a drawing rectangle for the circle.
+        drawRec = QRectF(
+            self.fittedX0, self.fittedY0, self.fittedR0, self.fittedR0)
+        # Translate top left corner of rectangle to match the center of circle.
+        drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+        # Draw circle with specified colour.
+        self.scene.addEllipse(drawRec, pen)
 
+        # Store the drawn circle for future modifications.
+        itemList = self.scene.items()
+        # The latest drawn item is on the top of the list.
+        self.nominalFittedCenter = itemList[0]
 
+        # Draw dL curves if dL is specified.
+        try:
+            self.dL = float(self.setDlLineEdit.text())
+        except ValueError:
+            self.displayMessage("ERROR - dL is not a float")
+            return
 
+        # Define outer circle.
+        drawRec = QRectF(
+            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+        # Draw a dotted line.
+        pen.setStyle(Qt.DashDotLine)
+        # Translate top left corner of rectangle to match the center of circle.
+        drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+        self.scene.addEllipse(drawRec, pen)
 
-		
+        # Store the drawn circle for future modifications.
+        itemList = self.scene.items()
+        # The latest drawn item is on the top of the list.
+        self.outerFittedCenter = itemList[0]
+
+        # Deine inner circle.
+        drawRec = QRectF(
+            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+        # Draw a dotted line.
+        pen.setStyle(Qt.DashDotLine)
+        # Translate top left corner of rectangle to match the center of circle.
+        drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+        self.scene.addEllipse(drawRec, pen)
+
+        # Store the drawn circle for future modifications.
+        itemList = self.scene.items()
+        # The latest drawn item is on the top of the list.
+        self.innerFittedCenter = itemList[0]
+
+        # Used for debugging purposes.
+        self.hasTrackMomentumCalc = True
+
+    def changedLCircles(self, value):
+        if not self.hasTrackMomentumCalc:
+            return
+
+        try:
+            self.dL = float(value)
+        except ValueError:
+            self.displayMessage("ERROR - dL is not a float")
+            return
+
+        drawRec = QRectF(
+            self.fittedX0, self.fittedY0, self.fittedR0 + self.dL, self.fittedR0 + self.dL)
+        drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+        self.outerFittedCenter.setRect(drawRec)
+
+        drawRec = QRectF(
+            self.fittedX0, self.fittedY0, self.fittedR0 - self.dL, self.fittedR0 - self.dL)
+        drawRec.moveCenter(QPointF(self.fittedX0, self.fittedY0))
+
+        self.innerFittedCenter.setRect(drawRec)
+
+        self.scene.update()

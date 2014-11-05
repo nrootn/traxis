@@ -64,5 +64,3 @@ if __name__ == "__main__":
 	fig = plt.gcf()
 	fig.gca().add_artist(circle)
 	plt.show()
-	
-	#plt.show()
