@@ -1,5 +1,5 @@
 import numpy
-from scipy import odr, row_stack
+from scipy import optimize
 
 def createXYArrays(qgei_point_list):
 	"""Given a list of QGraphicsEllipseItem's, qgei_point_list, return a numpy array of the x coordinates and a numpy array of the y coordinates."""
@@ -18,9 +18,11 @@ def createXYArrays(qgei_point_list):
 
 	return x_array, y_array
 
-def implicitCircle(p, x):
-	"""Implicit function definition of the circle. p is a list of parameters(p[0] is x coordinate of centre, p[1] is y coordinate of centre, p[2] is radius), x is list of variables (x[0] is x, x[1] is y)."""
-	return (x[0]-p[0])**2 + (x[1]-p[1])**2 - p[2]**2
+def distanceResiduals(center_tuple, x_array, y_array):
+
+	distances = numpy.sqrt((x_array - center_tuple[0])**2 + (y_array - center_tuple[1])**2)
+	residuals = distances - distances.mean()
+	return residuals
 
 def circleFit(qgei_point_list):
 	"""Given a list of QGraphicsEllipseItem's, qgei_point_list, return """
@@ -28,24 +30,18 @@ def circleFit(qgei_point_list):
 	# convert list of qgei's to arrays of x_coordinates and y_coordinates
 	x_array, y_array = createXYArrays(qgei_point_list)
 
-	# use the means of the x coorindates, y_coordinates and "radii" as initial guesses for the circle centre coordinates and radius
-	x_m = x_array.mean()
-	y_m = y_array.mean()
-	r_m = numpy.sqrt((x_array - x_m)**2 + (y_array - y_m)**2).mean()
+	# use the means of the x coorindates, y_coordinates as initial guesses for the circle centre coordinates
+	center_estimate = (x_array.mean(), y_array.mean())
 
-	beta0 = [x_m, y_m, r_m]
+	center_lsq, cov_matrix, infodict, mesg, ier = optimize.leastsq(distanceResiduals, center_estimate, args=(x_array, y_array), full_output=True)
+	chi2_dof = (distanceResiduals(center_lsq, x_array, y_array)**2).sum()/(len(y_array)-len(center_estimate))
+	pcov = cov_matrix * chi2_dof
+	center_x, center_y = center_lsq
+	delta_c_x, delta_c_y = numpy.sqrt(numpy.diag(pcov))
+	radius = numpy.sqrt((x_array - center_x)**2 + (y_array - center_y)**2).mean()
+	delta_radius = numpy.sqrt(((center_x-x_array).mean()/radius*delta_c_x)**2 + ((center_y-y_array).mean()/radius*delta_c_y)**2)
 
-	fit_data = odr.Data(row_stack([x_array, y_array]), y=1)
-	fit_model = odr.Model(implicitCircle, implicit=True)
-	fit_odr = odr.ODR(fit_data, fit_model, beta0=beta0)
-	fit_out = fit_odr.run()
-	fit_out = fit_odr.restart(1000)
-	centre_x, centre_y, radius = fit_out.beta
-	delta_c_x = fit_out.sd_beta[0]
-	delta_c_y = fit_out.sd_beta[1]
-	delta_radius = fit_out.sd_beta[2]
-
-	return [(centre_x, delta_c_x), (centre_y, delta_c_y), (radius, delta_radius)]
+	return [(center_x, delta_c_x), (center_y, delta_c_y), (radius, delta_radius)]
 
 if __name__ == "__main__":
 	from PyQt5.QtWidgets import QGraphicsEllipseItem as qgei
