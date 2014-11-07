@@ -3,21 +3,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class GuiSkeleton(object):
     """The skeleton of the GUI."""
 
-    def setupUi(self, main_window):
+    def __init__(self, main_window):
         """Setup the UI."""
 
-        # main Widget
-        main_window.setObjectName("main_window")
-        #main_window.setMaximumSize(QtCore.QSize(100000, 1000000))
-        main_window.resize(1070, 665)
-        #main_window.showFullScreen()
-
-        # CHANGE : added this option to make the button be in the clickable
-        # All options for MaximumSize are commented to prevent a large window
-        # from opening on Windows OS
-        # creating the window
+        # set the main window as the central widget and give it keyboard focus
         self.centralWidget = QtWidgets.QWidget(main_window)
         self.centralWidget.setObjectName("centralWidget")
+        self.centralWidget.setFocus()
 
         # Layout of the main window - allows for resizing
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralWidget)
@@ -44,9 +36,12 @@ class GuiSkeleton(object):
         # List Widget
         self.listWidget_points = QtWidgets.QListWidget(self.centralWidget)
         self.listWidget_points.setObjectName("listWidget_points")
+        self.listWidget_points.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.listWidget_points.setMaximumSize(QtCore.QSize(100, 2000))
+        self.listWidget_points.setMinimumSize(QtCore.QSize(100, 0))
         self.verticalLayout_pointLabel.addWidget(self.listWidget_points)
 
-        # add the layout to the main button layour
+        # add the layout to the main button layout
         self.TopBtnLayout.addLayout(self.verticalLayout_pointLabel)
 
         # Line to visually divide the area
@@ -219,6 +214,7 @@ class GuiSkeleton(object):
         self.textBrowser_consoleOutput.setMinimumSize(QtCore.QSize(100, 0))
         self.textBrowser_consoleOutput.setObjectName(
             "textBrowser_consoleOutput")
+        self.textBrowser_consoleOutput.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ConsoleLayout.addWidget(self.textBrowser_consoleOutput)
 
         # add the layout to the main button layout

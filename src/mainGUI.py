@@ -1,4 +1,4 @@
-__author__ = "Syed Haider Abidi, Chris Dydula, and Nooruddin Ahmed"
+__author__ = "Syed Haider Abidi,  Nooruddin Ahmed and Christopher Dydula"
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -15,15 +15,15 @@ class MainGui(GuiSkeleton):
     and calls external functions that have been imported below.
     """
 
-    def __init__(self):
-        super(GuiSkeleton, self).__init__()
-
-    def setupUi(self, main_window):
-        """The following function initializes skeleton GUI and connects
-        buttons to various internal and external methods.
+    def __init__(self, main_window):
+        """Initialize gui skeleton and connect buttons to internal and
+        external methods.
         """
 
-        GuiSkeleton.setupUi(self, main_window)
+        super().__init__(main_window)
+
+        # number of messages printed to the console
+        self.num_messages = 0
 
         # Creates QGraphicsScene to be used to display images.
         self.scene = QtWidgets.QGraphicsScene()
@@ -115,7 +115,6 @@ class MainGui(GuiSkeleton):
         self.listWidget_points.addItem('Point %s' % self.nEllipseDrawn)
         self.listWidget_points.setCurrentRow(
             self.listWidget_points.count() - 1)
-        self.listWidget_points.setFocus()
 
         # The latest drawn item is on the top of the list. Add to point list.
         itemList = self.scene.items()
@@ -137,29 +136,60 @@ class MainGui(GuiSkeleton):
             dx = 1
         elif event.key() == QtCore.Qt.Key_A:
             dx = -1
-        # Up/Down to select points in list.
-        elif event.key() == QtCore.Qt.Key_Down:
+
+        # F/V to select points in list.
+        elif event.key() == QtCore.Qt.Key_V:
             current_row = self.listWidget_points.currentRow()
             num_rows = self.listWidget_points.count()
             if current_row == -1 or current_row == num_rows - 1:
                 return
             else:
                 self.listWidget_points.setCurrentRow(current_row + 1)
-        elif event.key() == QtCore.Qt.Key_Up:
+        elif event.key() == QtCore.Qt.Key_F:
             current_row = self.listWidget_points.currentRow()
             if current_row == -1 or current_row == 0:
                 return
             else:
                 self.listWidget_points.setCurrentRow(current_row - 1)
-        # Z/X to zoom in/zoom out.
+
+        # Z/X for zoom in/zoom out.
         elif event.key() == QtCore.Qt.Key_Z:
             self.zoomIn()
         elif event.key() == QtCore.Qt.Key_X:
             self.zoomOut()
-        # Used for debugging purposes.
+
+        # R for reset
+        elif event.key() == QtCore.Qt.Key_R:
+            self.resetImage()
+
+        # M, N, B for calculate functions
+        elif event.key() == QtCore.Qt.Key_M:
+            self.calcTrackMom()
+        elif event.key() == QtCore.Qt.Key_N:
+            self.calcOptDen()
+        elif event.key() == QtCore.Qt.Key_B: # calculate angle
+            pass
+
+        # O for open image
+        elif event.key() == QtCore.Qt.Key_O:
+            self.openImage()
+
+        # P and L for mode switching
         elif event.key() == QtCore.Qt.Key_P:
-            print(self.listWidget_points.currentRow())
-        elif event.key() == QtCore.Qt.Key_Backspace:
+            if self.btn_placeMar.isChecked():
+                self.btn_placeMar.setChecked(False)
+            else:
+                self.btn_placeMar.setChecked(True)
+            self.btn_drwAngle.setChecked(False)
+        elif event.key() == QtCore.Qt.Key_L:
+            if self.btn_drwAngle.isChecked():
+                self.btn_drwAngle.setChecked(False)
+            else:
+                self.btn_drwAngle.setChecked(True)
+            self.btn_placeMar.setChecked(False)
+
+        # Delete to delete highlighted pointed
+        elif event.key() == QtCore.Qt.Key_Delete:
             self.deletePoint(self.listWidget_points.currentItem().text())
             self.listWidget_points.takeItem(
                 self.listWidget_points.currentRow())
@@ -202,6 +232,9 @@ class MainGui(GuiSkeleton):
         # Reset any image transformations.
         self.resetImage()
 
+        # set keyboard focus to the graphics view
+        self.view.setFocus()
+
     def resetImage(self):
         """The following function resets image transformations,
         and clears point list and console output."""
@@ -231,6 +264,9 @@ class MainGui(GuiSkeleton):
         self.nUserClickOnPicture = 0
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
+
+        # reset count of messages printed to console
+        self.num_messages = 0
 
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
@@ -282,6 +318,9 @@ class MainGui(GuiSkeleton):
 
     def displayMessage(self, msg):
         """The following function is used to write messages to console."""
+
+        self.num_messages += 1
+        msg = "[{}] {}".format(self.num_messages, msg)
         self.textBrowser_consoleOutput.append(msg)
 
     def calcTrackMom(self):
@@ -300,8 +339,8 @@ class MainGui(GuiSkeleton):
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
-            print('x: ', value.rect().center().x(),
-                  ' y: ', value.rect().center().y())
+            #print('x: ', value.rect().center().x(),
+            #      ' y: ', value.rect().center().y())
 
         # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
         fitted_circle = circleFit(pointList)
