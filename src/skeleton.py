@@ -1,29 +1,22 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'skeleton.ui'
-#
-# Created: Sat Nov  1 16:03:12 2014
-#      by: PyQt5 UI code generator 5.3.2
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+class GuiSkeleton(object):
+    """The skeleton of the GUI."""
 
-class Ui_skeleton(object):
-
-    def setupUi(self, skeleton):
+    def setupUi(self, main_window):
+        """Setup the UI."""
 
         # main Widget
-        skeleton.setObjectName("skeleton")
-        #skeleton.setMaximumSize(QtCore.QSize(100000, 1000000))
-        skeleton.resize(1070, 665)
+        main_window.setObjectName("main_window")
+        #main_window.setMaximumSize(QtCore.QSize(100000, 1000000))
+        main_window.resize(1070, 665)
+        #main_window.showFullScreen()
 
         # CHANGE : added this option to make the button be in the clickable
         # All options for MaximumSize are commented to prevent a large window
         # from opening on Windows OS
         # creating the window
-        self.centralWidget = QtWidgets.QWidget(skeleton)
+        self.centralWidget = QtWidgets.QWidget(main_window)
         self.centralWidget.setObjectName("centralWidget")
 
         # Layout of the main window - allows for resizing
@@ -128,7 +121,7 @@ class Ui_skeleton(object):
             100, 100, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.tech_calc_btnLayout.addItem(spacerItem)
 
-        # add the layout to the main button layour
+        # add the layout to the main button layout
         self.TopBtnLayout.addLayout(self.tech_calc_btnLayout)
 
         # Line to visually divide the area
@@ -263,7 +256,7 @@ class Ui_skeleton(object):
         self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.scrollArea.setMinimumSize(
-            QtCore.QSize(0, skeleton.size().height() / 1.5))
+            QtCore.QSize(0, main_window.size().height() / 1.5))
         self.scrollArea.setMaximumSize(QtCore.QSize(16777215, 16777192))
         self.scrollArea.setWidgetResizable(True)
         self.mainLayout.addWidget(self.scrollArea)
@@ -271,66 +264,67 @@ class Ui_skeleton(object):
 
         # Add to the main layout
         self.verticalLayout.addLayout(self.mainLayout)
-        skeleton.setCentralWidget(self.centralWidget)
+        main_window.setCentralWidget(self.centralWidget)
 
         # menu bar and status bar below
-        self.menuBar = QtWidgets.QMenuBar(skeleton)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1070, 22))
-        self.menuBar.setObjectName("menuBar")
-        skeleton.setMenuBar(self.menuBar)
+        #self.menuBar = QtWidgets.QMenuBar(main_window)
+        #self.menuBar.setGeometry(QtCore.QRect(0, 0, 1070, 22))
+        #self.menuBar.setObjectName("menuBar")
+        #main_window.setMenuBar(self.menuBar)
 
-        self.mainToolBar = QtWidgets.QToolBar(skeleton)
-        self.mainToolBar.setObjectName("mainToolBar")
-        skeleton.addToolBar(QtCore.Qt.TopToolBarArea, self.mainToolBar)
+        #self.mainToolBar = QtWidgets.QToolBar(main_window)
+        #self.mainToolBar.setObjectName("mainToolBar")
+        #main_window.addToolBar(QtCore.Qt.TopToolBarArea, self.mainToolBar)
 
-        self.statusBar = QtWidgets.QStatusBar(skeleton)
+        self.statusBar = QtWidgets.QStatusBar(main_window)
         self.statusBar.setObjectName("statusBar")
-        skeleton.setStatusBar(self.statusBar)
+        main_window.setStatusBar(self.statusBar)
 
         # To the correct mane and labels
-        self.retranslateUi(skeleton)
-        QtCore.QMetaObject.connectSlotsByName(skeleton)
+        self.retranslateUi(main_window)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
 
-    # sets the label and what is displayed when the button is clicked
-    def retranslateUi(self, skeleton):
+    def retranslateUi(self, main_window):
+        """Set the labels and what is displayed when buttons are clicked."""
+
         _translate = QtCore.QCoreApplication.translate
-        skeleton.setWindowTitle(_translate("skeleton", "Traxis"))
-        self.label_points.setText(_translate("skeleton", "Track Markers"))
-        self.label_tech.setText(_translate("skeleton", "Reset Analysis"))
+        main_window.setWindowTitle(_translate("main_window", "Traxis"))
+        self.label_points.setText(_translate("main_window", "Track Markers"))
+        self.label_tech.setText(_translate("main_window", "Reset Analysis"))
         self.btn_reset.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Reset all the selected points and calculated variables</p></body></html>"))
-        self.btn_reset.setText(_translate("skeleton", "Reset"))
-        self.label_Zoom.setText(_translate("skeleton", "Zoom"))
-        self.label_calc.setText(_translate("skeleton", "Calculate"))
+            "main_window", "<html><head/><body><p>Reset all the selected points and calculated variables</p></body></html>"))
+        self.btn_reset.setText(_translate("main_window", "Reset"))
+        self.label_Zoom.setText(_translate("main_window", "Zoom"))
+        self.label_calc.setText(_translate("main_window", "Calculate"))
         self.btn_trackMom.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Calculate Track momentum</p></body></html>"))
+            "main_window", "<html><head/><body><p>Calculate Track momentum</p></body></html>"))
         self.btn_trackMom.setText(
-            _translate("skeleton", "Calculate Track Momemetum"))
+            _translate("main_window", "Calculate Track Momemetum"))
         self.btn_optDen.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Calculate Optical Density</p></body></html>"))
+            "main_window", "<html><head/><body><p>Calculate Optical Density</p></body></html>"))
         self.btn_optDen.setText(
-            _translate("skeleton", "Calculate Optical Density"))
+            _translate("main_window", "Calculate Optical Density"))
         self.btn_angle.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Calculate Opening Angle</p></body></html>"))
-        self.btn_angle.setText(_translate("skeleton", "Calculate Angle"))
-        self.label_userSle.setText(_translate("skeleton", "User Input"))
+            "main_window", "<html><head/><body><p>Calculate Opening Angle</p></body></html>"))
+        self.btn_angle.setText(_translate("main_window", "Calculate Angle"))
+        self.label_userSle.setText(_translate("main_window", "User Input"))
         self.btn_placeMar.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Place a new marker on the track</p></body></html>"))
-        self.btn_placeMar.setText(_translate("skeleton", "Place Track Marker"))
-        self.setDlLabel.setText(_translate("skeleton", "Set DL"))
+            "main_window", "<html><head/><body><p>Place a new marker on the track</p></body></html>"))
+        self.btn_placeMar.setText(_translate("main_window", "Place Track Marker"))
+        self.setDlLabel.setText(_translate("main_window", "Set DL"))
         self.btn_drwAngle.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Draw reference for angle</p><p><br/></p></body></html>"))
+            "main_window", "<html><head/><body><p>Draw reference for angle</p><p><br/></p></body></html>"))
         self.btn_drwAngle.setText(
-            _translate("skeleton", "Draw Angle Reference"))
-        self.label_console.setText(_translate("skeleton", "Console"))
+            _translate("main_window", "Draw Angle Reference"))
+        self.label_console.setText(_translate("main_window", "Console"))
         self.btn_openImage.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Open Image for analysis</p></body></html>"))
-        self.btn_openImage.setText(_translate("skeleton", "Open Image"))
+            "main_window", "<html><head/><body><p>Open Image for analysis</p></body></html>"))
+        self.btn_openImage.setText(_translate("main_window", "Open Image"))
 
         self.btn_ZoomIn.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Zoom into the picture</p></body></html>"))
-        self.btn_ZoomIn.setText(_translate("skeleton", "Zoom In"))
+            "main_window", "<html><head/><body><p>Zoom into the picture</p></body></html>"))
+        self.btn_ZoomIn.setText(_translate("main_window", "Zoom In"))
         self.btn_ZoomOut.setToolTip(_translate(
-            "skeleton", "<html><head/><body><p>Zoom out from the picture</p></body></html>"))
-        self.btn_ZoomOut.setText(_translate("skeleton", "Zoom Out"))
+            "main_window", "<html><head/><body><p>Zoom out from the picture</p></body></html>"))
+        self.btn_ZoomOut.setText(_translate("main_window", "Zoom Out"))
 
