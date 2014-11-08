@@ -5,15 +5,20 @@ class GuiSkeleton(object):
 
     """The skeleton of the GUI."""
 
-    def __init__(self, main_window):
+    def __init__(self, mainWindow):
         """Setup the base user interface - create layouts and place widgets
         and labels on main window.
         """
 
         # instantiate a base widget and set it as the main window's central
         # widget
-        self.centralWidget = QtWidgets.QWidget(main_window)
-        main_window.setCentralWidget(self.centralWidget)
+        self.centralWidget = QtWidgets.QWidget(mainWindow)
+        mainWindow.setCentralWidget(self.centralWidget)
+
+        # set main window icon
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("./traxis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        mainWindow.setWindowIcon(icon)
 
         # layout of the main window
         self.mainLayout = QtWidgets.QVBoxLayout(self.centralWidget)
@@ -108,8 +113,7 @@ class GuiSkeleton(object):
         self.calcAngleButton.setText("Calculate Angle")
         self.calcAngleButton.setToolTip("Calculate Opening Angle")
 
-        # add stretch rather than spacer
-        self.techButtonLayout.addStretch(1)
+        self.techButtonLayout.addStretch(1)  # add stretch to segment
 
         # second vertical gui segment divider in top half layout
         self.vLineDiv2 = QtWidgets.QFrame(
@@ -176,7 +180,8 @@ class GuiSkeleton(object):
         self.dlFormLayout.setWidget(
             0, QtWidgets.QFormLayout.FieldRole, self.dlLineEdit)
         self.dlLineEdit.setText("0")
-        self.userSelectionLayout.addStretch(1)
+
+        self.userSelectionLayout.addStretch(1)  # add stretch to segment
 
         # third vertical gui segment divider in top half layout
         self.vLineDiv3 = QtWidgets.QFrame(
@@ -201,10 +206,6 @@ class GuiSkeleton(object):
         self.consoleTextBrowser.setFocusPolicy(QtCore.Qt.NoFocus)
         self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
 
-        # spacerItemConsole = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the console segment
-        #    100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        # self.mainLayout.addItem(spacerItemConsole)
-
         # horizontal gui segment divider between top half and bottom half of ui
         self.hLineDiv = QtWidgets.QFrame(self.centralWidget)
         self.mainLayout.addWidget(self.hLineDiv)
@@ -221,7 +222,7 @@ class GuiSkeleton(object):
         self.bottomUiLayout.addWidget(self.sceneScrollArea)
         self.sceneScrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.sceneScrollArea.setMinimumSize(
-            QtCore.QSize(0, main_window.size().height() / 1.5))
+            QtCore.QSize(0, mainWindow.size().height() / 1.5))
         self.sceneScrollArea.setWidgetResizable(True)
 
         # create graphics scene on which images will be displayed
@@ -236,8 +237,8 @@ class GuiSkeleton(object):
         self.scene.addItem(self.pixmapItem)
 
         # status bar at the bottom of the window
-        self.statusBar = QtWidgets.QStatusBar(main_window)
-        main_window.setStatusBar(self.statusBar)
+        self.statusBar = QtWidgets.QStatusBar(mainWindow)
+        mainWindow.setStatusBar(self.statusBar)
 
         # To the correct mane and labels
-        QtCore.QMetaObject.connectSlotsByName(main_window)
+        QtCore.QMetaObject.connectSlotsByName(mainWindow)

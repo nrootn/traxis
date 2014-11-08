@@ -16,12 +16,12 @@ class MainGui(GuiSkeleton):
     and calls external functions that have been imported below.
     """
 
-    def __init__(self, main_window):
+    def __init__(self, mainWindow):
         """Initialize gui skeleton and connect buttons to internal and
         external methods.
         """
 
-        super().__init__(main_window)
+        super().__init__(mainWindow)
 
         # number of messages printed to the console
         self.num_messages = 0
