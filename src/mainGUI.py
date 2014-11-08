@@ -42,6 +42,7 @@ class MainGui(GuiSkeleton):
 
         # Set up navigation of point list.
         self.centralWidget.keyPressEvent = self.keyPressEvent
+        self.listWidget_points.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
         self.resetButton.clicked.connect(self.resetImage)
@@ -228,9 +229,6 @@ class MainGui(GuiSkeleton):
         """The following function resets image transformations,
         and clears point list and console output."""
 
-        # Clear image transformations.
-        self.view.resetTransform()
-
         # Clear drawn points.
         itemList = self.scene.items()
         for i in itemList:
@@ -254,6 +252,7 @@ class MainGui(GuiSkeleton):
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
 
+        self.mapNametoPoint = {}
         # reset count of messages printed to console
         self.num_messages = 0
 
