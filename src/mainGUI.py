@@ -79,19 +79,7 @@ class MainGui(GuiSkeleton):
                     "HELP - To place track marker, first select 'Place Track Marker' button")
             return
 
-        # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(QtCore.Qt.red)
-        pen.setWidth(self.widthOfEllipse)
-        # set a mimimum width
-        if(self.widthOfEllipse < 1):
-            pen.setWidth(1)
-
-        # Set size of ellipse to be drawn.
-        size = self.sizeOfEllipse
-        # set a mimimum size
-        if(size < 2):
-            size = 2
-
+        pen,size = self.getPointPenSize()
         # Create a drawing rectangle for the ellipse.
         drawRec = QtCore.QRectF(event.pos().x(), event.pos().y(), size, size)
         # Translate top left corner of rectangle to match the clicked position.
@@ -109,6 +97,25 @@ class MainGui(GuiSkeleton):
         itemList = self.scene.items()
         self.mapNametoPoint[
             'Point ' + str(self.nEllipseDrawn)] = itemList[0]
+    
+    def getPointPenSize(self):
+        """The following function moves gets the size and pen for the track markers"""
+        # Set colour of ellipse to be drawn.
+        pen = QtGui.QPen(QtCore.Qt.red)
+        pen.setWidth(self.widthOfEllipse)
+        # set a mimimum width
+        if(self.widthOfEllipse < 1):
+            pen.setWidth(1)
+
+        # Set size of ellipse to be drawn.
+        size = self.sizeOfEllipse
+        # set a mimimum size
+        if(size < 2):
+            size = 2
+
+        return pen,size
+
+
 
     def keyPressEvent(self, event):
         """The following function handles keypressEvents used to select and
@@ -191,7 +198,17 @@ class MainGui(GuiSkeleton):
 
     def movePoint(self, pointName, dx, dy):
         """The following function moves given point by [dx,dy]"""
-        self.mapNametoPoint[pointName].moveBy(dx, dy)
+        pen,size = self.getPointPenSize()
+        
+        value = self.mapNametoPoint[pointName]
+        drawRec = QtCore.QRectF(
+                value.rect().x(), value.rect().y(), size, size)
+        drawRec.moveCenter(
+                QtCore.QPointF(value.rect().center().x() + dx, value.rect().center().y() + dy))
+        self.mapNametoPoint[pointName].setRect(drawRec)
+        self.mapNametoPoint[pointName].setPen(pen)
+
+        self.scene.update()
 
     def deletePoint(self, pointName):
         """The following function deletes given point"""
@@ -273,20 +290,9 @@ class MainGui(GuiSkeleton):
         # Scale the drawn points when zooming.
         self.sizeOfEllipse /= factor
         self.widthOfEllipse /= factor
-        pen = QtGui.QPen(QtCore.Qt.red)
-        pen.setWidth(self.widthOfEllipse)
-
-        # Set a minimum width.
-        if(self.widthOfEllipse < 1):
-            pen.setWidth(1)
-
-        # Set size of ellipse to be drawn.
-        size = self.sizeOfEllipse
-
-        # Set a minimum size.
-        if(size < 2):
-            size = 2
-
+        
+        pen,size = self.getPointPenSize()
+        
         # Recale the points.
         for key, value in self.mapNametoPoint.items():
             drawRec = QtCore.QRectF(
@@ -321,8 +327,12 @@ class MainGui(GuiSkeleton):
 
         # Return if track momentum has already been calculated.
         if self.hasTrackMomentumCalc:
-            return
+            self.scene.removeItem(self.nominalFittedCenter)
 
+        if self.hasDrawndLCurves:
+            self.scene.removeItem(self.innerFittedCenter)
+            self.scene.removeItem(self.outerFittedCenter)
+        
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
@@ -335,6 +345,9 @@ class MainGui(GuiSkeleton):
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
 
+        self.displayMessage(str("fitted x0 %f +/- %f" % (fitted_circle[0][0], fitted_circle[0][1])))
+        self.displayMessage(str("fitted y0 %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
+        self.displayMessage(str("fitted R0 %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
         # Set colour of circle to be drawn.
         pen = QtGui.QPen(QtCore.Qt.green)
         # Create a drawing rectangle for the circle.
@@ -426,13 +439,8 @@ class MainGui(GuiSkeleton):
     def changedLCircles(self, value):
         """The following helper function changes the diameter of dL curves."""
 
-        # Return if track momentum has already been calculated.
-        if not self.hasTrackMomentumCalc:
+        if len(value) is 0:
             return
-
-        # If original dL curves have not been drawn, create them.
-        if not self.hasDrawndLCurves:
-            self.drawdlCurves()
 
         try:
             self.dL = float(value)
@@ -440,6 +448,14 @@ class MainGui(GuiSkeleton):
             self.displayMessage("ERROR - dL is not a float")
             return
 
+        # Return if track momentum has already been calculated.
+        if not self.hasTrackMomentumCalc:
+            return
+
+        # If original dL curves have not been drawn, create them.
+        if not self.hasDrawndLCurves:
+            self.drawdlCurves()
+        
         drawRec = QtCore.QRectF(
             self.fittedX0, self.fittedY0,  2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
@@ -455,4 +471,4 @@ class MainGui(GuiSkeleton):
 
     def resizeEvent(self,event):
         self.sceneScrollArea.setMinimumSize(
-            QtCore.QSize(0, self.centralWidget.size().height() / 1.75))
+            QtCore.QSize(0, self.centralWidget.size().height() / 1.6))

@@ -28,6 +28,8 @@ class GuiSkeleton(object):
         self.pointListLabel.setText("Track Markers")
 
         self.pointListWidget = QtWidgets.QListWidget(self.centralWidget) # marker list widget
+        self.pointListWidget.setSizePolicy(
+                QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding) 
         self.pointListLayout.addWidget(self.pointListWidget)
         self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus) # don't focus on this widget when clicked
         self.pointListWidget.setMaximumSize(QtCore.QSize(100, 2000))
@@ -88,9 +90,8 @@ class GuiSkeleton(object):
         self.calcAngleButton.setText("Calculate Angle")
         self.calcAngleButton.setToolTip("Calculate Opening Angle")
         
-        spacerItemTech = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the tech button segment
-            100, 100, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.techButtonLayout.addItem(spacerItemTech)
+        # add stretch rather than spacer
+        self.techButtonLayout.addStretch(1)
 
         # second vertical gui segment divider in top half layout
         self.vLineDiv2 = QtWidgets.QFrame(self.centralWidget) # vertical divider widget
@@ -132,19 +133,20 @@ class GuiSkeleton(object):
             QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         self.dlLabel = QtWidgets.QLabel(self.centralWidget) # dl label
+        self.dlLabel.setSizePolicy(
+                QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.dlFormLayout.setWidget(
             0, QtWidgets.QFormLayout.LabelRole, self.dlLabel)
         self.dlLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.dlLabel.setText("Set DL")
 
         self.dlLineEdit = QtWidgets.QLineEdit(self.centralWidget) # dl text box (line edit) widget
+        self.dlLineEdit.setSizePolicy(
+                QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.dlFormLayout.setWidget(
             0, QtWidgets.QFormLayout.FieldRole, self.dlLineEdit)
         self.dlLineEdit.setText("0")
-
-        spacerItemUser = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the user selection segment
-            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.userSelectionLayout.addItem(spacerItemUser)
+        self.userSelectionLayout.addStretch(1)
 
         # third vertical gui segment divider in top half layout
         self.vLineDiv3 = QtWidgets.QFrame(self.centralWidget) # vertical divider widget
@@ -166,9 +168,9 @@ class GuiSkeleton(object):
         self.consoleTextBrowser.setFocusPolicy(QtCore.Qt.NoFocus) # don't focus on this widget when clicked
         self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
 
-        spacerItemConsole = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the console segment
-            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.mainLayout.addItem(spacerItemConsole)
+        #spacerItemConsole = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the console segment
+        #    100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        #self.mainLayout.addItem(spacerItemConsole)
 
         # horizontal gui segment divider between top half and bottom half of ui
         self.hLineDiv = QtWidgets.QFrame(self.centralWidget)
