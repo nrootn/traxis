@@ -59,6 +59,7 @@ class mainGUI(skeletonGUI):
 
         # Set up navigation of point list.
         self.centralWidget.keyPressEvent = self.keyPressEvent
+        self.listWidget_points.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
         self.btn_reset.clicked.connect(self.resetImage)
@@ -212,9 +213,6 @@ class mainGUI(skeletonGUI):
         """The following function resets image transformations,
         and clears point list and console output."""
 
-        # Clear image transformations.
-        self.view.resetTransform()
-
         # Clear drawn points.
         itemList = self.scene.items()
         for i in itemList:
@@ -237,6 +235,9 @@ class mainGUI(skeletonGUI):
         self.nUserClickOnPicture = 0
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
+
+        self.mapNametoPoint = {}
+
 
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
