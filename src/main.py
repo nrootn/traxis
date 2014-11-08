@@ -1,23 +1,27 @@
-import sys
-
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from mainGUI import mainGUI
+from PyQt5 import QtWidgets
+from mainGUI import MainGui
 
 
-# Simple wrapper class that creates window to display GUI
-class ImageDialog(QMainWindow):
+class TraxisApplicationWindow(QtWidgets.QMainWindow):
+    """Simple wrapper class that creates a window to display GUI."""
 
     def __init__(self):
-        super(ImageDialog, self).__init__()
+        super().__init__()
 
-        self.ui = mainGUI()
-        self.ui.setupUi(self)
+        self.setObjectName("main_window")
+
+        self.ui = MainGui(self)
+
+        self.showMaximized()
 
 
 # Main block that executes the application
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = ImageDialog()
+
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = TraxisApplicationWindow()
 
     window.show()
     sys.exit(app.exec_())
