@@ -4,323 +4,202 @@ class GuiSkeleton(object):
     """The skeleton of the GUI."""
 
     def __init__(self, main_window):
-        """Setup the UI."""
+        """Setup the base user interface - create layouts and place widgets
+        and labels on main window.
+        """
 
-        # set the main window as the central widget and give it keyboard focus
+        # instantiate a base widget and set it as the main window's central widget
         self.centralWidget = QtWidgets.QWidget(main_window)
-        self.centralWidget.setObjectName("centralWidget")
-        self.centralWidget.setFocus()
-
-        # Layout of the main window - allows for resizing
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralWidget)
-        self.verticalLayout.setObjectName("verticalLayout")
-
-        # Layout inside the main one..
-        # main layout in the GUI
-        self.mainLayout = QtWidgets.QVBoxLayout()
-        self.mainLayout.setObjectName("mainLayout")
-
-        # Layout for the top button
-        self.TopBtnLayout = QtWidgets.QHBoxLayout()
-        self.TopBtnLayout.setObjectName("TopBtnLayout")
-
-        # QList Widget for displaying points
-        # layout organizations
-        self.verticalLayout_pointLabel = QtWidgets.QVBoxLayout()
-        self.verticalLayout_pointLabel.setObjectName(
-            "verticalLayout_pointLabel")
-        # Label on the top
-        self.label_points = QtWidgets.QLabel(self.centralWidget)
-        self.label_points.setObjectName("label_points")
-        self.verticalLayout_pointLabel.addWidget(self.label_points)
-        # List Widget
-        self.listWidget_points = QtWidgets.QListWidget(self.centralWidget)
-        self.listWidget_points.setObjectName("listWidget_points")
-        self.listWidget_points.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.listWidget_points.setMaximumSize(QtCore.QSize(100, 2000))
-        self.listWidget_points.setMinimumSize(QtCore.QSize(100, 0))
-        self.verticalLayout_pointLabel.addWidget(self.listWidget_points)
-
-        # add the layout to the main button layout
-        self.TopBtnLayout.addLayout(self.verticalLayout_pointLabel)
-
-        # Line to visually divide the area
-        self.vLine_div2 = QtWidgets.QFrame(self.centralWidget)
-        #self.vLine_div2.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.vLine_div2.setFrameShape(QtWidgets.QFrame.VLine)
-        self.vLine_div2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.vLine_div2.setObjectName("vLine_div2")
-        # add to the top Layout
-        self.TopBtnLayout.addWidget(self.vLine_div2)
-
-        # Technical buttons
-        # Layout for that
-        self.tech_calc_btnLayout = QtWidgets.QVBoxLayout()
-        self.tech_calc_btnLayout.setObjectName("tech_calc_btnLayout")
-
-        # for reset button
-        # Label for reset
-        self.label_tech = QtWidgets.QLabel(self.centralWidget)
-        #self.label_tech.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.label_tech.setObjectName("label_tech")
-        self.tech_calc_btnLayout.addWidget(self.label_tech)
-        # Button for reset
-        self.btn_reset = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_reset.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_reset.setObjectName("btn_reset")
-        # add to the tech_calc_btn Layout
-        self.tech_calc_btnLayout.addWidget(self.btn_reset)
-
-        # for Zoom Button
-        # label
-        self.label_Zoom = QtWidgets.QLabel(self.centralWidget)
-        self.label_Zoom.setObjectName("label_Zoom")
-        self.tech_calc_btnLayout.addWidget(self.label_Zoom)
-        # Layout for the Zoom buttons
-        self.horizontalLayout_Zoom = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_Zoom.setObjectName("horizontalLayout_Zoom")
-        # Zoom in button
-        self.btn_ZoomIn = QtWidgets.QPushButton(self.centralWidget)
-        self.btn_ZoomIn.setObjectName("btn_ZoomIn")
-        self.horizontalLayout_Zoom.addWidget(self.btn_ZoomIn)
-        # Zoom Out button
-        self.btn_ZoomOut = QtWidgets.QPushButton(self.centralWidget)
-        self.btn_ZoomOut.setObjectName("btn_ZoomOut")
-        self.horizontalLayout_Zoom.addWidget(self.btn_ZoomOut)
-
-        self.tech_calc_btnLayout.addLayout(self.horizontalLayout_Zoom)
-
-        # Label for Calculation button
-        self.label_calc = QtWidgets.QLabel(self.centralWidget)
-        #self.label_calc.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.label_calc.setObjectName("label_calc")
-        self.tech_calc_btnLayout.addWidget(self.label_calc)
-        # Calculation track momentum button
-        self.btn_trackMom = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_trackMom.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_trackMom.setObjectName("btn_trackMom")
-        self.tech_calc_btnLayout.addWidget(self.btn_trackMom)
-        # Calculation optical density button
-        self.btn_optDen = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_optDen.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_optDen.setObjectName("btn_optDen")
-        self.tech_calc_btnLayout.addWidget(self.btn_optDen)
-        # Calculation Angle button
-        self.btn_angle = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_angle.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_angle.setStyleSheet("")
-        self.btn_angle.setObjectName("btn_angle")
-        self.tech_calc_btnLayout.addWidget(self.btn_angle)
-        # space at the bottom to maintain the size
-        spacerItem = QtWidgets.QSpacerItem(
-            100, 100, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.tech_calc_btnLayout.addItem(spacerItem)
-
-        # add the layout to the main button layout
-        self.TopBtnLayout.addLayout(self.tech_calc_btnLayout)
-
-        # Line to visually divide the area
-        self.line_2 = QtWidgets.QFrame(self.centralWidget)
-        self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        # add the layout to the main button layour
-        self.TopBtnLayout.addWidget(self.line_2)
-
-        # User Selection buttons
-        # Layout for that
-        self.usrSel_layout = QtWidgets.QVBoxLayout()
-        self.usrSel_layout.setObjectName("usrSel_layout")
-
-        # Label for the select button
-        self.label_userSle = QtWidgets.QLabel(self.centralWidget)
-        #self.label_userSle.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.label_userSle.setObjectName("label_userSle")
-        self.usrSel_layout.addWidget(self.label_userSle)
-
-        # button to open image
-        self.btn_openImage = QtWidgets.QPushButton(self.centralWidget)
-        self.btn_openImage.setObjectName("btn_openImage")
-        self.usrSel_layout.addWidget(self.btn_openImage)
-
-        # button for placing marker on the track
-        self.btn_placeMar = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_placeMar.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_placeMar.setObjectName("btn_placeMar")
-        # CHANGE : added this option to make the button be in the clickable
-        self.btn_placeMar.setCheckable(True)
-        self.usrSel_layout.addWidget(self.btn_placeMar)
-
-        # DL box
-        # Layout
-        self.dlForm = QtWidgets.QFormLayout()
-        self.dlForm.setLabelAlignment(
-            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.dlForm.setFormAlignment(
-            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
-        self.dlForm.setObjectName("dlForm")
-        # Label for DL
-        self.setDlLabel = QtWidgets.QLabel(self.centralWidget)
-        self.setDlLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.setDlLabel.setObjectName("setDlLabel")
-        self.dlForm.setWidget(
-            0, QtWidgets.QFormLayout.LabelRole, self.setDlLabel)
-        # LineEdit
-        self.setDlLineEdit = QtWidgets.QLineEdit(self.centralWidget)
-        self.setDlLineEdit.setObjectName("setDlLineEdit")
-        # --------CHANGE-------- : added this option
-        self.setDlLineEdit.setText("0")
-        self.dlForm.setWidget(
-            0, QtWidgets.QFormLayout.FieldRole, self.setDlLineEdit)
-        self.usrSel_layout.addLayout(self.dlForm)
-        # Angle Button
-        self.btn_drwAngle = QtWidgets.QPushButton(self.centralWidget)
-        #self.btn_drwAngle.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.btn_drwAngle.setObjectName("btn_drwAngle")
-        # CHANGE : added this option to make the button be in the clickable
-        self.btn_drwAngle.setCheckable(True)
-        self.usrSel_layout.addWidget(self.btn_drwAngle)
-
-        # Spacer Item
-        spacerItem1 = QtWidgets.QSpacerItem(
-            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.usrSel_layout.addItem(spacerItem1)
-
-        # add the layout to the main button layout
-        self.TopBtnLayout.addLayout(self.usrSel_layout)
-
-        # Line to visually divide the area
-        self.line_3 = QtWidgets.QFrame(self.centralWidget)
-        #self.line_3.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
-        # add the layout to the main button layout
-        self.TopBtnLayout.addWidget(self.line_3)
-
-        # Console Ouput
-        # layout
-        self.ConsoleLayout = QtWidgets.QVBoxLayout()
-        self.ConsoleLayout.setObjectName("ConsoleLayout")
-
-        # label
-        self.label_console = QtWidgets.QLabel(self.centralWidget)
-        self.label_console.setObjectName("label_console")
-        self.ConsoleLayout.addWidget(self.label_console)
-
-        # Acutal output
-        self.textBrowser_consoleOutput = QtWidgets.QTextBrowser(
-            self.centralWidget)
-        self.textBrowser_consoleOutput.setMinimumSize(QtCore.QSize(100, 0))
-        self.textBrowser_consoleOutput.setObjectName(
-            "textBrowser_consoleOutput")
-        self.textBrowser_consoleOutput.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.ConsoleLayout.addWidget(self.textBrowser_consoleOutput)
-
-        # add the layout to the main button layout
-        self.TopBtnLayout.addLayout(self.ConsoleLayout)
-
-        # add to the main window layour
-        self.mainLayout.addLayout(self.TopBtnLayout)
-
-        # Spacer to maintain the size of the QLabel bottom
-        spacerItem2 = QtWidgets.QSpacerItem(
-            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        # add to the main window layour
-        self.mainLayout.addItem(spacerItem2)
-
-        # Line to visually divide the area
-        self.line = QtWidgets.QFrame(self.centralWidget)
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
-        # add to the main window layour
-        self.mainLayout.addWidget(self.line)
-
-        # Main label
-        # --------CHANGE--------
-        # Changing from a QLabel to QScroll Areas
-        # leaving the old code still, for refereces
-        #self.picLabel = QtWidgets.QLabel(self.centralWidget)
-        #self.picLabel.setMinimumSize(QtCore.QSize(0, 312))
-        #self.picLabel.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        # self.picLabel.setText("")
-        # self.picLabel.setScaledContents(True)
-        # self.picLabel.setObjectName("picLabel")
-        # self.mainLayout.addWidget(self.picLabel)
-        # ------- START OF ADDITION -------
-        self.scrollArea = QtWidgets.QScrollArea()
-        self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
-        self.scrollArea.setMinimumSize(
-            QtCore.QSize(0, main_window.size().height() / 1.5))
-        self.scrollArea.setMaximumSize(QtCore.QSize(16777215, 16777192))
-        self.scrollArea.setWidgetResizable(True)
-        self.mainLayout.addWidget(self.scrollArea)
-        # ------- END OF ADDITION -------
-
-        # Add to the main layout
-        self.verticalLayout.addLayout(self.mainLayout)
         main_window.setCentralWidget(self.centralWidget)
 
-        # menu bar and status bar below
-        #self.menuBar = QtWidgets.QMenuBar(main_window)
-        #self.menuBar.setGeometry(QtCore.QRect(0, 0, 1070, 22))
-        #self.menuBar.setObjectName("menuBar")
-        #main_window.setMenuBar(self.menuBar)
+        # layout of the main window
+        self.mainLayout = QtWidgets.QVBoxLayout(self.centralWidget)
 
-        #self.mainToolBar = QtWidgets.QToolBar(main_window)
-        #self.mainToolBar.setObjectName("mainToolBar")
-        #main_window.addToolBar(QtCore.Qt.TopToolBarArea, self.mainToolBar)
+        # layout for the top half of the user interface
+        self.topUiLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.addLayout(self.topUiLayout)
 
+        # track marker list gui segment
+        self.pointListLayout = QtWidgets.QVBoxLayout() # marker segment layout
+        self.topUiLayout.addLayout(self.pointListLayout)
+
+        self.pointListLabel = QtWidgets.QLabel(self.centralWidget) # marker list label
+        self.pointListLayout.addWidget(self.pointListLabel)
+        self.pointListLabel.setText("Track Markers")
+
+        self.pointListWidget = QtWidgets.QListWidget(self.centralWidget) # marker list widget
+        self.pointListLayout.addWidget(self.pointListWidget)
+        self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus) # don't focus on this widget when clicked
+        self.pointListWidget.setMaximumSize(QtCore.QSize(100, 2000))
+        self.pointListWidget.setMinimumSize(QtCore.QSize(100, 0))
+
+        # first vertical gui segment divider in top half layout
+        self.vLineDiv1 = QtWidgets.QFrame(self.centralWidget) # vertical divider widget
+        self.topUiLayout.addWidget(self.vLineDiv1)
+        self.vLineDiv1.setFrameShape(QtWidgets.QFrame.VLine)
+        self.vLineDiv1.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+        # "technical button" gui segment
+        self.techButtonLayout = QtWidgets.QVBoxLayout() # technical button segment layout
+        self.topUiLayout.addLayout(self.techButtonLayout)
+
+        self.resetButtonLabel = QtWidgets.QLabel(self.centralWidget) # reset button label
+        self.techButtonLayout.addWidget(self.resetButtonLabel)
+        self.resetButtonLabel.setText("Reset Analysis")
+
+        self.resetButton = QtWidgets.QPushButton(self.centralWidget) # reset button widget
+        self.techButtonLayout.addWidget(self.resetButton)
+        self.resetButton.setText("Reset")
+        self.resetButton.setToolTip("Reset all the selected points and calculated variables")
+
+        self.zoomLabel = QtWidgets.QLabel(self.centralWidget) # zoom label
+        self.techButtonLayout.addWidget(self.zoomLabel)
+        self.zoomLabel.setText("Zoom")
+
+        self.zoomLayout = QtWidgets.QHBoxLayout() # horizontal layout for zoom buttons
+        self.techButtonLayout.addLayout(self.zoomLayout)
+
+        self.zoomInButton = QtWidgets.QPushButton(self.centralWidget) # zoom in button widget
+        self.zoomLayout.addWidget(self.zoomInButton)
+        self.zoomInButton.setText("Zoom In")
+        self.zoomInButton.setToolTip("Zoom into the picture")
+
+        self.zoomOutButton = QtWidgets.QPushButton(self.centralWidget) # zoom out button widget
+        self.zoomLayout.addWidget(self.zoomOutButton)
+        self.zoomOutButton.setText("Zoom Out")
+        self.zoomOutButton.setToolTip("Zoom out from the picture")
+
+        self.calcLabel = QtWidgets.QLabel(self.centralWidget) # calculate label
+        self.techButtonLayout.addWidget(self.calcLabel)
+        self.calcLabel.setText("Calculate")
+
+        self.calcMomentumButton = QtWidgets.QPushButton(self.centralWidget) # calculate momentum button widget
+        self.techButtonLayout.addWidget(self.calcMomentumButton)
+        self.calcMomentumButton.setText("Calculate Track Momemetum")
+        self.calcMomentumButton.setToolTip("Calculate Track momentum")
+
+        self.calcDensityButton = QtWidgets.QPushButton(self.centralWidget) # calculate optical density button widget
+        self.techButtonLayout.addWidget(self.calcDensityButton)
+        self.calcDensityButton.setText("Calculate Optical Density")
+        self.calcDensityButton.setToolTip("Calculate Optical Density")
+
+        self.calcAngleButton = QtWidgets.QPushButton(self.centralWidget) # calculate angle button widget
+        self.techButtonLayout.addWidget(self.calcAngleButton)
+        self.calcAngleButton.setText("Calculate Angle")
+        self.calcAngleButton.setToolTip("Calculate Opening Angle")
+        
+        spacerItemTech = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the tech button segment
+            100, 100, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.techButtonLayout.addItem(spacerItemTech)
+
+        # second vertical gui segment divider in top half layout
+        self.vLineDiv2 = QtWidgets.QFrame(self.centralWidget) # vertical divider widget
+        self.topUiLayout.addWidget(self.vLineDiv2)
+        self.vLineDiv2.setFrameShape(QtWidgets.QFrame.VLine)
+        self.vLineDiv2.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+        # "user selection" gui segment
+        self.userSelectionLayout = QtWidgets.QVBoxLayout() # user seletion segment layout
+        self.topUiLayout.addLayout(self.userSelectionLayout)
+
+        self.userInputLabel = QtWidgets.QLabel(self.centralWidget) # user input label
+        self.userSelectionLayout.addWidget(self.userInputLabel)
+        self.userInputLabel.setText("User Input")
+
+        self.openImageButton = QtWidgets.QPushButton(self.centralWidget) # open image button widget
+        self.userSelectionLayout.addWidget(self.openImageButton)
+        self.openImageButton.setText("Open Image")
+        self.openImageButton.setToolTip("Open image for analysis")
+
+        self.placeMarkerButton = QtWidgets.QPushButton(self.centralWidget) # place marker mode button widget
+        self.userSelectionLayout.addWidget(self.placeMarkerButton)
+        self.placeMarkerButton.setCheckable(True) # make the button checkable (i.e. stays depressed when clicked)
+        self.placeMarkerButton.setChecked(True) # have this mode selected by default
+        self.placeMarkerButton.setText("[Mode] Place Track Markers")
+        self.placeMarkerButton.setToolTip("Enter mode for placing markers on loaded image.")
+
+        self.drawRefButton = QtWidgets.QPushButton(self.centralWidget) # draw angle reference mode button widget
+        self.userSelectionLayout.addWidget(self.drawRefButton)
+        self.drawRefButton.setCheckable(True) # make the button checkable (i.e. stays depressed when clicked)
+        self.drawRefButton.setText("[Mode] Draw Angle Reference")
+        self.drawRefButton.setToolTip("Enter mode for drawing angle reference on loaded image.")
+
+        self.dlFormLayout = QtWidgets.QFormLayout() # dl form layout
+        self.userSelectionLayout.addLayout(self.dlFormLayout)
+        self.dlFormLayout.setLabelAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.dlFormLayout.setFormAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+
+        self.dlLabel = QtWidgets.QLabel(self.centralWidget) # dl label
+        self.dlFormLayout.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.dlLabel)
+        self.dlLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.dlLabel.setText("Set DL")
+
+        self.dlLineEdit = QtWidgets.QLineEdit(self.centralWidget) # dl text box (line edit) widget
+        self.dlFormLayout.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.dlLineEdit)
+        self.dlLineEdit.setText("0")
+
+        spacerItemUser = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the user selection segment
+            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.userSelectionLayout.addItem(spacerItemUser)
+
+        # third vertical gui segment divider in top half layout
+        self.vLineDiv3 = QtWidgets.QFrame(self.centralWidget) # vertical divider widget
+        self.topUiLayout.addWidget(self.vLineDiv3)
+        self.vLineDiv3.setFrameShape(QtWidgets.QFrame.VLine)
+        self.vLineDiv3.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+        # console gui segment
+        self.consoleLayout = QtWidgets.QVBoxLayout() # console segment layout
+        self.topUiLayout.addLayout(self.consoleLayout)
+
+        self.consoleLabel = QtWidgets.QLabel(self.centralWidget) # console label
+        self.consoleLayout.addWidget(self.consoleLabel)
+        self.consoleLabel.setText("Console")
+
+        self.consoleTextBrowser = QtWidgets.QTextBrowser( # console text browser widget
+            self.centralWidget)
+        self.consoleLayout.addWidget(self.consoleTextBrowser)
+        self.consoleTextBrowser.setFocusPolicy(QtCore.Qt.NoFocus) # don't focus on this widget when clicked
+        self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
+
+        spacerItemConsole = QtWidgets.QSpacerItem( # add a spacer item at the bottom of the console segment
+            100, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.mainLayout.addItem(spacerItemConsole)
+
+        # horizontal gui segment divider between top half and bottom half of ui
+        self.hLineDiv = QtWidgets.QFrame(self.centralWidget)
+        self.mainLayout.addWidget(self.hLineDiv)
+        self.hLineDiv.setFrameShape(QtWidgets.QFrame.HLine)
+        self.hLineDiv.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+        # layout for the bottom half of the user interface
+        self.bottomUiLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.addLayout(self.bottomUiLayout)
+
+        # scroll area on which the graphics scene will be displayed
+        self.sceneScrollArea = QtWidgets.QScrollArea(self.centralWidget) # scroll area widget
+        self.bottomUiLayout.addWidget(self.sceneScrollArea)
+        self.sceneScrollArea.setBackgroundRole(QtGui.QPalette.Dark)
+        self.sceneScrollArea.setMinimumSize(
+            QtCore.QSize(0, main_window.size().height() / 1.5))
+        self.sceneScrollArea.setWidgetResizable(True)
+
+        # create graphics scene on which images will be displayed
+        self.scene = QtWidgets.QGraphicsScene() # graphics scene widget
+        self.sceneScrollArea.setWidget(self.scene) # specify the graphics scene as the child widget of the scroll area
+        self.view = QtWidgets.QGraphicsView(self.scene) # grahics view widget
+        self.view.setFocus() # set keyboard focus to the graphics view by default
+        self.pixmapItem = QtWidgets.QGraphicsPixmapItem( # create pixmap item with blank image
+            QtGui.QPixmap('bkgPicture.png'), None)
+        self.scene.addItem(self.pixmapItem)
+
+        # status bar at the bottom of the window
         self.statusBar = QtWidgets.QStatusBar(main_window)
-        self.statusBar.setObjectName("statusBar")
         main_window.setStatusBar(self.statusBar)
 
         # To the correct mane and labels
-        self.retranslateUi(main_window)
         QtCore.QMetaObject.connectSlotsByName(main_window)
-
-    def retranslateUi(self, main_window):
-        """Set the labels and what is displayed when buttons are clicked."""
-
-        _translate = QtCore.QCoreApplication.translate
-        main_window.setWindowTitle(_translate("main_window", "Traxis"))
-        self.label_points.setText(_translate("main_window", "Track Markers"))
-        self.label_tech.setText(_translate("main_window", "Reset Analysis"))
-        self.btn_reset.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Reset all the selected points and calculated variables</p></body></html>"))
-        self.btn_reset.setText(_translate("main_window", "Reset"))
-        self.label_Zoom.setText(_translate("main_window", "Zoom"))
-        self.label_calc.setText(_translate("main_window", "Calculate"))
-        self.btn_trackMom.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Calculate Track momentum</p></body></html>"))
-        self.btn_trackMom.setText(
-            _translate("main_window", "Calculate Track Momemetum"))
-        self.btn_optDen.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Calculate Optical Density</p></body></html>"))
-        self.btn_optDen.setText(
-            _translate("main_window", "Calculate Optical Density"))
-        self.btn_angle.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Calculate Opening Angle</p></body></html>"))
-        self.btn_angle.setText(_translate("main_window", "Calculate Angle"))
-        self.label_userSle.setText(_translate("main_window", "User Input"))
-        self.btn_placeMar.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Place a new marker on the track</p></body></html>"))
-        self.btn_placeMar.setText(_translate("main_window", "Place Track Marker"))
-        self.setDlLabel.setText(_translate("main_window", "Set DL"))
-        self.btn_drwAngle.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Draw reference for angle</p><p><br/></p></body></html>"))
-        self.btn_drwAngle.setText(
-            _translate("main_window", "Draw Angle Reference"))
-        self.label_console.setText(_translate("main_window", "Console"))
-        self.btn_openImage.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Open Image for analysis</p></body></html>"))
-        self.btn_openImage.setText(_translate("main_window", "Open Image"))
-
-        self.btn_ZoomIn.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Zoom into the picture</p></body></html>"))
-        self.btn_ZoomIn.setText(_translate("main_window", "Zoom In"))
-        self.btn_ZoomOut.setToolTip(_translate(
-            "main_window", "<html><head/><body><p>Zoom out from the picture</p></body></html>"))
-        self.btn_ZoomOut.setText(_translate("main_window", "Zoom Out"))
-

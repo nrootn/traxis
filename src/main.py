@@ -8,7 +8,7 @@ class TraxisApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setObjectName("main_window")
+        self.setWindowTitle("Traxis")
 
         self.ui = MainGui(self)
 

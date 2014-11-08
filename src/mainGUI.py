@@ -25,46 +25,35 @@ class MainGui(GuiSkeleton):
         # number of messages printed to the console
         self.num_messages = 0
 
-        # Creates QGraphicsScene to be used to display images.
-        self.scene = QtWidgets.QGraphicsScene()
-        self.view = QtWidgets.QGraphicsView(self.scene)
-
-        # Load a blank image by default. This is required by QT
-        # to be able to load images after.
-        self.pixmap_item = QtWidgets.QGraphicsPixmapItem(
-            QtGui.QPixmap('bkgPicture.png'), None)
-        self.scene.addItem(self.pixmap_item)
-        self.scrollArea.setWidget(self.view)
-
         # Set up button to load images.
-        self.btn_openImage.clicked.connect(self.openImage)
+        self.openImageButton.clicked.connect(self.openImage)
 
         # Set up button to zoom in/out on image.
         self.zoomFactor = 1
-        self.btn_ZoomIn.clicked.connect(self.zoomIn)
-        self.btn_ZoomOut.clicked.connect(self.zoomOut)
+        self.zoomInButton.clicked.connect(self.zoomIn)
+        self.zoomOutButton.clicked.connect(self.zoomOut)
 
         # Set up point drawing at mousepress on image.
         self.sizeOfEllipse = 5
         self.widthOfEllipse = 2.5
         self.nEllipseDrawn = 0
         self.mapNametoPoint = {}
-        self.pixmap_item.mousePressEvent = self.pixelSelect
+        self.pixmapItem.mousePressEvent = self.pixelSelect
 
         # Set up navigation of point list.
         self.centralWidget.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
-        self.btn_reset.clicked.connect(self.resetImage)
+        self.resetButton.clicked.connect(self.resetImage)
 
         # Set up button to calculate track momentum.
-        self.btn_trackMom.clicked.connect(self.calcTrackMom)
+        self.calcMomentumButton.clicked.connect(self.calcTrackMom)
 
         # Set up button to calculate optical density.
-        self.btn_optDen.clicked.connect(self.calcOptDen)
+        self.calcDensityButton.clicked.connect(self.calcOptDen)
 
         # Set up text field that specifies dL (user-specified width).
-        self.setDlLineEdit.textEdited.connect(self.changedLCircles)
+        self.dlLineEdit.textEdited.connect(self.changedLCircles)
 
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
@@ -80,7 +69,7 @@ class MainGui(GuiSkeleton):
         a mousePressEvent at specified event location."""
 
         # Place an event only if 'place marker' button has been pressed.
-        if not self.btn_placeMar.isChecked():
+        if not self.placeMarkerButton.isChecked():
             # Count the number of times user has clicked on the picture.
             # If more than 3 times, display a help message.
             self.nUserClickOnPicture += 1
@@ -112,9 +101,9 @@ class MainGui(GuiSkeleton):
 
         # Update the widget containing the list of points.
         self.nEllipseDrawn += 1
-        self.listWidget_points.addItem('Point %s' % self.nEllipseDrawn)
-        self.listWidget_points.setCurrentRow(
-            self.listWidget_points.count() - 1)
+        self.pointListWidget.addItem('Point %s' % self.nEllipseDrawn)
+        self.pointListWidget.setCurrentRow(
+            self.pointListWidget.count() - 1)
 
         # The latest drawn item is on the top of the list. Add to point list.
         itemList = self.scene.items()
@@ -139,18 +128,18 @@ class MainGui(GuiSkeleton):
 
         # F/V to select points in list.
         elif event.key() == QtCore.Qt.Key_V:
-            current_row = self.listWidget_points.currentRow()
-            num_rows = self.listWidget_points.count()
+            current_row = self.pointListWidget.currentRow()
+            num_rows = self.pointListWidget.count()
             if current_row == -1 or current_row == num_rows - 1:
                 return
             else:
-                self.listWidget_points.setCurrentRow(current_row + 1)
+                self.pointListWidget.setCurrentRow(current_row + 1)
         elif event.key() == QtCore.Qt.Key_F:
-            current_row = self.listWidget_points.currentRow()
+            current_row = self.pointListWidget.currentRow()
             if current_row == -1 or current_row == 0:
                 return
             else:
-                self.listWidget_points.setCurrentRow(current_row - 1)
+                self.pointListWidget.setCurrentRow(current_row - 1)
 
         # Z/X for zoom in/zoom out.
         elif event.key() == QtCore.Qt.Key_Z:
@@ -176,29 +165,29 @@ class MainGui(GuiSkeleton):
 
         # P and L for mode switching
         elif event.key() == QtCore.Qt.Key_P:
-            if self.btn_placeMar.isChecked():
-                self.btn_placeMar.setChecked(False)
+            if self.placeMarkerButton.isChecked():
+                self.placeMarkerButton.setChecked(False)
             else:
-                self.btn_placeMar.setChecked(True)
-            self.btn_drwAngle.setChecked(False)
+                self.placeMarkerButton.setChecked(True)
+            self.drawRefButton.setChecked(False)
         elif event.key() == QtCore.Qt.Key_L:
-            if self.btn_drwAngle.isChecked():
-                self.btn_drwAngle.setChecked(False)
+            if self.drawRefButton.isChecked():
+                self.drawRefButton.setChecked(False)
             else:
-                self.btn_drwAngle.setChecked(True)
-            self.btn_placeMar.setChecked(False)
+                self.drawRefButton.setChecked(True)
+            self.placeMarkerButton.setChecked(False)
 
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
-            self.deletePoint(self.listWidget_points.currentItem().text())
-            self.listWidget_points.takeItem(
-                self.listWidget_points.currentRow())
+            self.deletePoint(self.pointListWidget.currentItem().text())
+            self.pointListWidget.takeItem(
+                self.pointListWidget.currentRow())
             return
 
         # Update point location
-        if(self.listWidget_points.currentItem()):
+        if(self.pointListWidget.currentItem()):
             self.movePoint(
-                self.listWidget_points.currentItem().text(), dx, dy)
+                self.pointListWidget.currentItem().text(), dx, dy)
 
     def movePoint(self, pointName, dx, dy):
         """The following function moves given point by [dx,dy]"""
@@ -227,7 +216,7 @@ class MainGui(GuiSkeleton):
             return
 
         # Create a pixmap from the loaded image.
-        self.pixmap_item.setPixmap(QtGui.QPixmap.fromImage(qimage))
+        self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(qimage))
 
         # Reset any image transformations.
         self.resetImage()
@@ -250,7 +239,7 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(i)
 
         # Clear console output.
-        self.textBrowser_consoleOutput.clear()
+        self.consoleTextBrowser.clear()
 
         # Reset the number of points.
         self.sizeOfEllipse = 5
@@ -258,7 +247,7 @@ class MainGui(GuiSkeleton):
         self.nEllipseDrawn = 0
 
         # Clear the list of points.
-        self.listWidget_points.clear()
+        self.pointListWidget.clear()
 
         self.zoomFactor = 1
         self.nUserClickOnPicture = 0
@@ -280,8 +269,8 @@ class MainGui(GuiSkeleton):
         """The following helper function scales images and points."""
         self.zoomFactor = self.zoomFactor * factor
         self.view.scale(factor, factor)
-        self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
-        self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+        self.adjustScrollBar(self.sceneScrollArea.horizontalScrollBar(), factor)
+        self.adjustScrollBar(self.sceneScrollArea.verticalScrollBar(), factor)
 
         # Scale the drawn points when zooming.
         self.sizeOfEllipse /= factor
@@ -321,7 +310,7 @@ class MainGui(GuiSkeleton):
 
         self.num_messages += 1
         msg = "[{}] {}".format(self.num_messages, msg)
-        self.textBrowser_consoleOutput.append(msg)
+        self.consoleTextBrowser.append(msg)
 
     def calcTrackMom(self):
         """The following function is used to calculate track momentum of
@@ -370,7 +359,7 @@ class MainGui(GuiSkeleton):
         """The following helper function draws the dL curves."""
         # Draw dL curves if dL is specified.
         try:
-            self.dL = float(self.setDlLineEdit.text())
+            self.dL = float(self.dlLineEdit.text())
         except ValueError:
             self.displayMessage("ERROR - dL is not a float")
             return
@@ -425,14 +414,14 @@ class MainGui(GuiSkeleton):
 
         # Draw dL curves if dL is specified.
         try:
-            self.dL = float(self.setDlLineEdit.text())
+            self.dL = float(self.dlLineEdit.text())
         except ValueError:
             self.displayMessage("ERROR - dL is not a float")
             return
 
         # Call function to compute optical density.
         self.optDens, self.errOptDens = calcOptDensity(
-            self, self.pixmap_item, pointList, self.tmp_circle, self.dL)
+            self, self.pixmapItem, pointList, self.tmp_circle, self.dL)
         # Used for debugging.
         self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
 
@@ -467,5 +456,5 @@ class MainGui(GuiSkeleton):
         self.scene.update()
 
     def resizeEvent(self,event):
-        self.scrollArea.setMinimumSize(
+        self.sceneScrollArea.setMinimumSize(
             QtCore.QSize(0, self.centralWidget.size().height() / 1.75))
