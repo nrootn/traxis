@@ -34,13 +34,23 @@ class MainGui(GuiSkeleton):
         self.zoomOutButton.clicked.connect(self.zoomOut)
 
         # Set up point drawing at mousepress on image.
-        self.sizeOfEllipse = 5
+        self.sizeOfEllipse = 10
         self.widthOfEllipse = 2.5
+        self.widthOfCircle = 2.5
+        self.sizeAngleRef = 10
+        self.widthAngleRef = 2.5
         self.nEllipseDrawn = 0
         self.mapNametoPoint = {}
+        self.hasTrackMomentumCalc = False
+        self.hasDrawndLCurves = False
+        self.initialAnglePointDrawn = False
+        self.finalAnglePointDrawn = False
+        self.lineAnglePointDrawn = False
         self.pixmapItem.mousePressEvent = self.pixelSelect
+        self.pixmapItem.mouseReleaseEvent = self.angleSelect
+        self.pixmapItem.mouseMoveEvent = self.pixelSelectMouseEvent
 
-        # Set up navigation of point list.
+        # Set up shortCuts
         self.centralWidget.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
@@ -55,19 +65,28 @@ class MainGui(GuiSkeleton):
         # Set up text field that specifies dL (user-specified width).
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
 
+        # Mode bottons
+        self.placeMarkerButton.clicked.connect(self.placeMarkerButtonFunc)
+        self.drawRefButton.clicked.connect(self.drawRefButtonFunc)
+        
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
-        self.hasTrackMomentumCalc = False
-        self.hasDrawndLCurves = False
 
-        self.test = QtWidgets.QGraphicsEllipseItem(3, 5, 10, 10)
+        self.centralWidget.resizeEvent = self.resizeEvent
 
-        self.centralWidget.resizeEvent = (self.resizeEvent)
+
+    ###########################
+    # Drawing functions
+    ###########################
 
     def pixelSelect(self, event):
         """The following function draws a point (ellipse) when called with
-        a mousePressEvent at specified event location."""
+        a mousePressEvent at specified event location. Or if the Angle draw
+        mode is selected, it will send the drawing to the respective function"""
 
+        if self.drawRefButton.isChecked():
+            self.angleSelect(event)
+            return
         # Place an event only if 'place marker' button has been pressed.
         if not self.placeMarkerButton.isChecked():
             # Count the number of times user has clicked on the picture.
@@ -77,6 +96,8 @@ class MainGui(GuiSkeleton):
                 self.nUserClickOnPicture = 0
                 self.displayMessage(
                     "HELP - To place track marker, first select 'Place Track Marker' button")
+                self.displayMessage(
+                    "HELP - To draw angle reference, first select 'Draw Angle Reference' button")
             return
 
         pen,size = self.getPointPenSize()
@@ -98,6 +119,72 @@ class MainGui(GuiSkeleton):
         self.mapNametoPoint[
             'Point ' + str(self.nEllipseDrawn)] = itemList[0]
     
+    
+    def angleSelect(self, event):
+        """The following function draws the intial and final points for the 
+        angle reference. It is also connected to the mouse release event signal
+        as well"""
+
+        # if the draw angle reference buttons is not checked, 
+        # just simply return. This occurs if mode is unselected or
+        # track marker mode is selected
+        if not self.drawRefButton.isChecked():
+            return
+
+        # if both intial and final point drawn, not need to draw another one
+        if self.initialAnglePointDrawn and self.finalAnglePointDrawn:
+            return
+        
+        pen,size = self.getAnglePenSize()
+        # Create a drawing rectangle for the ellipse.
+        drawRec = QtCore.QRectF(event.pos().x(), event.pos().y(), size, size)
+        # Translate top left corner of rectangle to match the clicked position.
+        drawRec.moveCenter(QtCore.QPointF(event.pos().x(), event.pos().y()))
+        # Draw ellipse with specified colour.
+        self.scene.addEllipse(drawRec, pen)
+        
+        # For later tracking
+        itemList = self.scene.items()
+        if not self.initialAnglePointDrawn:
+            self.initialAnglePointDrawn = True
+            self.initialAnglePoint = itemList[0]
+        else:
+            self.finalAnglePointDrawn = True
+            self.finalAnglePoint = itemList[0]
+
+    def pixelSelectMouseEvent(self, event):
+        """The following function draws a line between the intial point and the current 
+        mouse position. It is connected to mouse drag signal"""
+
+        # if the intial point doesn't existed, return
+        if not self.initialAnglePointDrawn:
+            return
+
+        # if the final point has been draw, just return
+        if self.finalAnglePointDrawn:
+            return
+
+        # if a line has been previously draw, just return
+        if self.lineAnglePointDrawn:
+            self.scene.removeItem(self.lineAnglePoint)
+
+        pen,size = self.getAnglePenSize()
+        self.scene.addLine(self.initialAnglePoint.rect().center().x(),
+                self.initialAnglePoint.rect().center().y(),
+                event.pos().x(), event.pos().y(),
+                pen)
+        
+        # for latter keeping
+        self.lineAnglePointDrawn = True
+        itemList = self.scene.items()
+        self.lineAnglePoint = itemList[0]
+        
+
+        return
+    
+    ###########################
+    # Drawing Helper functions
+    ###########################
     def getPointPenSize(self):
         """The following function moves gets the size and pen for the track markers"""
         # Set colour of ellipse to be drawn.
@@ -115,8 +202,39 @@ class MainGui(GuiSkeleton):
 
         return pen,size
 
+    def getCirclePen(self):
+        """The following function moves gets the size and pen for the fitted circle"""
+        # Set colour of ellipse to be drawn.
+        pen = QtGui.QPen(QtCore.Qt.green)
+        pen.setWidth(self.widthOfCircle)
+        # set a mimimum width
+        if(self.widthOfCircle < 1):
+            pen.setWidth(1)
 
+        return pen
 
+    def getAnglePenSize(self):
+        """The following function moves gets the size and pen for the angle markers"""
+        # Set colour of ellipse to be drawn.
+        pen = QtGui.QPen(QtCore.Qt.blue)
+        pen.setWidth(self.widthAngleRef)
+        # set a mimimum width
+        if(self.widthAngleRef < 1):
+            pen.setWidth(1)
+
+        # Set size of ellipse to be drawn.
+        size = self.sizeAngleRef
+        # set a mimimum size
+        if(size < 1):
+            size = 1
+
+        return pen,size
+
+    
+    ##############################
+    # Shortcuts and its helpers
+    ##############################
+ 
     def keyPressEvent(self, event):
         """The following function handles keypressEvents used to select and
         manipulate points in the QListWidget."""
@@ -176,13 +294,13 @@ class MainGui(GuiSkeleton):
                 self.placeMarkerButton.setChecked(False)
             else:
                 self.placeMarkerButton.setChecked(True)
-            self.drawRefButton.setChecked(False)
+            self.placeMarkerButtonFunc()
         elif event.key() == QtCore.Qt.Key_L:
             if self.drawRefButton.isChecked():
                 self.drawRefButton.setChecked(False)
             else:
                 self.drawRefButton.setChecked(True)
-            self.placeMarkerButton.setChecked(False)
+            self.drawRefButtonFunc()
 
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
@@ -218,6 +336,9 @@ class MainGui(GuiSkeleton):
                 self.scene.removeItem(i)
         del self.mapNametoPoint[pointName]
 
+    ##############################
+    # Open Image helper
+    ##############################
     def openImage(self):
         """The following function opens a file dialog and then loads
         user-specified image."""
@@ -241,37 +362,9 @@ class MainGui(GuiSkeleton):
         # set keyboard focus to the graphics view
         self.view.setFocus()
 
-    def resetImage(self):
-        """The following function resets image transformations,
-        and clears point list and console output."""
-
-        # Clear drawn points.
-        itemList = self.scene.items()
-        for i in itemList:
-            if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
-                continue
-            self.scene.removeItem(i)
-
-        # Clear console output.
-        self.consoleTextBrowser.clear()
-
-        # Reset the number of points.
-        self.sizeOfEllipse = 5
-        self.widthOfEllipse = 2.5
-        self.nEllipseDrawn = 0
-
-        # Clear the list of points.
-        self.pointListWidget.clear()
-
-        self.zoomFactor = 1
-        self.nUserClickOnPicture = 0
-        self.hasTrackMomentumCalc = False
-        self.hasDrawndLCurves = False
-
-        self.mapNametoPoint = {}
-        # reset count of messages printed to console
-        self.num_messages = 0
-
+    ##############################
+    # Zoom and Helper functions
+    ##############################
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
         self.scaleImage(1.25)
@@ -290,25 +383,49 @@ class MainGui(GuiSkeleton):
         # Scale the drawn points when zooming.
         self.sizeOfEllipse /= factor
         self.widthOfEllipse /= factor
-        
+        self.widthOfCircle /= factor
+        self.sizeAngleRef /= factor
+        self.widthAngleRef /= factor
         pen,size = self.getPointPenSize()
         
         # Recale the points.
         for key, value in self.mapNametoPoint.items():
-            drawRec = QtCore.QRectF(
-                value.rect().x(), value.rect().y(), size, size)
-            drawRec.moveCenter(
-                QtCore.QPointF(value.rect().center().x(), value.rect().center().y()))
-            value.setRect(drawRec)
-            value.setPen(pen)
+            self.updateDrawCircleZoom(value, size, pen)
+
+        pen = self.getCirclePen()
+        if self.hasTrackMomentumCalc:
+            self.updateDrawCircleZoom(self.nominalFittedCenter, self.nominalFittedCenter.rect().width(), pen)
+        
+        pen.setStyle(QtCore.Qt.DashDotLine)        
+        if self.hasDrawndLCurves:
+            self.updateDrawCircleZoom(self.innerFittedCenter, self.innerFittedCenter.rect().width(), pen)
+            self.updateDrawCircleZoom(self.outerFittedCenter, self.outerFittedCenter.rect().width(), pen)
+
+        pen,size = self.getAnglePenSize()
+        if self.initialAnglePointDrawn:
+            self.updateDrawCircleZoom(self.initialAnglePoint, size, pen)
+        if self.finalAnglePointDrawn:
+            self.updateDrawCircleZoom(self.finalAnglePoint, size, pen)
+        if self.lineAnglePointDrawn:
+            self.lineAnglePoint.setPen(pen)
 
         self.scene.update()
+
+    def updateDrawCircleZoom(self, circle, size, pen):
+        """The following helper function scales circles."""
+        drawRec = QtCore.QRectF(circle.rect().x(), circle.rect().y(), size, size)
+        drawRec.moveCenter(QtCore.QPointF(circle.rect().center().x(), circle.rect().center().y()))
+        circle.setRect(drawRec)
+        circle.setPen(pen)
 
     def adjustScrollBar(self, scrollBar, factor):
         """The following helper function adjusts size of scrollbar."""
         scrollBar.setValue(
             int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep() / 2)))
-
+    
+    ##############################
+    # console functions
+    ##############################
     def displayMessage(self, msg):
         """The following function is used to write messages to console."""
 
@@ -316,6 +433,9 @@ class MainGui(GuiSkeleton):
         msg = "[{}] {}".format(self.num_messages, msg)
         self.consoleTextBrowser.append(msg)
 
+    ##############################
+    # Main calculations buttons
+    ##############################
     def calcTrackMom(self):
         """The following function is used to calculate track momentum of
         drawn points on image and then draw a fitted circle to them."""
@@ -333,6 +453,9 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(self.innerFittedCenter)
             self.scene.removeItem(self.outerFittedCenter)
         
+        if self.placeMarkerButton.isChecked():
+            self.placeMarkerButton.setChecked(False)
+
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
@@ -349,7 +472,7 @@ class MainGui(GuiSkeleton):
         self.displayMessage(str("fitted y0 %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
         self.displayMessage(str("fitted R0 %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
         # Set colour of circle to be drawn.
-        pen = QtGui.QPen(QtCore.Qt.green)
+        pen = self.getCirclePen()
         # Create a drawing rectangle for the circle.
         drawRec = QtCore.QRectF(
             self.fittedX0, self.fittedY0, 2 * self.fittedR0, 2 * self.fittedR0)
@@ -375,7 +498,8 @@ class MainGui(GuiSkeleton):
             self.displayMessage("ERROR - dL is not a float")
             return
 
-        pen = QtGui.QPen(QtCore.Qt.green)
+        pen = self.getCirclePen()
+        pen.setStyle(QtCore.Qt.DashDotLine)
         # Define outer circle.
         drawRec = QtCore.QRectF(
             self.fittedX0, self.fittedY0, 2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
@@ -394,7 +518,6 @@ class MainGui(GuiSkeleton):
         drawRec = QtCore.QRectF(
             self.fittedX0, self.fittedY0,  2 * (self.fittedR0 - self.dL), 2 * (self.fittedR0 - self.dL))
         # Draw a dotted line.
-        pen.setStyle(QtCore.Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
         self.scene.addEllipse(drawRec, pen)
@@ -436,8 +559,13 @@ class MainGui(GuiSkeleton):
         # Used for debugging.
         self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
 
+
+    ##############################
+    # connection to other buttons 
+    ##############################
     def changedLCircles(self, value):
-        """The following helper function changes the diameter of dL curves."""
+        """The following helper function changes the diameter of dL curves.
+        Connected to changing values on the dL field"""
 
         if len(value) is 0:
             return
@@ -469,6 +597,76 @@ class MainGui(GuiSkeleton):
 
         self.scene.update()
 
+
+    def placeMarkerButtonFunc(self):
+        """The following helper function creates the changes when the 
+        place track marker mode button is toggled"""
+        self.drawRefButton.setChecked(False)
+
+    def drawRefButtonFunc(self):
+        """The following helper function creates the changes when the 
+        draw angle reference mode button is toggled. Resets the drawn
+        angle reference as well"""
+
+        self.placeMarkerButton.setChecked(False)
+        if self.drawRefButton.isChecked():
+            # reset if check in
+            if self.lineAnglePointDrawn:
+                self.scene.removeItem(self.lineAnglePoint)
+            if self.finalAnglePointDrawn:
+                self.scene.removeItem(self.finalAnglePoint)
+            if self.initialAnglePointDrawn:
+                self.scene.removeItem(self.initialAnglePoint)
+           
+            self.initialAnglePointDrawn = False
+            self.finalAnglePointDrawn = False
+            self.lineAnglePointDrawn = False
+            
+            pass
+
+    ##############################
+    # Resize function  
+    ##############################
     def resizeEvent(self,event):
         self.sceneScrollArea.setMinimumSize(
             QtCore.QSize(0, self.centralWidget.size().height() / 1.6))
+
+    ##############################
+    # Reset 
+    ##############################
+    def resetImage(self):
+        """The following function resets image transformations,
+        and clears point list and console output."""
+
+        # Clear drawn points.
+        itemList = self.scene.items()
+        for i in itemList:
+            if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
+                continue
+            self.scene.removeItem(i)
+
+        # Clear console output.
+        self.consoleTextBrowser.clear()
+
+        # Reset the number of points.
+        self.sizeOfEllipse = 10
+        self.widthOfEllipse = 2.5
+        self.widthOfCircle = 2.5
+        self.nEllipseDrawn = 0
+        self.mapNametoPoint = {}
+        self.hasTrackMomentumCalc = False
+        self.hasDrawndLCurves = False
+        self.initialAnglePointDrawn = False
+        self.finalAnglePointDrawn = False
+        self.lineAnglePointDrawn = False
+
+        # Clear the list of points.
+        self.pointListWidget.clear()
+
+        self.zoomFactor = 1
+        self.nUserClickOnPicture = 0
+
+        self.mapNametoPoint = {}
+        # reset count of messages printed to console
+        self.num_messages = 0
+
