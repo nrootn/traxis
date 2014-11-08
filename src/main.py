@@ -3,6 +3,7 @@ from mainGUI import MainGui
 
 
 class TraxisApplicationWindow(QtWidgets.QMainWindow):
+
     """Simple wrapper class that creates a window to display GUI."""
 
     def __init__(self):
