@@ -190,8 +190,8 @@ class GuiSkeleton(object):
 
         # create graphics scene on which images will be displayed
         self.scene = QtWidgets.QGraphicsScene() # graphics scene widget
-        self.sceneScrollArea.setWidget(self.scene) # specify the graphics scene as the child widget of the scroll area
         self.view = QtWidgets.QGraphicsView(self.scene) # grahics view widget
+        self.sceneScrollArea.setWidget(self.view) # specify the graphics scene as the child widget of the scroll area
         self.view.setFocus() # set keyboard focus to the graphics view by default
         self.pixmapItem = QtWidgets.QGraphicsPixmapItem( # create pixmap item with blank image
             QtGui.QPixmap('bkgPicture.png'), None)

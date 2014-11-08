@@ -42,7 +42,6 @@ class MainGui(GuiSkeleton):
 
         # Set up navigation of point list.
         self.centralWidget.keyPressEvent = self.keyPressEvent
-        self.listWidget_points.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
         self.resetButton.clicked.connect(self.resetImage)
