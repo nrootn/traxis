@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 import numpy as np
 
@@ -7,12 +7,12 @@ from mainGUI import *
 
 
 # Input: gui - mainGUI class to be used ONLY for printing messages
-# Input: Pix - image to be analyzed [QPixmap]
+# Input: Img - image to be analyzed [QImage]
 # Input: P - list of points [QGraphicsEllipseItem]
 # Input: C - list of tuples [(x,dx),(y,dy),(r,dr)]
 # Input: dL - float specifying track width
 # Output: tuple with calculated optical density and associated error
-def calcOptDensity(gui, Pix, P, Circle, dL):
+def calcOptDensity(gui, Img, P, Circle, dL):
 
     gui.displayMessage("Computing optical density...")
     gui.displayMessage("Radius: %f Coordinates: %f %f" %
@@ -43,6 +43,8 @@ def calcOptDensity(gui, Pix, P, Circle, dL):
     arc.setSpanAngle(16.0 * (end_angle - start_angle))
     gui.scene.addItem(arc)
 
+
+
     # Create and draw outer arc
     # outer_arc = QGraphicsEllipseItem(
     #     Circle[0] - Circle[2] - dL, Circle[1] - Circle[2] - dL, 2 * (Circle[2] + dL), 2 * (Circle[2] + dL))
@@ -65,7 +67,6 @@ def calcOptDensity(gui, Pix, P, Circle, dL):
 
     return (optDens, errOptDens)
 
-
 def getAngles(origin, pts, v):
     angles = []
     # Compute angles of each point wrt v
@@ -76,3 +77,6 @@ def getAngles(origin, pts, v):
         print(r)
         angles.append(QtCore.QLineF.angleTo(r, v))
     return angles
+
+def getRoi():
+	return

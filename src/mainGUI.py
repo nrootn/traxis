@@ -67,10 +67,10 @@ class MainGui(GuiSkeleton):
 
         # Set up button to calculate optical density.
         self.calcDensityButton.clicked.connect(self.calcOptDen)
-        
+
         # Set up button to calculate angle.
         self.calcAngleButton.clicked.connect(self.calcAngle)
-        
+
         # Set up text field that specifies dL (user-specified width).
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
 
@@ -123,7 +123,6 @@ class MainGui(GuiSkeleton):
         self.pointListWidget.setCurrentRow(
             self.pointListWidget.count() - 1)
 
-
     def angleSelect(self, event):
         """The following function draws the intial and final points for the
         angle reference. It is also connected to the mouse release event signal
@@ -153,7 +152,6 @@ class MainGui(GuiSkeleton):
             self.finalAnglePointDrawn = True
             self.finalAnglePoint = self.scene.addEllipse(drawRec, pen)
 
-
     def pixelSelectMouseEvent(self, event):
         """The following function draws a line between the intial point and the current
         mouse position. It is connected to mouse drag signal"""
@@ -172,9 +170,10 @@ class MainGui(GuiSkeleton):
 
         pen, size = self.getAnglePenSize()
         self.lineAnglePoint = self.scene.addLine(self.initialAnglePoint.rect().center().x(),
-                           self.initialAnglePoint.rect().center().y(),
-                           event.pos().x(), event.pos().y(),
-                           pen)
+                                                 self.initialAnglePoint.rect(
+        ).center().y(),
+            event.pos().x(), event.pos().y(),
+            pen)
 
         # for latter keeping
         self.lineAnglePointDrawn = True
@@ -184,7 +183,7 @@ class MainGui(GuiSkeleton):
     ###########################
     # Drawing Helper Functions
     ###########################
-    def getPointPenSize(self, pointName = ""):
+    def getPointPenSize(self, pointName=""):
         """The following function moves gets the size and pen for the track markers"""
         # Set colour of ellipse to be drawn.
         pen = QtGui.QPen(self.getPointColor(pointName))
@@ -201,7 +200,7 @@ class MainGui(GuiSkeleton):
 
         return pen, size
 
-    def getPointColor(self, pointName = ""):
+    def getPointColor(self, pointName=""):
         """The following function moves gets the colour for the track markers
         based on the designation of the point"""
         if 's - ' in pointName:
@@ -283,7 +282,7 @@ class MainGui(GuiSkeleton):
         # G/H key for setting start and end point
         elif event.key() == QtCore.Qt.Key_G:
             listPoint = self.pointListWidget.findItems(
-                    's - '+self.startPointName, QtCore.Qt.MatchExactly)
+                's - ' + self.startPointName, QtCore.Qt.MatchExactly)
             for p in listPoint:
                 p.setText(p.text().replace('s - ', ''))
                 # just to redraw the point in the different colour
@@ -294,12 +293,12 @@ class MainGui(GuiSkeleton):
                 if('e - ' in p.text()):
                     p.setText(p.text().replace('e - ', ''))
                 self.startPointName = p.text()
-                p.setText('s - '+p.text())
+                p.setText('s - ' + p.text())
                 self.movePoint(p.text(), 0, 0)
-                
+
         elif event.key() == QtCore.Qt.Key_H:
             listPoint = self.pointListWidget.findItems(
-                    'e - '+self.endPointName, QtCore.Qt.MatchExactly)
+                'e - ' + self.endPointName, QtCore.Qt.MatchExactly)
 
             for p in listPoint:
                 p.setText(p.text().replace('e - ', ''))
@@ -310,7 +309,7 @@ class MainGui(GuiSkeleton):
                 if('s - ' in p.text()):
                     p.setText(p.text().replace('s - ', ''))
                 self.endPointName = p.text()
-                p.setText('e - '+p.text())
+                p.setText('e - ' + p.text())
                 self.movePoint(p.text(), 0, 0)
 
         # Z/X for zoom in/zoom out.
@@ -404,7 +403,8 @@ class MainGui(GuiSkeleton):
             return
 
         # resize the graphics scene to the loaded image
-        self.scene.setSceneRect(0, 0, self.qimage.width(), self.qimage.height())
+        self.scene.setSceneRect(
+            0, 0, self.qimage.width(), self.qimage.height())
 
         # Create a pixmap from the loaded image.
         self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(self.qimage))
@@ -414,7 +414,6 @@ class MainGui(GuiSkeleton):
 
         # Reset any image transformations.
         self.resetImage()
-
 
     ##############################
     # Zoom and Helper Functions
@@ -449,12 +448,14 @@ class MainGui(GuiSkeleton):
 
         # rescale the end and start point
         if len(self.startPointName) > 0:
-            pen, size = self.getPointPenSize('s - '+self.startPointName)
-            self.updateDrawCircleZoom(self.mapNametoPoint[self.startPointName], size, pen)
+            pen, size = self.getPointPenSize('s - ' + self.startPointName)
+            self.updateDrawCircleZoom(
+                self.mapNametoPoint[self.startPointName], size, pen)
         if len(self.endPointName) > 0:
-            pen, size = self.getPointPenSize('e - '+self.endPointName)
-            self.updateDrawCircleZoom(self.mapNametoPoint[self.endPointName], size, pen)
-      
+            pen, size = self.getPointPenSize('e - ' + self.endPointName)
+            self.updateDrawCircleZoom(
+                self.mapNametoPoint[self.endPointName], size, pen)
+
         pen = self.getCirclePen('green')
         if self.hasTrackMomentumCalc:
             self.updateDrawCircleZoom(
@@ -603,7 +604,7 @@ class MainGui(GuiSkeleton):
                 "ERROR: Track momentum has not been calculated yet.")
             return
 
-        # Return if track momentum has NOT been calculated.
+        # Return if value of dL was not specified.
         if self.dL <= 0:
             self.displayMessage(
                 "ERROR: Positive non-zero value for dL was not specified.")
@@ -637,7 +638,7 @@ class MainGui(GuiSkeleton):
             self.displayMessage(
                 "ERROR: Track momentum has not been calculated yet.")
             return
-        
+
         if len(self.startPointName) == 0:
             self.displayMessage(
                 "ERROR: Intial Point has not been defined yet.")
@@ -648,13 +649,12 @@ class MainGui(GuiSkeleton):
                 "ERROR: Angle Line reference not drawn.")
             return
 
+        angleInfo = angleCalc(self, self.circleInfo,
+                              self.mapNametoPoint[self.startPointName],
+                              self.lineAnglePoint)
 
-        angleInfo = angleCalc(self, self.circleInfo, 
-                self.mapNametoPoint[self.startPointName],
-                self.lineAnglePoint )
-        
-        self.displayMessage(str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
-
+        self.displayMessage(
+            str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
 
     ##############################
     # Connection to Other Buttons
@@ -755,8 +755,7 @@ class MainGui(GuiSkeleton):
         self.endPointName = ""
 
         # reset view scale and fit image in view
-        self.scaleImage(1/self.zoomFactor)
-
+        self.scaleImage(1 / self.zoomFactor)
 
         self.sizeOfEllipse *= self.zoomFactor
         self.widthOfEllipse *= self.zoomFactor
@@ -771,10 +770,10 @@ class MainGui(GuiSkeleton):
 
         if height_ratio < width_ratio:
             if height_ratio < 1:
-                scaleFactor = 0.8**math.ceil(math.log(height_ratio, 0.8))
+                scaleFactor = 0.8 ** math.ceil(math.log(height_ratio, 0.8))
         else:
             if width_ratio < 1:
-                scaleFactor = 0.8**math.ceil(math.log(width_ratio, 0.8))
+                scaleFactor = 0.8 ** math.ceil(math.log(width_ratio, 0.8))
 
         self.scaleImage(scaleFactor)
 
