@@ -234,6 +234,8 @@ class GuiSkeleton(object):
         self.view.setFocus()
         self.pixmapItem = QtWidgets.QGraphicsPixmapItem(  # create pixmap item with blank image
             QtGui.QPixmap('bkgPicture.png'), None)
+        self.qimage = QtGui.QImage()
+        self.qimage.load('bkgPicture.png')
         self.scene.addItem(self.pixmapItem)
 
         # status bar at the bottom of the window

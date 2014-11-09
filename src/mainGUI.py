@@ -49,6 +49,8 @@ class MainGui(GuiSkeleton):
         self.initialAnglePointDrawn = False
         self.finalAnglePointDrawn = False
         self.lineAnglePointDrawn = False
+        self.startPointName = ""
+        self.endPointName = ""
         self.pixmapItem.mousePressEvent = self.pixelSelect
         self.pixmapItem.mouseReleaseEvent = self.angleSelect
         self.pixmapItem.mouseMoveEvent = self.pixelSelectMouseEvent
@@ -80,7 +82,6 @@ class MainGui(GuiSkeleton):
     ###########################
     # Drawing Functions
     ###########################
-
     def pixelSelect(self, event):
         """The following function draws a point (ellipse) when called with
         a mousePressEvent at specified event location. Or if the Angle draw
@@ -179,10 +180,10 @@ class MainGui(GuiSkeleton):
     ###########################
     # Drawing Helper Functions
     ###########################
-    def getPointPenSize(self):
+    def getPointPenSize(self, pointName = ""):
         """The following function moves gets the size and pen for the track markers"""
         # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(QtCore.Qt.red)
+        pen = QtGui.QPen(self.getPointColor(pointName))
         pen.setWidth(self.widthOfEllipse)
         # set a mimimum width
         if(self.widthOfEllipse < 1):
@@ -196,17 +197,27 @@ class MainGui(GuiSkeleton):
 
         return pen, size
 
+    def getPointColor(self, pointName = ""):
+        """The following function moves gets the colour for the track markers
+        based on the designation of the point"""
+        if 's - ' in pointName:
+            return QtGui.QColor(0, 186, 186)
+        elif 'e - ' in pointName:
+            return QtGui.QColor(34, 197, 25)
+        else:
+            return QtGui.QColor(176, 30, 125)
+
     def getCirclePen(self, colour):
         """The following function moves gets the size and pen for the fitted circle"""
         # Set colour of ellipse to be drawn.
         if colour is 'red':
             pen = QtGui.QPen(QtCore.Qt.red)
         elif colour is 'blue':
-            pen = QtGui.QPen(QtCore.Qt.blue)
+            pen = QtGui.QPen()
         elif colour is 'yellow':
             pen = QtGui.QPen(QtCore.Qt.yellow)
         else:
-            pen = QtGui.QPen(QtCore.Qt.green)
+            pen = QtGui.QPen(QtGui.QColor(33, 95, 147))
         pen.setWidth(self.widthOfCircle)
         # set a mimimum width
         if(self.widthOfCircle < 1):
@@ -217,7 +228,7 @@ class MainGui(GuiSkeleton):
     def getAnglePenSize(self):
         """The following function moves gets the size and pen for the angle markers"""
         # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(QtCore.Qt.blue)
+        pen = QtGui.QPen(QtGui.QColor(243, 42, 31))
         pen.setWidth(self.widthAngleRef)
         # set a mimimum width
         if(self.widthAngleRef < 1):
@@ -234,7 +245,6 @@ class MainGui(GuiSkeleton):
     ##############################
     # Point Manipulation Methods
     ##############################
-
     def keyPressEvent(self, event):
         """The following function handles keypressEvents used to select and
         manipulate points in the QListWidget."""
@@ -265,6 +275,39 @@ class MainGui(GuiSkeleton):
                 return
             else:
                 self.pointListWidget.setCurrentRow(current_row - 1)
+
+        # G/H key for setting start and end point
+        elif event.key() == QtCore.Qt.Key_G:
+            listPoint = self.pointListWidget.findItems(
+                    's - '+self.startPointName, QtCore.Qt.MatchExactly)
+            for p in listPoint:
+                p.setText(p.text().replace('s - ', ''))
+                # just to redraw the point in the different colour
+                self.movePoint(p.text(), 0, 0)
+
+            if(self.pointListWidget.currentItem()):
+                p = self.pointListWidget.currentItem()
+                if('e - ' in p.text()):
+                    p.setText(p.text().replace('e - ', ''))
+                self.startPointName = p.text()
+                p.setText('s - '+p.text())
+                self.movePoint(p.text(), 0, 0)
+                
+        elif event.key() == QtCore.Qt.Key_H:
+            listPoint = self.pointListWidget.findItems(
+                    'e - '+self.endPointName, QtCore.Qt.MatchExactly)
+
+            for p in listPoint:
+                p.setText(p.text().replace('e - ', ''))
+                self.movePoint(p.text(), 0, 0)
+
+            if(self.pointListWidget.currentItem()):
+                p = self.pointListWidget.currentItem()
+                if('s - ' in p.text()):
+                    p.setText(p.text().replace('s - ', ''))
+                self.endPointName = p.text()
+                p.setText('e - '+p.text())
+                self.movePoint(p.text(), 0, 0)
 
         # Z/X for zoom in/zoom out.
         elif event.key() == QtCore.Qt.Key_Z:
@@ -316,8 +359,9 @@ class MainGui(GuiSkeleton):
 
     def movePoint(self, pointName, dx, dy):
         """The following function moves given point by [dx,dy]"""
-        pen, size = self.getPointPenSize()
-
+        pen, size = self.getPointPenSize(pointName)
+        pointName = pointName.replace('s - ', '')
+        pointName = pointName.replace('e - ', '')
         value = self.mapNametoPoint[pointName]
         drawRec = QtCore.QRectF(
             value.rect().x(), value.rect().y(), size, size)
@@ -331,6 +375,8 @@ class MainGui(GuiSkeleton):
     def deletePoint(self, pointName):
         """The following function deletes given point"""
         itemList = self.scene.items()
+        pointName = pointName.replace('s - ', '')
+        pointName = pointName.replace('e - ', '')
         for i in itemList:
             if(i == self.mapNametoPoint[pointName]):
                 self.scene.removeItem(i)
@@ -356,15 +402,15 @@ class MainGui(GuiSkeleton):
         # resize the graphics scene to the loaded image
         self.scene.setSceneRect(0, 0, self.qimage.width(), self.qimage.height())
 
-        # Reset any image transformations.
-        self.resetImage()
-
         # Create a pixmap from the loaded image.
         self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(self.qimage))
 
-
         # set keyboard focus to the graphics view
         self.view.setFocus()
+
+        # Reset any image transformations.
+        self.resetImage()
+
 
     ##############################
     # Zoom and Helper Functions
@@ -397,6 +443,14 @@ class MainGui(GuiSkeleton):
         for key, value in self.mapNametoPoint.items():
             self.updateDrawCircleZoom(value, size, pen)
 
+        # rescale the end and start point
+        if len(self.startPointName) > 0:
+            pen, size = self.getPointPenSize('s - '+self.startPointName)
+            self.updateDrawCircleZoom(self.mapNametoPoint[self.startPointName], size, pen)
+        if len(self.endPointName) > 0:
+            pen, size = self.getPointPenSize('e - '+self.endPointName)
+            self.updateDrawCircleZoom(self.mapNametoPoint[self.endPointName], size, pen)
+      
         pen = self.getCirclePen('green')
         if self.hasTrackMomentumCalc:
             self.updateDrawCircleZoom(
@@ -483,7 +537,7 @@ class MainGui(GuiSkeleton):
         self.displayMessage(
             str("Fitted y_o:\t %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
         self.displayMessage(
-            str("Fitted R:\t %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
+            str("Fitted R_o:\t %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
         # Set colour of circle to be drawn.
         pen = self.getCirclePen('green')
         # Create a drawing rectangle for the circle.
@@ -657,9 +711,6 @@ class MainGui(GuiSkeleton):
         self.consoleTextBrowser.clear()
 
         # Reset the number of points.
-        self.sizeOfEllipse = 10
-        self.widthOfEllipse = 2.5
-        self.widthOfCircle = 2.5
         self.nEllipseDrawn = 0
         self.mapNametoPoint = {}
         self.hasTrackMomentumCalc = False
@@ -667,9 +718,19 @@ class MainGui(GuiSkeleton):
         self.initialAnglePointDrawn = False
         self.finalAnglePointDrawn = False
         self.lineAnglePointDrawn = False
+        self.startPointName = ""
+        self.endPointName = ""
 
         # reset view scale and fit image in view
         self.scaleImage(1/self.zoomFactor)
+
+
+        self.sizeOfEllipse *= self.zoomFactor
+        self.widthOfEllipse *= self.zoomFactor
+        self.widthOfCircle *= self.zoomFactor
+        self.sizeAngleRef *= self.zoomFactor
+        self.widthAngleRef *= self.zoomFactor
+
         scaleFactor = 1
 
         height_ratio = self.view.height() / self.qimage.height()
