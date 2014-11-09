@@ -100,24 +100,22 @@ class MainGui(GuiSkeleton):
                     "HELP - To draw angle reference, first select 'Draw Angle Reference' button")
             return
 
+        self.nEllipseDrawn += 1
+
         pen, size = self.getPointPenSize()
         # Create a drawing rectangle for the ellipse.
         drawRec = QtCore.QRectF(event.pos().x(), event.pos().y(), size, size)
         # Translate top left corner of rectangle to match the clicked position.
         drawRec.moveCenter(QtCore.QPointF(event.pos().x(), event.pos().y()))
         # Draw ellipse with specified colour.
-        self.scene.addEllipse(drawRec, pen)
+        self.mapNametoPoint[
+            'Point ' + str(self.nEllipseDrawn)] = self.scene.addEllipse(drawRec, pen)
 
         # Update the widget containing the list of points.
-        self.nEllipseDrawn += 1
         self.pointListWidget.addItem('Point %s' % self.nEllipseDrawn)
         self.pointListWidget.setCurrentRow(
             self.pointListWidget.count() - 1)
 
-        # The latest drawn item is on the top of the list. Add to point list.
-        itemList = self.scene.items()
-        self.mapNametoPoint[
-            'Point ' + str(self.nEllipseDrawn)] = itemList[0]
 
     def angleSelect(self, event):
         """The following function draws the intial and final points for the
@@ -140,16 +138,14 @@ class MainGui(GuiSkeleton):
         # Translate top left corner of rectangle to match the clicked position.
         drawRec.moveCenter(QtCore.QPointF(event.pos().x(), event.pos().y()))
         # Draw ellipse with specified colour.
-        self.scene.addEllipse(drawRec, pen)
-
-        # For later tracking
-        itemList = self.scene.items()
+        
         if not self.initialAnglePointDrawn:
             self.initialAnglePointDrawn = True
-            self.initialAnglePoint = itemList[0]
+            self.initialAnglePoint = self.scene.addEllipse(drawRec, pen)
         else:
             self.finalAnglePointDrawn = True
-            self.finalAnglePoint = itemList[0]
+            self.finalAnglePoint = self.scene.addEllipse(drawRec, pen)
+ 
 
     def pixelSelectMouseEvent(self, event):
         """The following function draws a line between the intial point and the current 
@@ -168,15 +164,13 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(self.lineAnglePoint)
 
         pen, size = self.getAnglePenSize()
-        self.scene.addLine(self.initialAnglePoint.rect().center().x(),
+        self.lineAnglePoint = self.scene.addLine(self.initialAnglePoint.rect().center().x(),
                            self.initialAnglePoint.rect().center().y(),
                            event.pos().x(), event.pos().y(),
                            pen)
 
         # for latter keeping
         self.lineAnglePointDrawn = True
-        itemList = self.scene.items()
-        self.lineAnglePoint = itemList[0]
 
         return
 
@@ -465,7 +459,7 @@ class MainGui(GuiSkeleton):
             # print('x: ', value.rect().center().x(),
             #      ' y: ', value.rect().center().y())
 
-        # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
+        # Fit Circle here
         fitted_circle = circleFit(pointList)
         self.fittedX0 = fitted_circle[0][0]
         self.fittedY0 = fitted_circle[1][0]
@@ -485,12 +479,7 @@ class MainGui(GuiSkeleton):
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
         # Draw circle with specified colour.
-        self.scene.addEllipse(drawRec, pen)
-
-        # Store the drawn circle for future modifications.
-        itemList = self.scene.items()
-        # The latest drawn item is on the top of the list.
-        self.nominalFittedCenter = itemList[0]
+        self.nominalFittedCenter = self.scene.addEllipse(drawRec, pen)
 
         self.drawdlCurves()
         self.hasTrackMomentumCalc = True
@@ -513,12 +502,7 @@ class MainGui(GuiSkeleton):
         pen.setStyle(QtCore.Qt.DashDotLine)
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-        self.scene.addEllipse(drawRec, pen)
-
-        # Store the drawn circle for future modifications.
-        itemList = self.scene.items()
-        # The latest drawn item is on the top of the list.
-        self.outerFittedCenter = itemList[0]
+        self.outerFittedCenter = self.scene.addEllipse(drawRec, pen)
 
         # Deine inner circle.
         drawRec = QtCore.QRectF(
@@ -526,12 +510,7 @@ class MainGui(GuiSkeleton):
         # Draw a dotted line.
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-        self.scene.addEllipse(drawRec, pen)
-
-        # Store the drawn circle for future modifications.
-        itemList = self.scene.items()
-        # The latest drawn item is on the top of the list.
-        self.innerFittedCenter = itemList[0]
+        self.innerFittedCenter = self.scene.addEllipse(drawRec, pen)
 
         # Used for debugging purposes.
         self.hasDrawndLCurves = True
