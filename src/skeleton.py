@@ -143,8 +143,6 @@ class GuiSkeleton(object):
         self.userSelectionLayout.addWidget(self.placeMarkerButton)
         # make the button checkable (i.e. stays depressed when clicked)
         self.placeMarkerButton.setCheckable(True)
-        # have this mode selected by default
-        self.placeMarkerButton.setChecked(True)
         self.placeMarkerButton.setText("[Mode] Place Track Markers")
         self.placeMarkerButton.setToolTip(
             "Enter mode for placing markers on loaded image.")
@@ -220,27 +218,22 @@ class GuiSkeleton(object):
         self.sceneScrollArea = QtWidgets.QScrollArea(
             self.centralWidget)  # scroll area widget
         self.bottomUiLayout.addWidget(self.sceneScrollArea)
-        self.sceneScrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.sceneScrollArea.setMinimumSize(
             QtCore.QSize(0, mainWindow.size().height() / 1.5))
         self.sceneScrollArea.setWidgetResizable(True)
 
         # create graphics scene on which images will be displayed
         self.scene = QtWidgets.QGraphicsScene()  # graphics scene widget
-        self.view = QtWidgets.QGraphicsView(self.scene)  # grahics view widget
+        self.sceneView = QtWidgets.QGraphicsView(self.scene)  # grahics view widget
         # specify the graphics scene as the child widget of the scroll area
-        self.sceneScrollArea.setWidget(self.view)
+        self.sceneScrollArea.setWidget(self.sceneView)
         # set keyboard focus to the graphics view by default
-        self.view.setFocus()
-        self.pixmapItem = QtWidgets.QGraphicsPixmapItem(  # create pixmap item with blank image
-            QtGui.QPixmap('bkgPicture.png'), None)
-        self.qimage = QtGui.QImage()
-        self.qimage.load('bkgPicture.png')
-        self.scene.addItem(self.pixmapItem)
+        self.sceneView.setFocus()
+        # instantiate QImage and PixmapItem
+        self.sceneImage = QtGui.QImage()
+        self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
+        self.scene.addItem(self.scenePixmap)
 
         # status bar at the bottom of the window
         self.statusBar = QtWidgets.QStatusBar(mainWindow)
         mainWindow.setStatusBar(self.statusBar)
-
-        # To the correct mane and labels
-        QtCore.QMetaObject.connectSlotsByName(mainWindow)
