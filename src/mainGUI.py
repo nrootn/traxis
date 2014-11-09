@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from skeleton import GuiSkeleton
 from optDensity import calcOptDensity
 from circleFit import circleFit
+from angleCalc import angleCalc
 import math
 
 
@@ -66,7 +67,10 @@ class MainGui(GuiSkeleton):
 
         # Set up button to calculate optical density.
         self.calcDensityButton.clicked.connect(self.calcOptDen)
-
+        
+        # Set up button to calculate angle.
+        self.calcAngleButton.clicked.connect(self.calcAngle)
+        
         # Set up text field that specifies dL (user-specified width).
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
 
@@ -532,6 +536,8 @@ class MainGui(GuiSkeleton):
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
 
+        self.circleInfo = fitted_circle
+
         self.displayMessage(
             str("Fitted x_o:\t %f +/- %f" % (fitted_circle[0][0], fitted_circle[0][1])))
         self.displayMessage(
@@ -622,6 +628,33 @@ class MainGui(GuiSkeleton):
             self, self.pixmapItem, pointList, self.tmp_circle, self.dL)
         # Used for debugging.
         self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
+
+    def calcAngle(self):
+        """The following function is used to calculate the angle between
+        intial tangent and specified references"""
+
+        if self.hasTrackMomentumCalc is False:
+            self.displayMessage(
+                "ERROR: Track momentum has not been calculated yet.")
+            return
+        
+        if len(self.startPointName) == 0:
+            self.displayMessage(
+                "ERROR: Intial Point has not been defined yet.")
+            return
+
+        if self.lineAnglePointDrawn is False:
+            self.displayMessage(
+                "ERROR: Angle Line reference not drawn.")
+            return
+
+
+        angleInfo = angleCalc(self, self.circleInfo, 
+                self.mapNametoPoint[self.startPointName],
+                self.lineAnglePoint )
+        
+        self.displayMessage(str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
+
 
     ##############################
     # Connection to Other Buttons
