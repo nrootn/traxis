@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from skeleton import GuiSkeleton
 from optDensity import calcOptDensity
 from circleFit import circleFit
+import math
 
 
 class MainGui(GuiSkeleton):
@@ -338,17 +339,21 @@ class MainGui(GuiSkeleton):
         fileName = QtWidgets.QFileDialog.getOpenFileName(
             self.centralWidget, "Open File", QtCore.QDir.currentPath())
         if fileName:
-            qimage = QtGui.QImage()
-            image = qimage.load(fileName[0])
+            self.qimage = QtGui.QImage()
+            image = self.qimage.load(fileName[0])
         if not image:
             self.displayMessage("Cannot load {}.".format(fileName))
             return
 
-        # Create a pixmap from the loaded image.
-        self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(qimage))
+        # resize the graphics scene to the loaded image
+        self.scene.setSceneRect(0, 0, self.qimage.width(), self.qimage.height())
 
         # Reset any image transformations.
         self.resetImage()
+
+        # Create a pixmap from the loaded image.
+        self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(self.qimage))
+
 
         # set keyboard focus to the graphics view
         self.view.setFocus()
@@ -643,10 +648,25 @@ class MainGui(GuiSkeleton):
         self.finalAnglePointDrawn = False
         self.lineAnglePointDrawn = False
 
+        # reset view scale and fit image in view
+        self.scaleImage(1/self.zoomFactor)
+        scaleFactor = 1
+
+        height_ratio = self.view.height() / self.qimage.height()
+        width_ratio = self.view.width() / self.qimage.width()
+
+        if height_ratio < width_ratio:
+            if height_ratio < 1:
+                scaleFactor = 0.8**math.ceil(math.log(height_ratio, 0.8))
+        else:
+            if width_ratio < 1:
+                scaleFactor = 0.8**math.ceil(math.log(width_ratio, 0.8))
+
+        self.scaleImage(scaleFactor)
+
         # Clear the list of points.
         self.pointListWidget.clear()
 
-        self.zoomFactor = 1
         self.nUserClickOnPicture = 0
 
         self.mapNametoPoint = {}

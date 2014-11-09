@@ -17,7 +17,7 @@ class GuiSkeleton(object):
 
         # set main window icon
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./traxis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("./traxis.png"))
         mainWindow.setWindowIcon(icon)
 
         # layout of the main window
