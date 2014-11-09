@@ -93,7 +93,7 @@ class GuiSkeleton(object):
         self.calcMomentumButton = QtWidgets.QPushButton(
             self.centralWidget)  # calculate momentum button widget
         self.techButtonLayout.addWidget(self.calcMomentumButton)
-        self.calcMomentumButton.setText("Calculate Track Momemetum")
+        self.calcMomentumButton.setText("Calculate Track Momentum")
         self.calcMomentumButton.setToolTip("Calculate Track momentum")
 
         # calculate optical density button widget

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = "Syed Haider Abidi,  Nooruddin Ahmed and Christopher Dydula"
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -200,10 +201,17 @@ class MainGui(GuiSkeleton):
 
         return pen, size
 
-    def getCirclePen(self):
+    def getCirclePen(self, colour):
         """The following function moves gets the size and pen for the fitted circle"""
         # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(QtCore.Qt.green)
+        if colour is 'red':
+            pen = QtGui.QPen(QtCore.Qt.red)
+        elif colour is 'blue':
+            pen = QtGui.QPen(QtCore.Qt.blue)
+        elif colour is 'yellow':
+            pen = QtGui.QPen(QtCore.Qt.yellow)
+        else:
+            pen = QtGui.QPen(QtCore.Qt.green)
         pen.setWidth(self.widthOfCircle)
         # set a mimimum width
         if(self.widthOfCircle < 1):
@@ -390,7 +398,7 @@ class MainGui(GuiSkeleton):
         for key, value in self.mapNametoPoint.items():
             self.updateDrawCircleZoom(value, size, pen)
 
-        pen = self.getCirclePen()
+        pen = self.getCirclePen('green')
         if self.hasTrackMomentumCalc:
             self.updateDrawCircleZoom(
                 self.nominalFittedCenter, self.nominalFittedCenter.rect().width(), pen)
@@ -433,7 +441,7 @@ class MainGui(GuiSkeleton):
         """The following function is used to write messages to console."""
 
         self.num_messages += 1
-        msg = "[{}] {}".format(self.num_messages, msg)
+        msg = "[{}]  {}".format(self.num_messages, msg)
         self.consoleTextBrowser.append(msg)
 
     ##############################
@@ -445,7 +453,7 @@ class MainGui(GuiSkeleton):
 
         # Need a minimum of 3 points to fit a circle.
         if len(self.mapNametoPoint) < 3:
-            self.displayMessage("ERROR - Less than 3 points to fit.")
+            self.displayMessage("ERROR: Less than 3 points to fit.")
             return
 
         # Return if track momentum has already been calculated.
@@ -465,20 +473,20 @@ class MainGui(GuiSkeleton):
             # print('x: ', value.rect().center().x(),
             #      ' y: ', value.rect().center().y())
 
-        # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
+        # Fit a circle to selected points.
         fitted_circle = circleFit(pointList)
         self.fittedX0 = fitted_circle[0][0]
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
 
         self.displayMessage(
-            str("fitted x0 %f +/- %f" % (fitted_circle[0][0], fitted_circle[0][1])))
+            str("Fitted x_o:\t %f +/- %f" % (fitted_circle[0][0], fitted_circle[0][1])))
         self.displayMessage(
-            str("fitted y0 %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
+            str("Fitted y_o:\t %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
         self.displayMessage(
-            str("fitted R0 %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
+            str("Fitted R:\t %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
         # Set colour of circle to be drawn.
-        pen = self.getCirclePen()
+        pen = self.getCirclePen('green')
         # Create a drawing rectangle for the circle.
         drawRec = QtCore.QRectF(
             self.fittedX0, self.fittedY0, 2 * self.fittedR0, 2 * self.fittedR0)
@@ -501,10 +509,10 @@ class MainGui(GuiSkeleton):
         try:
             self.dL = float(self.dlLineEdit.text())
         except ValueError:
-            self.displayMessage("ERROR - dL is not a float")
+            self.displayMessage("ERROR: dL is not a float")
             return
 
-        pen = self.getCirclePen()
+        pen = self.getCirclePen('green')
         pen.setStyle(QtCore.Qt.DashDotLine)
         # Define outer circle.
         drawRec = QtCore.QRectF(
@@ -542,21 +550,33 @@ class MainGui(GuiSkeleton):
 
         # Need a minimum of 3 points to fit a circle.
         if len(self.mapNametoPoint) < 3:
-            self.displayMessage("ERROR - Less than 3 points to fit.")
+            self.displayMessage("ERROR: Less than 3 points to fit.")
+            return
+
+        # Return if track momentum has NOT been calculated.
+        if self.hasTrackMomentumCalc is False:
+            self.displayMessage(
+                "ERROR: Track momentum has not been calculated yet.")
+            return
+
+        # Return if track momentum has NOT been calculated.
+        if self.dL <= 0:
+            self.displayMessage(
+                "ERROR: Positive non-zero value for dL was not specified.")
             return
 
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
 
-        # Hardcoded circle for now. TODO: FIT CIRCLE HERE.
-        self.tmp_circle = [50, 50, 50]
+        # Create a circle to pass to optical density function.
+        self.tmp_circle = [self.fittedX0, self.fittedY0, self.fittedR0]
 
         # Draw dL curves if dL is specified.
         try:
             self.dL = float(self.dlLineEdit.text())
         except ValueError:
-            self.displayMessage("ERROR - dL is not a float")
+            self.displayMessage("ERROR: dL is not a float")
             return
 
         # Call function to compute optical density.
@@ -578,7 +598,7 @@ class MainGui(GuiSkeleton):
         try:
             self.dL = float(value)
         except ValueError:
-            self.displayMessage("ERROR - dL is not a float")
+            self.displayMessage("ERROR: dL is not a float")
             return
 
         # Return if track momentum has already been calculated.
