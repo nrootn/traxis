@@ -763,19 +763,21 @@ class MainGui(GuiSkeleton):
         self.sizeAngleRef *= self.zoomFactor
         self.widthAngleRef *= self.zoomFactor
 
-        scaleFactor = 1
 
-        height_ratio = self.sceneView.height() / self.sceneImage.height()
-        width_ratio = self.sceneView.width() / self.sceneImage.width()
+        if not self.sceneImage.isNull():
+            scaleFactor = 1
 
-        if height_ratio < width_ratio:
-            if height_ratio < 1:
-                scaleFactor = 0.8**math.ceil(math.log(height_ratio, 0.8))
-        else:
-            if width_ratio < 1:
-                scaleFactor = 0.8**math.ceil(math.log(width_ratio, 0.8))
+            height_ratio = self.sceneView.height() / self.sceneImage.height()
+            width_ratio = self.sceneView.width() / self.sceneImage.width()
 
-        self.scaleImage(scaleFactor)
+            if height_ratio < width_ratio:
+                if height_ratio < 1:
+                    scaleFactor = 0.8**math.ceil(math.log(height_ratio, 0.8))
+            else:
+                if width_ratio < 1:
+                    scaleFactor = 0.8**math.ceil(math.log(width_ratio, 0.8))
+
+            self.scaleImage(scaleFactor)
 
         # Clear the list of points.
         self.pointListWidget.clear()
