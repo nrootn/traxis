@@ -43,8 +43,6 @@ def calcOptDensity(gui, Img, P, Circle, dL):
     arc.setSpanAngle(16.0 * (end_angle - start_angle))
     gui.scene.addItem(arc)
 
-
-
     # Create and draw outer arc
     # outer_arc = QGraphicsEllipseItem(
     #     Circle[0] - Circle[2] - dL, Circle[1] - Circle[2] - dL, 2 * (Circle[2] + dL), 2 * (Circle[2] + dL))
@@ -67,6 +65,7 @@ def calcOptDensity(gui, Img, P, Circle, dL):
 
     return (optDens, errOptDens)
 
+
 def getAngles(origin, pts, v):
     angles = []
     # Compute angles of each point wrt v
@@ -78,5 +77,6 @@ def getAngles(origin, pts, v):
         angles.append(QtCore.QLineF.angleTo(r, v))
     return angles
 
+
 def getRoi():
-	return
+    return

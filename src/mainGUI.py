@@ -52,9 +52,9 @@ class MainGui(GuiSkeleton):
         self.lineAnglePointDrawn = False
         self.startPointName = ""
         self.endPointName = ""
-        self.pixmapItem.mousePressEvent = self.pixelSelect
-        self.pixmapItem.mouseReleaseEvent = self.angleSelect
-        self.pixmapItem.mouseMoveEvent = self.pixelSelectMouseEvent
+        self.scenePixmap.mousePressEvent = self.pixelSelect
+        self.scenePixmap.mouseReleaseEvent = self.angleSelect
+        self.scenePixmap.mouseMoveEvent = self.pixelSelectMouseEvent
 
         # Set up shortCuts
         self.centralWidget.keyPressEvent = self.keyPressEvent
@@ -396,21 +396,20 @@ class MainGui(GuiSkeleton):
         fileName = QtWidgets.QFileDialog.getOpenFileName(
             self.centralWidget, "Open File", QtCore.QDir.currentPath())
         if fileName:
-            self.qimage = QtGui.QImage()
-            image = self.qimage.load(fileName[0])
+            image = self.sceneImage.load(fileName[0])
         if not image:
             self.displayMessage("Cannot load {}.".format(fileName))
             return
 
         # resize the graphics scene to the loaded image
         self.scene.setSceneRect(
-            0, 0, self.qimage.width(), self.qimage.height())
+            0, 0, self.sceneImage.width(), self.sceneImage.height())
 
         # Create a pixmap from the loaded image.
-        self.pixmapItem.setPixmap(QtGui.QPixmap.fromImage(self.qimage))
+        self.scenePixmap.setPixmap(QtGui.QPixmap.fromImage(self.sceneImage))
 
         # set keyboard focus to the graphics view
-        self.view.setFocus()
+        self.sceneView.setFocus()
 
         # Reset any image transformations.
         self.resetImage()
@@ -429,7 +428,7 @@ class MainGui(GuiSkeleton):
     def scaleImage(self, factor):
         """The following helper function scales images and points."""
         self.zoomFactor = self.zoomFactor * factor
-        self.view.scale(factor, factor)
+        self.sceneView.scale(factor, factor)
         self.adjustScrollBar(
             self.sceneScrollArea.horizontalScrollBar(), factor)
         self.adjustScrollBar(self.sceneScrollArea.verticalScrollBar(), factor)
@@ -522,8 +521,8 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(self.innerFittedCenter)
             self.scene.removeItem(self.outerFittedCenter)
 
-        if self.placeMarkerButton.isChecked():
-            self.placeMarkerButton.setChecked(False)
+        # if self.placeMarkerButton.isChecked():
+        #    self.placeMarkerButton.setChecked(False)
 
         pointList = []
         for key, value in self.mapNametoPoint.items():
@@ -626,7 +625,7 @@ class MainGui(GuiSkeleton):
 
         # Call function to compute optical density.
         self.optDens, self.errOptDens = calcOptDensity(
-            self, self.pixmapItem, pointList, self.tmp_circle, self.dL)
+            self, self.scenePixmap, pointList, self.tmp_circle, self.dL)
         # Used for debugging.
         self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
 
@@ -763,19 +762,20 @@ class MainGui(GuiSkeleton):
         self.sizeAngleRef *= self.zoomFactor
         self.widthAngleRef *= self.zoomFactor
 
-        scaleFactor = 1
+        if not self.sceneImage.isNull():
+            scaleFactor = 1
 
-        height_ratio = self.view.height() / self.qimage.height()
-        width_ratio = self.view.width() / self.qimage.width()
+            height_ratio = self.sceneView.height() / self.sceneImage.height()
+            width_ratio = self.sceneView.width() / self.sceneImage.width()
 
-        if height_ratio < width_ratio:
-            if height_ratio < 1:
-                scaleFactor = 0.8 ** math.ceil(math.log(height_ratio, 0.8))
-        else:
-            if width_ratio < 1:
-                scaleFactor = 0.8 ** math.ceil(math.log(width_ratio, 0.8))
+            if height_ratio < width_ratio:
+                if height_ratio < 1:
+                    scaleFactor = 0.8 ** math.ceil(math.log(height_ratio, 0.8))
+            else:
+                if width_ratio < 1:
+                    scaleFactor = 0.8 ** math.ceil(math.log(width_ratio, 0.8))
 
-        self.scaleImage(scaleFactor)
+            self.scaleImage(scaleFactor)
 
         # Clear the list of points.
         self.pointListWidget.clear()
