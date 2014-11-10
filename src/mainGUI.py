@@ -96,6 +96,7 @@ class MainGui(GuiSkeleton):
         if self.drawRefButton.isChecked():
             self.angleSelect(event)
             return
+
         # Place an event only if 'place marker' button has been pressed.
         if not self.placeMarkerButton.isChecked():
             # Count the number of times user has clicked on the picture.
@@ -377,6 +378,7 @@ class MainGui(GuiSkeleton):
         drawRec.moveCenter(
             QtCore.QPointF(value.rect().center().x() + dx, value.rect().center().y() + dy))
         self.mapNametoPoint[pointName].setRect(drawRec)
+        #pen.setColor(self.mapNametoPoint[pointName].pen().color())
         #self.mapNametoPoint[pointName].setPen(pen)
 
         self.scene.update()
@@ -503,7 +505,8 @@ class MainGui(GuiSkeleton):
         drawRec.moveCenter(
             QtCore.QPointF(circle.rect().center().x(), circle.rect().center().y()))
         circle.setRect(drawRec)
-        #circle.setPen(pen)
+        pen.setColor(circle.pen().color())
+        circle.setPen(pen)
 
     def adjustScrollBar(self, scrollBar, factor):
         """The following helper function adjusts size of scrollbar."""
