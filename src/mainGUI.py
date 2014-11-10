@@ -609,6 +609,18 @@ class MainGui(GuiSkeleton):
                 "ERROR: Positive non-zero value for dL was not specified.")
             return
 
+        # Check if start point was defined.
+        if len(self.startPointName) == 0:
+            self.displayMessage(
+                "ERROR: Initial point has not been defined yet.")
+            return
+
+        # Check if end point was defined
+        if len(self.endPointName) == 0:
+            self.displayMessage(
+                "ERROR: End point has not been defined yet.")
+            return
+
         pointList = []
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
@@ -625,7 +637,9 @@ class MainGui(GuiSkeleton):
 
         # Call function to compute optical density.
         self.optDens, self.errOptDens = calcOptDensity(
-            self, self.scenePixmap, pointList, self.tmp_circle, self.dL)
+            self, self.sceneImage, pointList, self.tmp_circle, self.dL,
+            self.mapNametoPoint[self.startPointName],
+            self.mapNametoPoint[self.endPointName])
         # Used for debugging.
         self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
 
@@ -640,7 +654,7 @@ class MainGui(GuiSkeleton):
 
         if len(self.startPointName) == 0:
             self.displayMessage(
-                "ERROR: Intial Point has not been defined yet.")
+                "ERROR: Initial point has not been defined yet.")
             return
 
         if self.lineAnglePointDrawn is False:
