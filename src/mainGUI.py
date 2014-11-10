@@ -81,6 +81,8 @@ class MainGui(GuiSkeleton):
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
 
+        self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
+
         self.centralWidget.resizeEvent = self.resizeEvent
 
     ###########################
@@ -183,10 +185,13 @@ class MainGui(GuiSkeleton):
     ###########################
     # Drawing Helper Functions
     ###########################
-    def getPointPenSize(self, pointName=""):
+    def getPointPenSize(self, pointName="", color=None):
         """The following function moves gets the size and pen for the track markers"""
         # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(self.getPointColor(pointName))
+        if not color:
+            pen = QtGui.QPen(self.getPointColor(pointName))
+        else:
+            pen = QtGui.QPen(color)
         pen.setWidth(self.widthOfEllipse)
         # set a mimimum width
         if(self.widthOfEllipse < 1):
@@ -328,7 +333,7 @@ class MainGui(GuiSkeleton):
         elif event.key() == QtCore.Qt.Key_N:
             self.calcOptDen()
         elif event.key() == QtCore.Qt.Key_B:  # calculate angle
-            pass
+            self.calcAngle()
 
         # O for open image
         elif event.key() == QtCore.Qt.Key_O:
@@ -350,9 +355,10 @@ class MainGui(GuiSkeleton):
 
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
-            self.deletePoint(self.pointListWidget.currentItem().text())
-            self.pointListWidget.takeItem(
-                self.pointListWidget.currentRow())
+            if self.pointListWidget.count() > 0:
+                deletedItem = self.pointListWidget.takeItem(
+                    self.pointListWidget.currentRow())
+                self.deletePoint(deletedItem.text())
             return
 
         # Update point location
@@ -371,7 +377,7 @@ class MainGui(GuiSkeleton):
         drawRec.moveCenter(
             QtCore.QPointF(value.rect().center().x() + dx, value.rect().center().y() + dy))
         self.mapNametoPoint[pointName].setRect(drawRec)
-        self.mapNametoPoint[pointName].setPen(pen)
+        #self.mapNametoPoint[pointName].setPen(pen)
 
         self.scene.update()
 
@@ -384,6 +390,19 @@ class MainGui(GuiSkeleton):
             if(i == self.mapNametoPoint[pointName]):
                 self.scene.removeItem(i)
         del self.mapNametoPoint[pointName]
+
+    def highlightPoint(self):
+        for row in range(self.pointListWidget.count()):
+            point = self.pointListWidget.item(row)
+            strippedPointName = point.text().replace('s - ', '')
+            strippedPointName = strippedPointName.replace('e - ', '')
+            self.mapNametoPoint[strippedPointName].setPen(self.getPointPenSize(point.text())[0])
+        if self.pointListWidget.currentItem():
+            currentPoint = self.pointListWidget.currentItem().text()
+            if currentPoint.startswith('s - ') or currentPoint.startswith('e - '):
+                currentPoint = currentPoint[4:]
+            self.mapNametoPoint[currentPoint].setPen(self.getPointPenSize(currentPoint, QtCore.Qt.yellow)[0])
+        self.scene.update()
 
     ##############################
     # Open Image Method
@@ -484,7 +503,7 @@ class MainGui(GuiSkeleton):
         drawRec.moveCenter(
             QtCore.QPointF(circle.rect().center().x(), circle.rect().center().y()))
         circle.setRect(drawRec)
-        circle.setPen(pen)
+        #circle.setPen(pen)
 
     def adjustScrollBar(self, scrollBar, factor):
         """The following helper function adjusts size of scrollbar."""
@@ -746,12 +765,16 @@ class MainGui(GuiSkeleton):
         """The following function resets image transformations,
         and clears point list and console output."""
 
+        # Clear the list of points.
+        self.pointListWidget.clear()
+
         # Clear drawn points.
         itemList = self.scene.items()
         for i in itemList:
             if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
                 continue
             self.scene.removeItem(i)
+
 
         # Clear console output.
         self.consoleTextBrowser.clear()
@@ -791,8 +814,6 @@ class MainGui(GuiSkeleton):
 
             self.scaleImage(scaleFactor)
 
-        # Clear the list of points.
-        self.pointListWidget.clear()
 
         self.nUserClickOnPicture = 0
 
