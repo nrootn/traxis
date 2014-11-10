@@ -62,11 +62,10 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
             x = Circle[0] + r * np.cos(radians)
             y = Circle[1] + r * np.sin(radians)
             # print("%f, %f" % (x, y))
-            # c = Img.pixel(int(x), int(y))
-            # colors = QColor(c).getRgbF()
-            Img.setPixel(QtCore.QPoint(int(x), int(y)), 255)
-            alpha += x * y
+            c = Img.pixel(int(x), int(y))
+            alpha += QColor(c).alphaF()
             num += 1
+            # Img.setPixel(QtCore.QPoint(int(x), int(y)), 255)
 
 # SHELL: does nothing atm
     optDens = alpha / num
