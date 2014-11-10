@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QImage, QColor
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 import numpy as np
@@ -50,25 +50,29 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     gui.scene.addItem(inner_arc)
 
     # Get points along arc
-    dR = np.linspace(Circle[2] - dL, Circle[2] + dL, 100.0)
-    dTheta = np.linspace(start_angle, start_angle + span_angle, 100.0)
+    dR = np.linspace(Circle[2] - dL, Circle[2] + dL, 2 * dL + 1)
 
     # Loop through all arc points and average alphas
-    alpha = 0.
+    blackness = 0.
     num = 0.
     for r in dR:
+        dTheta = np.linspace(start_angle, start_angle + span_angle, int(r * span_angle))
         for theta in dTheta:
+            # print("degs: %f" % theta)
             radians = theta * (np.pi / 180.0)
             x = Circle[0] + r * np.cos(radians)
-            y = Circle[1] + r * np.sin(radians)
+            y = Circle[1] - r * np.sin(radians)
             # print("%f, %f" % (x, y))
             c = Img.pixel(int(x), int(y))
-            alpha += QColor(c).alphaF()
+            blackness += QColor(c).blackF()
+            # print("x: %f y: %f black: %f" % (x, y, QColor(c).blackF()))
             num += 1
-            # Img.setPixel(QtCore.QPoint(int(x), int(y)), 255)
+            # Img.setPixel(QPoint.QtCore(int(x), int(y)), 255)
+            # gui.scene.addEllipse(x, y, 1, 1)
 
-# SHELL: does nothing atm
-    optDens = alpha / num
+    # Calculate and return optical density
+    print("num: %f" % num)
+    optDens = blackness / num
     errOptDens = 0.0
 
     return (optDens, errOptDens)
