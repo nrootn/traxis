@@ -31,7 +31,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 because function uses units of 1/16th degrees
     arc.setStartAngle(16.0 * start_angle)
     arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(arc)
+    #gui.scene.addItem(arc)
 
     # Create and draw outer arc
     outer_arc = QGraphicsEllipseItem(
@@ -39,7 +39,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
     outer_arc.setStartAngle(16.0 * start_angle)
     outer_arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(outer_arc)
+    #gui.scene.addItem(outer_arc)
 
     # Create and draw inner arc
     inner_arc = QGraphicsEllipseItem(
@@ -47,16 +47,16 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 because function uses units of 1/16th degrees
     inner_arc.setStartAngle(16.0 * start_angle)
     inner_arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(inner_arc)
+    #gui.scene.addItem(inner_arc)
 
     # Get points along arc
-    dR = np.linspace(Circle[2] - dL, Circle[2] + dL, 2 * dL + 1)
+    dR = np.linspace(Circle[2] - dL, Circle[2] + dL, 100) #2 * dL + 1)
 
     # Loop through all arc points and average alphas
     blackness = 0.
     num = 0.
     for r in dR:
-        dTheta = np.linspace(start_angle, start_angle + span_angle, int(r * span_angle))
+        dTheta = np.linspace(start_angle, start_angle + span_angle, 100 )#int(r * span_angle))
         for theta in dTheta:
             # print("degs: %f" % theta)
             radians = theta * (np.pi / 180.0)
