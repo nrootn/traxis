@@ -34,7 +34,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
     outer_arc.setStartAngle(16.0 * start_angle)
     outer_arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(outer_arc)
+    # gui.scene.addItem(outer_arc)
 
     # Create and draw inner arc
     inner_arc = QGraphicsEllipseItem(
@@ -42,7 +42,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 because function uses units of 1/16th degrees
     inner_arc.setStartAngle(16.0 * start_angle)
     inner_arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(inner_arc)
+    # gui.scene.addItem(inner_arc)
 
     # Get points along arc
     dR = np.linspace(
@@ -62,7 +62,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
                 errPointSet.add((int(x), int(y)))
             else:
                 pointSet.add((int(x), int(y)))
-    
+
     # Loop over distinct pixel coordinates and sum the blackness of each
     blackness = 0.
     num = 0.
