@@ -14,28 +14,23 @@ from mainGUI import *
 # Output: tuple with calculated optical density and associated error
 def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
 
-    gui.displayMessage("Computing optical density...")
-    gui.displayMessage("Radius: %f Coordinates: %f %f" %
-                       (Circle[2], Circle[0], Circle[1]))
+    # Create variables for circle parameters to make code more readable
+    x0 = Circle[0][0]
+    dx0 = Circle[0][1]
+    y0 = Circle[1][0]
+    dy0 = Circle[1][1]
+    r0 = Circle[2][0]
+    dr0 = Circle[2][1]
 
     # Get angle between start point and unit vector
-    start_angle = getAngle(
-        [Circle[0], Circle[1]], startPt, [Circle[0] + 1, Circle[1] + 0])
+    start_angle = getAngle([x0, y0], startPt, [x0 + 1, y0 + 0])
 
     # Get angle that spans the start vector and end vector
-    span_angle = getAngle([Circle[0], Circle[1]], endPt, startPt)
-
-    # Create and draw an arc
-    arc = QGraphicsEllipseItem(
-        Circle[0] - Circle[2], Circle[1] - Circle[2], 2 * Circle[2], 2 * Circle[2])
-    # Need to multiply by 16.0 because function uses units of 1/16th degrees
-    arc.setStartAngle(16.0 * start_angle)
-    arc.setSpanAngle(16.0 * span_angle)
-    gui.scene.addItem(arc)
+    span_angle = getAngle([x0, y0], endPt, startPt)
 
     # Create and draw outer arc
     outer_arc = QGraphicsEllipseItem(
-        Circle[0] - Circle[2] - dL, Circle[1] - Circle[2] - dL, 2 * (Circle[2] + dL), 2 * (Circle[2] + dL))
+        x0 - r0 - dL, y0 - r0 - dL, 2 * (r0 + dL), 2 * (r0 + dL))
     # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
     outer_arc.setStartAngle(16.0 * start_angle)
     outer_arc.setSpanAngle(16.0 * span_angle)
@@ -43,37 +38,52 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
 
     # Create and draw inner arc
     inner_arc = QGraphicsEllipseItem(
-        Circle[0] - Circle[2] + dL, Circle[1] - Circle[2] + dL, 2 * (Circle[2] - dL), 2 * (Circle[2] - dL))
+        x0 - r0 + dL, y0 - r0 + dL, 2 * (r0 - dL), 2 * (r0 - dL))
     # Need to multiply by 16.0 because function uses units of 1/16th degrees
     inner_arc.setStartAngle(16.0 * start_angle)
     inner_arc.setSpanAngle(16.0 * span_angle)
     gui.scene.addItem(inner_arc)
 
     # Get points along arc
-    dR = np.linspace(Circle[2] - dL, Circle[2] + dL, 2 * dL + 1)
+    dR = np.linspace(
+        r0 - abs(dr0) - dL, r0 + abs(dr0) + dL, 2 * (dL + dr0) + 1)
+    pointSet = set()
+    errPointSet = set()
 
-    # Loop through all arc points and average alphas
+    # Loop through all arc points and create set of distinct pixel values
+    for r in dR:
+        dTheta = np.linspace(
+            start_angle, start_angle + span_angle, int(r * span_angle))
+        for theta in dTheta:
+            radians = theta * (np.pi / 180.0)
+            x = x0 + r * np.cos(radians)
+            y = y0 - r * np.sin(radians)
+            if r < (r0 - dL) or r > (r0 + dL):
+                errPointSet.add((int(x), int(y)))
+            else:
+                pointSet.add((int(x), int(y)))
+    
+    # Loop over distinct pixel coordinates and sum the blackness of each
     blackness = 0.
     num = 0.
-    for r in dR:
-        dTheta = np.linspace(start_angle, start_angle + span_angle, int(r * span_angle))
-        for theta in dTheta:
-            # print("degs: %f" % theta)
-            radians = theta * (np.pi / 180.0)
-            x = Circle[0] + r * np.cos(radians)
-            y = Circle[1] - r * np.sin(radians)
-            # print("%f, %f" % (x, y))
-            c = Img.pixel(int(x), int(y))
-            blackness += QColor(c).blackF()
-            # print("x: %f y: %f black: %f" % (x, y, QColor(c).blackF()))
-            num += 1
-            # Img.setPixel(QPoint.QtCore(int(x), int(y)), 255)
-            # gui.scene.addEllipse(x, y, 1, 1)
+    for p in pointSet:
+        c = Img.pixel(p[0], p[1])
+        blackness += QColor(c).blackF()
+        num += 1
+
+    # Repeat the calculation above for error region
+    errBlackness = 0.
+    errNum = 0.
+    for p in errPointSet:
+        c = Img.pixel(p[0], p[1])
+        errBlackness += QColor(c).blackF()
+        errNum += 1
 
     # Calculate and return optical density
     print("num: %f" % num)
+    print("errNum: %f" % errNum)
     optDens = blackness / num
-    errOptDens = 0.0
+    errOptDens = errBlackness / errNum
 
     return (optDens, errOptDens)
 

@@ -644,8 +644,8 @@ class MainGui(GuiSkeleton):
         for key, value in self.mapNametoPoint.items():
             pointList.append(value)
 
-        # Create a circle to pass to optical density function.
-        self.tmp_circle = [self.fittedX0, self.fittedY0, self.fittedR0]
+        # Assigned fitted circle to pass to optical density function.
+        self.tmp_circle = self.circleInfo
 
         # Draw dL curves if dL is specified.
         try:
@@ -655,6 +655,8 @@ class MainGui(GuiSkeleton):
             return
 
         # Call function to compute optical density.
+        self.displayMessage("Computing optical density...")
+
         self.optDens, self.errOptDens = calcOptDensity(
             self, self.sceneImage, pointList, self.tmp_circle, self.dL,
             self.mapNametoPoint[self.startPointName],
