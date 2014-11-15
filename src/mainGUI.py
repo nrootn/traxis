@@ -87,7 +87,7 @@ class MainGui(GuiSkeleton):
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
 
-        self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
+        self.pointListWidget.itemSelectionChanged.connect(self.recolourPoint)
 
         self.centralWidget.resizeEvent = self.resizeEvent
 
@@ -296,8 +296,6 @@ class MainGui(GuiSkeleton):
                 's - ' + self.startPointName, QtCore.Qt.MatchExactly)
             for p in listPoint:
                 p.setText(p.text().replace('s - ', ''))
-                # just to redraw the point in the different colour
-                self.movePoint(p.text(), 0, 0)
 
             if(self.pointListWidget.currentItem()):
                 p = self.pointListWidget.currentItem()
@@ -305,7 +303,7 @@ class MainGui(GuiSkeleton):
                     p.setText(p.text().replace('e - ', ''))
                 self.startPointName = p.text()
                 p.setText('s - ' + p.text())
-                self.movePoint(p.text(), 0, 0)
+            self.recolourPoint()
 
         elif event.key() == QtCore.Qt.Key_H:
             listPoint = self.pointListWidget.findItems(
@@ -313,7 +311,6 @@ class MainGui(GuiSkeleton):
 
             for p in listPoint:
                 p.setText(p.text().replace('e - ', ''))
-                self.movePoint(p.text(), 0, 0)
 
             if(self.pointListWidget.currentItem()):
                 p = self.pointListWidget.currentItem()
@@ -321,7 +318,7 @@ class MainGui(GuiSkeleton):
                     p.setText(p.text().replace('s - ', ''))
                 self.endPointName = p.text()
                 p.setText('e - ' + p.text())
-                self.movePoint(p.text(), 0, 0)
+            self.recolourPoint()
 
         # Z/X for zoom in/zoom out.
         elif event.key() == QtCore.Qt.Key_Z:
@@ -399,7 +396,7 @@ class MainGui(GuiSkeleton):
                 self.scene.removeItem(i)
         del self.mapNametoPoint[pointName]
 
-    def highlightPoint(self):
+    def recolourPoint(self):
         for row in range(self.pointListWidget.count()):
             point = self.pointListWidget.item(row)
             strippedPointName = point.text().replace('s - ', '')
