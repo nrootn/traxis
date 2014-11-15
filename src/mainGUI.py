@@ -37,6 +37,9 @@ class MainGui(GuiSkeleton):
         self.saveSessionButton.clicked.connect(self.saveSession)
         self.loadSessionButton.clicked.connect(self.loadSession)
 
+        # Set up button for taking a screenshot of the scroll area
+        self.screenshotButton.clicked.connect(self.saveScreenshot)
+
         # Set up buttons to zoom in/out on image.
         self.zoomFactor = 1
         self.zoomInButton.clicked.connect(self.zoomIn)
@@ -587,6 +590,20 @@ class MainGui(GuiSkeleton):
                     self.lineAnglePoint = self.scene.addLine(
                         initialAnglePoint['x'], initialAnglePoint['y'],
                         finalAnglePoint['x'], finalAnglePoint['y'], pen)
+
+    def saveScreenshot(self):
+        """Save the currently visible part of the scene scroll area to an
+        image.
+        """
+        screenshot = QtGui.QPixmap(self.sceneScrollArea.rect().size())
+        self.sceneScrollArea.render(
+            screenshot, QtCore.QPoint(),
+            QtGui.QRegion(self.sceneScrollArea.rect()))
+        fileName = QtWidgets.QFileDialog.getSaveFileName(
+            self.centralWidget, "Save Screenshot", "./untitled.png",
+            "PNG (*.png);;JPEG (*.jpg);;TIFF (*.tiff *.tif)")[0]
+        if not screenshot.save(fileName):
+            self.displayMessage("Unable to save screenshot")
 
     ##############################
     # Zoom and Helper Functions

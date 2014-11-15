@@ -152,6 +152,13 @@ class GuiSkeleton(object):
         self.loadSessionButton.setToolTip(
             "Load a previously saved analysis session")
 
+        self.screenshotButton = QtWidgets.QPushButton(
+            self.centralWidget)  # screenshot button widget
+        self.userSelectionLayout.addWidget(self.screenshotButton)
+        self.screenshotButton.setText("Save Screenshot")
+        self.screenshotButton.setToolTip(
+            "Take a screenshot of the scroll area contents and save to image")
+
         self.modeLabel = QtWidgets.QLabel(self.centralWidget) # mode label
         self.userSelectionLayout.addWidget(self.modeLabel)
         self.modeLabel.setText("Mode")
