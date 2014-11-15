@@ -38,8 +38,6 @@ class GuiSkeleton(object):
 
         self.pointListWidget = QtWidgets.QListWidget(
             self.centralWidget)  # marker list widget
-        self.pointListWidget.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.pointListLayout.addWidget(self.pointListWidget)
         # don't focus on this widget when clicked
         self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -137,6 +135,26 @@ class GuiSkeleton(object):
         self.userSelectionLayout.addWidget(self.openImageButton)
         self.openImageButton.setText("Open Image")
         self.openImageButton.setToolTip("Open image for analysis")
+
+        self.saveLayout = QtWidgets.QHBoxLayout()
+        self.userSelectionLayout.addLayout(self.saveLayout)
+
+        self.saveSessionButton = QtWidgets.QPushButton(
+            self.centralWidget) # save session button widget
+        self.saveLayout.addWidget(self.saveSessionButton)
+        self.saveSessionButton.setText("Save")
+        self.saveSessionButton.setToolTip("Save current analysis session")
+        
+        self.loadSessionButton = QtWidgets.QPushButton(
+            self.centralWidget) # load session button widget
+        self.saveLayout.addWidget(self.loadSessionButton)
+        self.loadSessionButton.setText("Load")
+        self.loadSessionButton.setToolTip(
+            "Load a previously saved analysis session")
+
+        self.modeLabel = QtWidgets.QLabel(self.centralWidget) # mode label
+        self.userSelectionLayout.addWidget(self.modeLabel)
+        self.modeLabel.setText("Mode")
 
         self.placeMarkerButton = QtWidgets.QPushButton(
             self.centralWidget)  # place marker mode button widget

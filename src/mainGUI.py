@@ -9,6 +9,7 @@ from optDensity import calcOptDensity
 from circleFit import circleFit
 from angleCalc import angleCalc
 import math
+import json
 
 
 class MainGui(GuiSkeleton):
@@ -29,10 +30,14 @@ class MainGui(GuiSkeleton):
         # number of messages printed to the console
         self.num_messages = 0
 
-        # Set up button to load images.
+        # Set up button to open images.
         self.openImageButton.clicked.connect(self.openImage)
 
-        # Set up button to zoom in/out on image.
+        # Set up buttons to save and load analysis sessions
+        self.saveSessionButton.clicked.connect(self.saveSession)
+        self.loadSessionButton.clicked.connect(self.loadSession)
+
+        # Set up buttons to zoom in/out on image.
         self.zoomFactor = 1
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomOutButton.clicked.connect(self.zoomOut)
@@ -52,6 +57,7 @@ class MainGui(GuiSkeleton):
         self.lineAnglePointDrawn = False
         self.startPointName = ""
         self.endPointName = ""
+        self.imageFileName = None
         self.scenePixmap.mousePressEvent = self.pixelSelect
         self.scenePixmap.mouseReleaseEvent = self.angleSelect
         self.scenePixmap.mouseMoveEvent = self.pixelSelectMouseEvent
@@ -172,11 +178,10 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(self.lineAnglePoint)
 
         pen, size = self.getAnglePenSize()
-        self.lineAnglePoint = self.scene.addLine(self.initialAnglePoint.rect().center().x(),
-                                                 self.initialAnglePoint.rect(
-        ).center().y(),
-            event.pos().x(), event.pos().y(),
-            pen)
+        self.lineAnglePoint = self.scene.addLine(
+            self.initialAnglePoint.rect().center().x(),
+            self.initialAnglePoint.rect().center().y(),
+            event.pos().x(), event.pos().y(), pen)
 
         # for latter keeping
         self.lineAnglePointDrawn = True
@@ -347,6 +352,7 @@ class MainGui(GuiSkeleton):
             else:
                 self.placeMarkerButton.setChecked(True)
             self.placeMarkerButtonFunc()
+            print(vars(self))
         elif event.key() == QtCore.Qt.Key_L:
             if self.drawRefButton.isChecked():
                 self.drawRefButton.setChecked(False)
@@ -409,17 +415,26 @@ class MainGui(GuiSkeleton):
     ##############################
     # Open Image Method
     ##############################
-    def openImage(self):
+    def openImage(self, fileName=None):
         """The following function opens a file dialog and then loads
         user-specified image."""
 
-        # Load image through FileDialog
-        fileName = QtWidgets.QFileDialog.getOpenFileName(
-            self.centralWidget, "Open File", QtCore.QDir.currentPath())
-        if fileName:
-            image = self.sceneImage.load(fileName[0])
+        if not fileName:
+            # open file dialog to obtain image file name
+            self.imageFileName = QtWidgets.QFileDialog.getOpenFileName(
+                self.centralWidget, "Open File", QtCore.QDir.currentPath(),
+                "Images (*.png *.jpg);;All Files (*)")[0]
+        else:
+            self.imageFileName = fileName
+
+        # load the image into sceneImage
+        if not self.imageFileName:
+            return
+        else:
+            image = self.sceneImage.load(self.imageFileName)
         if not image:
-            self.displayMessage("Cannot load {}.".format(fileName))
+            self.displayMessage(
+                "Cannot load {}.".format(self.imageFileName))
             return
 
         # resize the graphics scene to the loaded image
@@ -434,6 +449,138 @@ class MainGui(GuiSkeleton):
 
         # Reset any image transformations.
         self.resetImage()
+
+    def saveSession(self):
+        """Save analysis session to a .json file."""
+
+        if not self.imageFileName:
+            self.displayMessage("Nothing to save.")
+            return
+
+        # open file dialog for selecting a file to save to
+        fileName = QtWidgets.QFileDialog.getSaveFileName(
+            self.centralWidget, "Save Session", "./untitled.json",
+            "HEP Track Analysis (*.json);;All Files (*)")[0]
+
+        if not fileName:
+            return
+        else:
+            # create a dictionary with the data we want to save
+            saveData = {}
+            saveData['imageFileName'] = self.imageFileName
+
+            if self.pointListWidget.count() > 0:
+                points = []
+                for row in range(self.pointListWidget.count()):
+                    point = self.pointListWidget.item(row)
+                    pointDict = {}
+                    pointDict['name'] = point.text()
+                    strippedName = point.text().replace('s - ', '')
+                    strippedName = strippedName.replace('e - ', '')
+                    pointEllipse = self.mapNametoPoint[strippedName]
+                    pointDict['x'] = pointEllipse.rect().center().x()
+                    pointDict['y'] = pointEllipse.rect().center().y()
+                    points.append(pointDict)
+                saveData["points"] = points
+
+            if self.dlLineEdit.text() != "0":
+                saveData['dl'] = self.dlLineEdit.text()
+
+            if self.finalAnglePointDrawn:
+                initialPointDict = {}
+                initialPointDict[
+                    'x'] = self.initialAnglePoint.rect().center().x()
+                initialPointDict[
+                    'y'] = self.initialAnglePoint.rect().center().y()
+                saveData['initialAnglePoint'] = initialPointDict
+                finalPointDict = {}
+                finalPointDict[
+                    'x'] = self.finalAnglePoint.rect().center().x()
+                finalPointDict[
+                    'y'] = self.finalAnglePoint.rect().center().y()
+                saveData['finalAnglePoint'] = finalPointDict
+
+            # serialize the save data dictionary and save to file
+            with open(fileName, 'w') as saveFile:
+                json.dump(saveData, saveFile, indent=4)
+
+    def loadSession(self):
+        """Load analysis session from a .json file."""
+
+        # open file dialog for selecting a file to load from
+        fileName = QtWidgets.QFileDialog.getOpenFileName(
+            self.centralWidget, "Load Session", QtCore.QDir.currentPath(),
+            "HEP Track Analysis (*.json);;All Files (*)")[0]
+
+        if not fileName:
+            return
+        else:
+            with open(fileName, 'r') as loadFile:
+                loadData = json.load(loadFile)
+
+                imageFileName = loadData.get('imageFileName')
+
+                self.resetImage()
+
+                if not imageFileName:
+                    return
+
+                self.openImage(imageFileName)
+
+                points = loadData.get('points')
+                if points:
+                    for point in points:
+                        pointName = point["name"]
+                        x = point['x']
+                        y = point['y']
+                        self.nEllipseDrawn += 1
+                        self.pointListWidget.addItem(pointName)
+                        pen, size = self.getPointPenSize(pointName)
+                        drawRec = QtCore.QRectF(x, y, size, size)
+                        drawRec.moveCenter(QtCore.QPointF(x, y))
+                        pointEllipse = self.scene.addEllipse(drawRec, pen)
+                        if pointName.startswith('s - '):
+                            self.startPointName = pointName
+                            self.mapNametoPoint[
+                                pointName.replace('s - ', '')] = pointEllipse
+                        elif pointName.startswith('e - '):
+                            self.endPointName = pointName
+                            self.mapNametoPoint[
+                                pointName.replace('e - ', '')] = pointEllipse
+                        else:
+                            self.mapNametoPoint[pointName] = pointEllipse
+                        self.pointListWidget.setCurrentRow(
+                            self.pointListWidget.count() - 1)
+
+                dl = loadData.get('dl')
+                if dl:
+                    self.dlLineEdit.setText(dl)
+                    self.dL = float(dl)
+
+                initialAnglePoint = loadData.get('initialAnglePoint')
+                finalAnglePoint = loadData.get('finalAnglePoint')
+                if initialAnglePoint and finalAnglePoint:
+                    self.initialAnglePointDrawn = True
+                    self.finalAnglePointDrawn = True
+                    self.lineAnglePointDrawn = True
+                    pen, size = self.getAnglePenSize()
+                    drawRecInitial = QtCore.QRectF(initialAnglePoint['x'],
+                                              initialAnglePoint['y'], size,
+                                              size)
+                    drawRecInitial.moveCenter(QtCore.QPointF(initialAnglePoint['x'],
+                                              initialAnglePoint['y']))
+                    drawRecFinal = QtCore.QRectF(finalAnglePoint['x'],
+                                              finalAnglePoint['y'], size,
+                                              size)
+                    drawRecFinal.moveCenter(QtCore.QPointF(finalAnglePoint['x'],
+                                              finalAnglePoint['y']))
+                    self.initialAnglePoint = self.scene.addEllipse(
+                        drawRecInitial, pen)
+                    self.finalAnglePoint = self.scene.addEllipse(
+                        drawRecFinal, pen)
+                    self.lineAnglePoint = self.scene.addLine(
+                        initialAnglePoint['x'], initialAnglePoint['y'],
+                        finalAnglePoint['x'], finalAnglePoint['y'], pen)
 
     ##############################
     # Zoom and Helper Functions
@@ -754,8 +901,6 @@ class MainGui(GuiSkeleton):
             self.finalAnglePointDrawn = False
             self.lineAnglePointDrawn = False
 
-            pass
-
     ##############################
     # Resize Function
     ##############################
@@ -821,6 +966,9 @@ class MainGui(GuiSkeleton):
 
 
         self.nUserClickOnPicture = 0
+
+        self.dlLineEdit.setText("0")
+        self.dL = 0
 
         self.mapNametoPoint = {}
         # reset count of messages printed to console
