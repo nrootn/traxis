@@ -275,8 +275,15 @@ class MainGui(GuiSkeleton):
         elif event.key() == QtCore.Qt.Key_A:
             dx = -1
 
+        # if shift was pressed 10x the movement
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            # multiple the movement by the circle radius
+            pen, size = self.getPointPenSize()
+            dx *= size/2
+            dy *= size/2
+        
         # F/V to select points in list.
-        elif event.key() == QtCore.Qt.Key_V:
+        if event.key() == QtCore.Qt.Key_V:
             current_row = self.pointListWidget.currentRow()
             num_rows = self.pointListWidget.count()
             if current_row == -1 or current_row == num_rows - 1:
@@ -349,7 +356,7 @@ class MainGui(GuiSkeleton):
             else:
                 self.placeMarkerButton.setChecked(True)
             self.placeMarkerButtonFunc()
-            print(vars(self))
+            #print(vars(self))
         elif event.key() == QtCore.Qt.Key_L:
             if self.drawRefButton.isChecked():
                 self.drawRefButton.setChecked(False)
@@ -365,6 +372,8 @@ class MainGui(GuiSkeleton):
                 self.deletePoint(deletedItem.text())
             return
 
+
+        
         # Update point location
         if(self.pointListWidget.currentItem()):
             self.movePoint(
