@@ -540,11 +540,11 @@ class MainGui(GuiSkeleton):
                         drawRec.moveCenter(QtCore.QPointF(x, y))
                         pointEllipse = self.scene.addEllipse(drawRec, pen)
                         if pointName.startswith('s - '):
-                            self.startPointName = pointName
+                            self.startPointName = pointName.replace('s - ', '')
                             self.mapNametoPoint[
                                 pointName.replace('s - ', '')] = pointEllipse
                         elif pointName.startswith('e - '):
-                            self.endPointName = pointName
+                            self.endPointName = pointName.replace('e - ', '')
                             self.mapNametoPoint[
                                 pointName.replace('e - ', '')] = pointEllipse
                         else:
