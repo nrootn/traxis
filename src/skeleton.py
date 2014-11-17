@@ -203,6 +203,8 @@ class GuiSkeleton(object):
         self.dlFormLayout.setWidget(
             0, QtWidgets.QFormLayout.FieldRole, self.dlLineEdit)
         self.dlLineEdit.setText("0")
+        self.dlLineEdit.setValidator(
+            QtGui.QRegExpValidator(QtCore.QRegExp('[0-9]+\.?[0-9]*')))
 
         self.userSelectionLayout.addStretch(1)  # add stretch to segment
 
