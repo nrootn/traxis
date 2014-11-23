@@ -64,6 +64,7 @@ class GuiSkeleton(object):
         self.resetButton = QtWidgets.QPushButton(
             self.centralWidget)  # reset button widget
         self.techButtonLayout.addWidget(self.resetButton)
+        self.resetButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip(
             "Reset all the selected points and calculated variables")
@@ -79,12 +80,14 @@ class GuiSkeleton(object):
         self.zoomInButton = QtWidgets.QPushButton(
             self.centralWidget)  # zoom in button widget
         self.zoomLayout.addWidget(self.zoomInButton)
+        self.zoomInButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomInButton.setText("Zoom In")
         self.zoomInButton.setToolTip("Zoom into the picture")
 
         self.zoomOutButton = QtWidgets.QPushButton(
             self.centralWidget)  # zoom out button widget
         self.zoomLayout.addWidget(self.zoomOutButton)
+        self.zoomOutButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomOutButton.setText("Zoom Out")
         self.zoomOutButton.setToolTip("Zoom out from the picture")
 
@@ -96,18 +99,21 @@ class GuiSkeleton(object):
         self.calcMomentumButton = QtWidgets.QPushButton(
             self.centralWidget)  # calculate momentum button widget
         self.techButtonLayout.addWidget(self.calcMomentumButton)
+        self.calcMomentumButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcMomentumButton.setText("Calculate Track Momentum")
         self.calcMomentumButton.setToolTip("Calculate Track momentum")
 
         # calculate optical density button widget
         self.calcDensityButton = QtWidgets.QPushButton(self.centralWidget)
         self.techButtonLayout.addWidget(self.calcDensityButton)
+        self.calcDensityButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcDensityButton.setText("Calculate Optical Density")
         self.calcDensityButton.setToolTip("Calculate Optical Density")
 
         self.calcAngleButton = QtWidgets.QPushButton(
             self.centralWidget)  # calculate angle button widget
         self.techButtonLayout.addWidget(self.calcAngleButton)
+        self.calcAngleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcAngleButton.setText("Calculate Angle")
         self.calcAngleButton.setToolTip("Calculate Opening Angle")
 
@@ -133,6 +139,7 @@ class GuiSkeleton(object):
         self.openImageButton = QtWidgets.QPushButton(
             self.centralWidget)  # open image button widget
         self.userSelectionLayout.addWidget(self.openImageButton)
+        self.openImageButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.openImageButton.setText("Open Image")
         self.openImageButton.setToolTip("Open image for analysis")
 
@@ -142,12 +149,14 @@ class GuiSkeleton(object):
         self.saveSessionButton = QtWidgets.QPushButton(
             self.centralWidget) # save session button widget
         self.saveLayout.addWidget(self.saveSessionButton)
+        self.saveSessionButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.saveSessionButton.setText("Save")
         self.saveSessionButton.setToolTip("Save current analysis session")
         
         self.loadSessionButton = QtWidgets.QPushButton(
             self.centralWidget) # load session button widget
         self.saveLayout.addWidget(self.loadSessionButton)
+        self.loadSessionButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.loadSessionButton.setText("Load")
         self.loadSessionButton.setToolTip(
             "Load a previously saved analysis session")
@@ -155,6 +164,7 @@ class GuiSkeleton(object):
         self.screenshotButton = QtWidgets.QPushButton(
             self.centralWidget)  # screenshot button widget
         self.userSelectionLayout.addWidget(self.screenshotButton)
+        self.screenshotButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.screenshotButton.setText("Save Screenshot")
         self.screenshotButton.setToolTip(
             "Take a screenshot of the scroll area contents and save to image")
@@ -168,6 +178,7 @@ class GuiSkeleton(object):
         self.userSelectionLayout.addWidget(self.placeMarkerButton)
         # make the button checkable (i.e. stays depressed when clicked)
         self.placeMarkerButton.setCheckable(True)
+        self.placeMarkerButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.placeMarkerButton.setText("[Mode] Place Track Markers")
         self.placeMarkerButton.setToolTip(
             "Enter mode for placing markers on loaded image.")
@@ -177,6 +188,7 @@ class GuiSkeleton(object):
         self.userSelectionLayout.addWidget(self.drawRefButton)
         # make the button checkable (i.e. stays depressed when clicked)
         self.drawRefButton.setCheckable(True)
+        self.drawRefButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.drawRefButton.setText("[Mode] Draw Angle Reference")
         self.drawRefButton.setToolTip(
             "Enter mode for drawing angle reference on loaded image.")
@@ -248,6 +260,7 @@ class GuiSkeleton(object):
         self.sceneScrollArea.setMinimumSize(
             QtCore.QSize(0, mainWindow.size().height() / 1.5))
         self.sceneScrollArea.setWidgetResizable(True)
+        self.sceneScrollArea.setFocusPolicy(QtCore.Qt.NoFocus)
 
         # create graphics scene on which images will be displayed
         self.scene = QtWidgets.QGraphicsScene()  # graphics scene widget

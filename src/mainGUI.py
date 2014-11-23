@@ -438,13 +438,13 @@ class MainGui(GuiSkeleton):
 
         # load the image into sceneImage
         if not self.imageFileName:
-            return
+            return False # image not loaded successfully
         else:
             image = self.sceneImage.load(self.imageFileName)
         if not image:
             self.displayMessage(
                 "Cannot load {}.".format(self.imageFileName))
-            return
+            return False # image not loaded successfully
 
         # resize the graphics scene to the loaded image
         self.scene.setSceneRect(
@@ -458,6 +458,9 @@ class MainGui(GuiSkeleton):
 
         # Reset any image transformations.
         self.resetImage()
+
+        # an image was successfully opened
+        return True
 
     def saveSession(self):
         """Save analysis session to a .json file."""
@@ -534,7 +537,9 @@ class MainGui(GuiSkeleton):
                 if not imageFileName:
                     return
 
-                self.openImage(imageFileName)
+                opened = self.openImage(imageFileName)
+                if not opened:
+                    return
 
                 points = loadData.get('points')
                 if points:
