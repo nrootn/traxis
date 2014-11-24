@@ -239,8 +239,6 @@ class GuiSkeleton(object):
         self.consoleTextBrowser = QtWidgets.QTextBrowser(  # console text browser widget
             self.centralWidget)
         self.consoleLayout.addWidget(self.consoleTextBrowser)
-        # don't focus on this widget when clicked
-        self.consoleTextBrowser.setFocusPolicy(QtCore.Qt.NoFocus)
         self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
 
         # horizontal gui segment divider between top half and bottom half of ui
