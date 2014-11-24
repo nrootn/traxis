@@ -27,6 +27,10 @@ class MainGui(GuiSkeleton):
 
         super().__init__(mainWindow)
 
+        # Calibration
+        self.nomCalcmPerPix = 0.01188
+        self.errCalcmPerPix = 0.00090
+
         # number of messages printed to the console
         self.num_messages = 0
 
@@ -736,11 +740,24 @@ class MainGui(GuiSkeleton):
         self.circleInfo = fitted_circle
 
         self.displayMessage(
-            str("Fitted x_o:\t %f +/- %f" % (fitted_circle[0][0], fitted_circle[0][1])))
+            str("Fitted x_o:\t %f +/- %f [pixel]" % (fitted_circle[0][0], fitted_circle[0][1])))
         self.displayMessage(
-            str("Fitted y_o:\t %f +/- %f" % (fitted_circle[1][0], fitted_circle[1][1])))
+            str("Fitted y_o:\t %f +/- %f [pixel]" % (fitted_circle[1][0], fitted_circle[1][1])))
         self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f" % (fitted_circle[2][0], fitted_circle[2][1])))
+            str("Fitted R_o:\t %f +/- %f [pixel]" % (fitted_circle[2][0], fitted_circle[2][1])))
+        self.displayMessage(
+            str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % (fitted_circle[2][0]*self.nomCalcmPerPix, 
+                fitted_circle[2][1]*self.nomCalcmPerPix, fitted_circle[2][0]*self.errCalcmPerPix)))
+
+        # TODO: Remove this
+        r_temp = fitted_circle[2][0]*self.nomCalcmPerPix
+        r_err = r_temp*math.sqrt(math.pow(fitted_circle[2][1]/fitted_circle[2][0],2)+math.pow(self.errCalcmPerPix/self.nomCalcmPerPix,2))  
+        self.displayMessage("Remove this from the final product")
+        self.displayMessage(
+                str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" % (0.3*15.5*fitted_circle[2][0]*self.nomCalcmPerPix, 
+                    0.3*15.5*fitted_circle[2][1]*self.nomCalcmPerPix, 0.3*15.5*fitted_circle[2][0]*self.errCalcmPerPix)))
+        self.displayMessage(
+            str("Fitted R_o:\t %f +/- %f [MeV]" % (0.3*15.5*r_temp, 0.3*15.5*r_err)))
         # Set colour of circle to be drawn.
         pen = self.getCirclePen('green')
         # Create a drawing rectangle for the circle.
@@ -835,12 +852,22 @@ class MainGui(GuiSkeleton):
         # Call function to compute optical density.
         self.displayMessage("Computing optical density...")
 
-        self.optDens, self.errOptDens = calcOptDensity(
+        self.optDens, self.errOptDens, self.trackLengthPix  = calcOptDensity(
             self, self.sceneImage, pointList, self.tmp_circle, self.dL,
             self.mapNametoPoint[self.startPointName],
             self.mapNametoPoint[self.endPointName])
-        # Used for debugging.
-        self.displayMessage(str("%f %f" % (self.optDens, self.errOptDens)))
+        self.displayMessage(str("Total optical density: %f +/- %f" % (self.optDens, self.errOptDens)))
+        self.displayMessage(str("Track Length: %f [Pixel]" % (self.trackLengthPix)))
+
+        # Calculation of Variables
+        self.trackLengthcm = self.trackLengthPix * self.nomCalcmPerPix;
+        self.trackLengtherr = self.trackLengthPix * self.errCalcmPerPix;
+        self.optDenspercm = self.optDens/self.trackLengthcm;
+        self.optDenspercmErr = self.optDenspercm * math.sqrt(
+                math.pow(self.trackLengtherr/self.trackLengthcm,2)+math.pow(self.errOptDens/self.optDens,2));
+
+        self.displayMessage(str("Optical density/cm: %f +/- %f [1/cm]" % (self.optDenspercm, self.optDenspercmErr)))
+        self.displayMessage(str("Track Length: %f +/- %f [cm]" % (self.trackLengthcm, self.trackLengtherr)))
 
     def calcAngle(self):
         """The following function is used to calculate the angle between

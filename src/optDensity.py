@@ -2,7 +2,6 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QImage, QColor
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 import numpy as np
-
 from mainGUI import *
 
 
@@ -11,7 +10,7 @@ from mainGUI import *
 # Input: P - list of points [QGraphicsEllipseItem]
 # Input: C - list of tuples [(x,dx),(y,dy),(r,dr)]
 # Input: dL - float specifying track width
-# Output: tuple with calculated optical density and associated error
+# Output: tuple with calculated optical density, associated error and track lenght
 def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
 
     # Create variables for circle parameters to make code more readable
@@ -20,12 +19,13 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     y0 = Circle[1][0]
     dy0 = Circle[1][1]
     r0 = Circle[2][0]
-    dr0 = Circle[2][1]
+    dr0 = 1 # To give sensical error output, assume 1 pixel error box around the selected area
 
     # Get angle between start point and unit vector
     start_angle = getAngle([x0, y0], startPt, [x0 + 1, y0 + 0])
 
     # Get angle that spans the start vector and end vector
+    # This is in degrees
     span_angle = getAngle([x0, y0], endPt, startPt)
 
     # Create and draw outer arc
@@ -34,7 +34,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
     outer_arc.setStartAngle(16.0 * start_angle)
     outer_arc.setSpanAngle(16.0 * span_angle)
-    # gui.scene.addItem(outer_arc)
+    #gui.scene.addItem(outer_arc)
 
     # Create and draw inner arc
     inner_arc = QGraphicsEllipseItem(
@@ -50,14 +50,15 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     pointSet = set()
     errPointSet = set()
 
-    # Loop through all arc points and create set of distinct pixel values
+    # vectorized calculations are easier
     for r in dR:
         dTheta = np.linspace(
-            start_angle, start_angle + span_angle, int(r * span_angle))
-        for theta in dTheta:
-            radians = theta * (np.pi / 180.0)
-            x = x0 + r * np.cos(radians)
-            y = y0 - r * np.sin(radians)
+            start_angle, start_angle + span_angle, int(2 * r * span_angle * (np.pi / 180.0)))
+        cosTransform = np.cos(dTheta * (np.pi / 180.0))
+        sinTransform = np.sin(dTheta * (np.pi / 180.0))
+        for i in range(0, len(dTheta)):
+            x = x0 + r * cosTransform[i]
+            y = y0 - r * sinTransform[i]
             if r < (r0 - dL) or r > (r0 + dL):
                 errPointSet.add((int(x), int(y)))
             else:
@@ -65,27 +66,21 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
 
     # Loop over distinct pixel coordinates and sum the blackness of each
     blackness = 0.
-    num = 0.
     for p in pointSet:
         c = Img.pixel(p[0], p[1])
         blackness += QColor(c).blackF()
-        num += 1
 
     # Repeat the calculation above for error region
     errBlackness = 0.
-    errNum = 0.
     for p in errPointSet:
         c = Img.pixel(p[0], p[1])
         errBlackness += QColor(c).blackF()
-        errNum += 1
 
     # Calculate and return optical density
-    print("num: %f" % num)
-    print("errNum: %f" % errNum)
-    optDens = blackness / num
-    errOptDens = errBlackness / errNum
-
-    return (optDens, errOptDens)
+    optDens = blackness 
+    errOptDens = errBlackness
+    trackLength = r0 * span_angle * (np.pi / 180.0)
+    return (optDens, errOptDens, trackLength)
 
 
 def getAngles(origin, pts, v_pt):
