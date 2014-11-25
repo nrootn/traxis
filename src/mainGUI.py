@@ -412,6 +412,15 @@ class MainGui(GuiSkeleton):
                 self.scene.removeItem(i)
         del self.mapNametoPoint[pointName]
 
+        print(pointName, self.startPointName, self.endPointName)
+
+        if pointName in self.startPointName:
+            self.startPointName = ''
+        if pointName in self.endPointName:
+            self.endPointName = ''
+
+        print(pointName, self.startPointName, self.endPointName)
+
     def recolourPoint(self):
         for row in range(self.pointListWidget.count()):
             point = self.pointListWidget.item(row)
@@ -422,7 +431,7 @@ class MainGui(GuiSkeleton):
             currentPoint = self.pointListWidget.currentItem().text()
             if currentPoint.startswith('s - ') or currentPoint.startswith('e - '):
                 currentPoint = currentPoint[4:]
-            self.mapNametoPoint[currentPoint].setPen(self.getPointPenSize(currentPoint, QtCore.Qt.yellow)[0])
+            self.mapNametoPoint[currentPoint].setPen(self.getPointPenSize(currentPoint, QtGui.QColor(235, 233, 0))[0])
         self.scene.update()
 
     ##############################
