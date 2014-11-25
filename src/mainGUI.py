@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 # External methods
 from skeleton import GuiSkeleton
-from optDensity import calcOptDensity
+from optDensity import calcOptDensity, getAngle
 from circleFit import circleFit
 from angleCalc import angleCalc
 import math
@@ -379,8 +379,6 @@ class MainGui(GuiSkeleton):
                 self.deletePoint(deletedItem.text())
             return
 
-
-        
         # Update point location
         if(self.pointListWidget.currentItem()):
             self.movePoint(
@@ -411,8 +409,6 @@ class MainGui(GuiSkeleton):
             if(i == self.mapNametoPoint[pointName]):
                 self.scene.removeItem(i)
         del self.mapNametoPoint[pointName]
-
-        print(pointName, self.startPointName, self.endPointName)
 
         if pointName in self.startPointName:
             self.startPointName = ''
@@ -731,8 +727,20 @@ class MainGui(GuiSkeleton):
             self.scene.removeItem(self.innerFittedCenter)
             self.scene.removeItem(self.outerFittedCenter)
 
-        # if self.placeMarkerButton.isChecked():
-        #    self.placeMarkerButton.setChecked(False)
+        # Check if start point was defined.
+        if len(self.startPointName) == 0:
+            self.displayMessage(
+                "ERROR: Initial point has not been defined yet.")
+            return
+
+        # Check if end point was defined
+        if len(self.endPointName) == 0:
+            self.displayMessage(
+                "ERROR: End point has not been defined yet.")
+            return
+
+        if self.placeMarkerButton.isChecked():
+            self.placeMarkerButton.setChecked(False)
 
         pointList = []
         for key, value in self.mapNametoPoint.items():
@@ -745,7 +753,7 @@ class MainGui(GuiSkeleton):
         self.fittedX0 = fitted_circle[0][0]
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
-
+        
         self.circleInfo = fitted_circle
 
         self.displayMessage(
@@ -774,9 +782,21 @@ class MainGui(GuiSkeleton):
             self.fittedX0, self.fittedY0, 2 * self.fittedR0, 2 * self.fittedR0)
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
+
+        self.start_angle = getAngle([self.fittedX0, self.fittedY0], 
+                self.mapNametoPoint[self.startPointName], 
+                [self.fittedX0 + 1, self.fittedY0 + 0])
+        self.span_angle = getAngle([self.fittedX0, self.fittedY0], 
+                self.mapNametoPoint[self.endPointName], 
+                self.mapNametoPoint[self.startPointName])
+
+
         # Draw circle with specified colour.
         self.nominalFittedCenter = self.scene.addEllipse(drawRec, pen)
-
+        # Need to multiply by 16.0 because function uses units of 1/16th degrees
+        self.nominalFittedCenter.setStartAngle(16.0 * self.start_angle)
+        self.nominalFittedCenter.setSpanAngle(16.0 * self.span_angle)
+        
         self.drawdlCurves()
         self.hasTrackMomentumCalc = True
 
@@ -799,6 +819,10 @@ class MainGui(GuiSkeleton):
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
         self.outerFittedCenter = self.scene.addEllipse(drawRec, pen)
+        
+        # Need to multiply by 16.0 because function uses units of 1/16th degrees        
+        self.outerFittedCenter.setStartAngle(16.0 * self.start_angle)
+        self.outerFittedCenter.setSpanAngle(16.0 * self.span_angle)
 
         # Deine inner circle.
         drawRec = QtCore.QRectF(
@@ -807,6 +831,10 @@ class MainGui(GuiSkeleton):
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
         self.innerFittedCenter = self.scene.addEllipse(drawRec, pen)
+        
+        # Need to multiply by 16.0 because function uses units of 1/16th degrees
+        self.innerFittedCenter.setStartAngle(16.0 * self.start_angle)
+        self.innerFittedCenter.setSpanAngle(16.0 * self.span_angle)
 
         # Used for debugging purposes.
         self.hasDrawndLCurves = True
