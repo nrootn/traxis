@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-__author__ = "Syed Haider Abidi,  Nooruddin Ahmed and Christopher Dydula"
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 # External methods
