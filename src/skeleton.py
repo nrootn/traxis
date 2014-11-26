@@ -271,7 +271,3 @@ class GuiSkeleton(object):
         self.sceneImage = QtGui.QImage()
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
         self.scene.addItem(self.scenePixmap)
-
-        # status bar at the bottom of the window
-        self.statusBar = QtWidgets.QStatusBar(mainWindow)
-        mainWindow.setStatusBar(self.statusBar)
