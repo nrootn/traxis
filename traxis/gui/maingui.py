@@ -13,12 +13,12 @@ class MainGui(skeleton.GuiSkeleton):
     and calls external functions that have been imported below.
     """
 
-    def __init__(self, mainWindow):
+    def __init__(self):
         """Initialize gui skeleton and connect buttons to internal and
         external methods.
         """
 
-        super().__init__(mainWindow)
+        super().__init__()
 
         # Calibration
         self.nomCalcmPerPix = 0.01188
@@ -63,7 +63,7 @@ class MainGui(skeleton.GuiSkeleton):
         self.scenePixmap.mouseMoveEvent = self.pixelSelectMouseEvent
 
         # Set up shortCuts
-        self.centralWidget.keyPressEvent = self.keyPressEvent
+        self.baseWidget.keyPressEvent = self.keyPressEvent
 
         # Set up button to reset the tool.
         self.resetButton.clicked.connect(self.resetImage)
@@ -89,7 +89,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.pointListWidget.itemSelectionChanged.connect(self.recolourPoint)
 
-        self.centralWidget.resizeEvent = self.resizeEvent
+        self.baseWidget.resizeEvent = self.resizeEvent
 
     ###########################
     # Drawing Functions
@@ -433,7 +433,7 @@ class MainGui(skeleton.GuiSkeleton):
         if not fileName:
             # open file dialog to obtain image file name
             self.imageFileName = QtWidgets.QFileDialog.getOpenFileName(
-                self.centralWidget, "Open File", QtCore.QDir.currentPath(),
+                self.baseWidget, "Open File", QtCore.QDir.currentPath(),
                 "Images (*.png *.jpg);;All Files (*)")[0]
         else:
             self.imageFileName = fileName
@@ -473,7 +473,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         # open file dialog for selecting a file to save to
         fileName = QtWidgets.QFileDialog.getSaveFileName(
-            self.centralWidget, "Save Session", "./untitled.json",
+            self.baseWidget, "Save Session", "./untitled.json",
             "HEP Track Analysis (*.json);;All Files (*)")[0]
 
         if not fileName:
@@ -523,7 +523,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         # open file dialog for selecting a file to load from
         fileName = QtWidgets.QFileDialog.getOpenFileName(
-            self.centralWidget, "Load Session", QtCore.QDir.currentPath(),
+            self.baseWidget, "Load Session", QtCore.QDir.currentPath(),
             "HEP Track Analysis (*.json);;All Files (*)")[0]
 
         if not fileName:
@@ -607,7 +607,7 @@ class MainGui(skeleton.GuiSkeleton):
             screenshot, QtCore.QPoint(),
             QtGui.QRegion(self.sceneScrollArea.rect()))
         fileName = QtWidgets.QFileDialog.getSaveFileName(
-            self.centralWidget, "Save Screenshot", "./untitled.png",
+            self.baseWidget, "Save Screenshot", "./untitled.png",
             "PNG (*.png);;JPEG (*.jpg);;TIFF (*.tiff *.tif)")[0]
         if not screenshot.save(fileName):
             self.displayMessage("Unable to save screenshot")
@@ -991,7 +991,7 @@ class MainGui(skeleton.GuiSkeleton):
     ##############################
     def resizeEvent(self, event):
         self.sceneScrollArea.setMinimumSize(
-            QtCore.QSize(0, self.centralWidget.size().height() / 1.6))
+            QtCore.QSize(0, self.baseWidget.size().height() / 1.6))
 
     ##############################
     # Reset

@@ -1,39 +1,23 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+import ctypes
 from PyQt5 import QtWidgets
-from traxis.gui import maingui
+from traxis.gui import mainwindow
 
 
-class TraxisApplicationWindow(QtWidgets.QMainWindow):
+# if running on Windows, create an application user model id for this app
+# so that a custom taskbar icon can be used
+if hasattr(ctypes, 'windll'):
+    appId = 'traxis.0.2.0'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 
-    """Simple wrapper class that creates a window to display GUI."""
+basePath = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, basePath)
 
-    def __init__(self):
-        super().__init__()
+app = QtWidgets.QApplication(sys.argv)
+window = mainwindow.TraxisApplicationWindow()
 
-        self.setWindowTitle("Traxis")
-
-        self.ui = maingui.MainGui(self)
-
-
-# Main block that executes the application
-if __name__ == '__main__':
-
-    import sys
-    import ctypes
-
-    # if running on Windows, create an application user model id for this app
-    # so that a custom taskbar icon can be used
-    if hasattr(ctypes, 'windll'):
-        appId = 'traxis.0.2.0'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelId(appId)
-
-    base = os.path.dirname(os.path.realpath(__file__))
-    sys.path.insert(0, base)
-
-    app = QtWidgets.QApplication(sys.argv)
-    window = TraxisApplicationWindow()
-
-    window.show()
-    sys.exit(app.exec_())
+window.show()
+sys.exit(app.exec_())
