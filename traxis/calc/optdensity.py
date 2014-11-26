@@ -1,8 +1,6 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtGui import QImage, QColor
-from PyQt5.QtWidgets import QGraphicsEllipseItem
+from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
-from mainGUI import *
+from traxis.gui.maingui import *
 
 
 # Input: gui - mainGUI class to be used ONLY for printing messages
@@ -29,7 +27,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     span_angle = getAngle([x0, y0], endPt, startPt)
 
     # Create and draw outer arc
-    outer_arc = QGraphicsEllipseItem(
+    outer_arc = QtWidgets.QGraphicsEllipseItem(
         x0 - r0 - dL, y0 - r0 - dL, 2 * (r0 + dL), 2 * (r0 + dL))
     # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
     outer_arc.setStartAngle(16.0 * start_angle)
@@ -37,7 +35,7 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     #gui.scene.addItem(outer_arc)
 
     # Create and draw inner arc
-    inner_arc = QGraphicsEllipseItem(
+    inner_arc = QtWidgets.QGraphicsEllipseItem(
         x0 - r0 + dL, y0 - r0 + dL, 2 * (r0 - dL), 2 * (r0 - dL))
     # Need to multiply by 16.0 because function uses units of 1/16th degrees
     inner_arc.setStartAngle(16.0 * start_angle)
@@ -68,13 +66,13 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     blackness = 0.
     for p in pointSet:
         c = Img.pixel(p[0], p[1])
-        blackness += QColor(c).blackF()
+        blackness += QtGui.QColor(c).blackF()
 
     # Repeat the calculation above for error region
     errBlackness = 0.
     for p in errPointSet:
         c = Img.pixel(p[0], p[1])
-        errBlackness += QColor(c).blackF()
+        errBlackness += QtGui.QColor(c).blackF()
 
     # Calculate and return optical density
     optDens = blackness 

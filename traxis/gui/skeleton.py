@@ -1,3 +1,5 @@
+import sys
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -17,7 +19,8 @@ class GuiSkeleton(object):
 
         # set main window icon
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./traxis.png"))
+        base = sys.path[0]
+        icon.addPixmap(QtGui.QPixmap(os.path.join(base,"traxis.png")))
         mainWindow.setWindowIcon(icon)
 
         # layout of the main window

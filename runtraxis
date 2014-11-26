@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
+import os
 from PyQt5 import QtWidgets
-from mainGUI import MainGui
+from traxis.gui import maingui
 
 
 class TraxisApplicationWindow(QtWidgets.QMainWindow):
@@ -13,7 +14,7 @@ class TraxisApplicationWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Traxis")
 
-        self.ui = MainGui(self)
+        self.ui = maingui.MainGui(self)
 
 
 # Main block that executes the application
@@ -27,6 +28,9 @@ if __name__ == '__main__':
     if hasattr(ctypes, 'windll'):
         appId = 'traxis.0.2.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelId(appId)
+
+    base = os.path.dirname(os.path.realpath(__file__))
+    sys.path.insert(0, base)
 
     app = QtWidgets.QApplication(sys.argv)
     window = TraxisApplicationWindow()

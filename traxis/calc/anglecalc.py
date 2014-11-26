@@ -1,7 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QGraphicsEllipseItem
-
-from mainGUI import *
+from traxis.gui.maingui import *
 
 
 # Input: gui - mainGUI class to be used ONLY for printing messages

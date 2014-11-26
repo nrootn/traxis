@@ -1,15 +1,11 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
-
-# External methods
-from skeleton import GuiSkeleton
-from optDensity import calcOptDensity, getAngle
-from circleFit import circleFit
-from angleCalc import angleCalc
 import math
 import json
+from PyQt5 import QtWidgets, QtGui, QtCore
+from traxis.gui import skeleton
+from traxis.calc import anglecalc, circlefit, optdensity
 
 
-class MainGui(GuiSkeleton):
+class MainGui(skeleton.GuiSkeleton):
 
     """Main GUI class that inherits from base skeleton GUI class and implements
     logic that connects buttons and functions together. Defines internal
@@ -746,7 +742,7 @@ class MainGui(GuiSkeleton):
             #      ' y: ', value.rect().center().y())
 
         # Fit a circle to selected points.
-        fitted_circle = circleFit(pointList)
+        fitted_circle = circlefit.circleFit(pointList)
         self.fittedX0 = fitted_circle[0][0]
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
@@ -780,10 +776,10 @@ class MainGui(GuiSkeleton):
         # Translate top left corner of rectangle to match the center of circle.
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
 
-        self.start_angle = getAngle([self.fittedX0, self.fittedY0], 
+        self.start_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.mapNametoPoint[self.startPointName], 
                 [self.fittedX0 + 1, self.fittedY0 + 0])
-        self.span_angle = getAngle([self.fittedX0, self.fittedY0], 
+        self.span_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.mapNametoPoint[self.endPointName], 
                 self.mapNametoPoint[self.startPointName])
 
@@ -886,7 +882,7 @@ class MainGui(GuiSkeleton):
         # Call function to compute optical density.
         self.displayMessage("Computing optical density...")
 
-        self.optDens, self.errOptDens, self.trackLengthPix  = calcOptDensity(
+        self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
             self, self.sceneImage, pointList, self.tmp_circle, self.dL,
             self.mapNametoPoint[self.startPointName],
             self.mapNametoPoint[self.endPointName])
@@ -922,7 +918,7 @@ class MainGui(GuiSkeleton):
                 "ERROR: Angle Line reference not drawn.")
             return
 
-        angleInfo = angleCalc(self, self.circleInfo,
+        angleInfo = anglecalc.angleCalc(self, self.circleInfo,
                               self.mapNametoPoint[self.startPointName],
                               self.lineAnglePoint)
 
