@@ -134,7 +134,7 @@ class GuiSkeleton(object):
         self.userInputLabel = QtWidgets.QLabel(
             self.centralWidget)  # user input label
         self.userSelectionLayout.addWidget(self.userInputLabel)
-        self.userInputLabel.setText("User Input")
+        self.userInputLabel.setText("Open/Save")
 
         self.openImageButton = QtWidgets.QPushButton(
             self.centralWidget)  # open image button widget
