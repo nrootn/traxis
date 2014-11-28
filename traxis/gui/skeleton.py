@@ -1,6 +1,7 @@
 import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
+from traxis.graphics import markers
 
 
 class GuiSkeleton(object):
@@ -31,7 +32,7 @@ class GuiSkeleton(object):
         self.pointListLayout.addWidget(self.pointListLabel)
         self.pointListLabel.setText("Track Markers")
 
-        self.pointListWidget = QtWidgets.QListWidget(
+        self.pointListWidget = markers.MarkerList(
             self.baseWidget)  # marker list widget
         self.pointListLayout.addWidget(self.pointListWidget)
         # don't focus on this widget when clicked
@@ -258,8 +259,6 @@ class GuiSkeleton(object):
         self.sceneView = QtWidgets.QGraphicsView(self.scene)  # grahics view widget
         # specify the graphics scene as the child widget of the scroll area
         self.sceneScrollArea.setWidget(self.sceneView)
-        # set keyboard focus to the graphics view by default
-        self.sceneView.setFocus()
         # instantiate QImage and PixmapItem
         self.sceneImage = QtGui.QImage()
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()

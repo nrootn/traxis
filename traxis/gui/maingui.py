@@ -48,15 +48,11 @@ class MainGui(skeleton.GuiSkeleton):
         self.widthOfCircle = 2.5
         self.sizeAngleRef = 10
         self.widthAngleRef = 2.5
-        self.nEllipseDrawn = 0
-        self.mapNametoPoint = {}
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
         self.initialAnglePointDrawn = False
         self.finalAnglePointDrawn = False
         self.lineAnglePointDrawn = False
-        self.startPointName = ""
-        self.endPointName = ""
         self.imageFileName = None
         self.scenePixmap.mousePressEvent = self.pixelSelect
         self.scenePixmap.mouseReleaseEvent = self.angleSelect
@@ -80,14 +76,14 @@ class MainGui(skeleton.GuiSkeleton):
         # Set up text field that specifies dL (user-specified width).
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
 
-        # Mode bottons
+        # Mode buttons
         self.placeMarkerButton.clicked.connect(self.placeMarkerButtonFunc)
         self.drawRefButton.clicked.connect(self.drawRefButtonFunc)
 
         # Used for debugging purposes.
         self.nUserClickOnPicture = 0
 
-        self.pointListWidget.itemSelectionChanged.connect(self.recolourPoint)
+        self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
 
         self.baseWidget.resizeEvent = self.resizeEvent
 
@@ -116,21 +112,9 @@ class MainGui(skeleton.GuiSkeleton):
                     "HELP - To draw angle reference, first select 'Draw Angle Reference' button")
             return
 
-        self.nEllipseDrawn += 1
-
-        pen, size = self.getPointPenSize()
-        # Create a drawing rectangle for the ellipse.
-        drawRec = QtCore.QRectF(event.pos().x(), event.pos().y(), size, size)
-        # Translate top left corner of rectangle to match the clicked position.
-        drawRec.moveCenter(QtCore.QPointF(event.pos().x(), event.pos().y()))
-        # Draw ellipse with specified colour.
-        self.mapNametoPoint[
-            'Point ' + str(self.nEllipseDrawn)] = self.scene.addEllipse(drawRec, pen)
-
-        # Update the widget containing the list of points.
-        self.pointListWidget.addItem('Point %s' % self.nEllipseDrawn)
-        self.pointListWidget.setCurrentRow(
-            self.pointListWidget.count() - 1)
+        self.pointListWidget.addMarker(
+            event.pos().x(), event.pos().y(), 
+            self.sizeOfEllipse, self.widthOfEllipse, self.scene)
 
     def angleSelect(self, event):
         """The following function draws the intial and final points for the
@@ -191,36 +175,6 @@ class MainGui(skeleton.GuiSkeleton):
     ###########################
     # Drawing Helper Functions
     ###########################
-    def getPointPenSize(self, pointName="", color=None):
-        """The following function moves gets the size and pen for the track markers"""
-        # Set colour of ellipse to be drawn.
-        if not color:
-            pen = QtGui.QPen(self.getPointColor(pointName))
-        else:
-            pen = QtGui.QPen(color)
-        pen.setWidth(self.widthOfEllipse)
-        # set a mimimum width
-        if(self.widthOfEllipse < 1):
-            pen.setWidth(1)
-
-        # Set size of ellipse to be drawn.
-        size = self.sizeOfEllipse
-        # set a mimimum size
-        if(size < 2):
-            size = 2
-
-        return pen, size
-
-    def getPointColor(self, pointName=""):
-        """The following function moves gets the colour for the track markers
-        based on the designation of the point"""
-        if 's - ' in pointName:
-            return QtGui.QColor(0, 186, 186)
-        elif 'e - ' in pointName:
-            return QtGui.QColor(34, 197, 25)
-        else:
-            return QtGui.QColor(176, 30, 125)
-
     def getCirclePen(self, colour):
         """The following function moves gets the size and pen for the fitted circle"""
         # Set colour of ellipse to be drawn.
@@ -261,75 +215,59 @@ class MainGui(skeleton.GuiSkeleton):
     ##############################
     def keyPressEvent(self, event):
         """The following function handles keypressEvents used to select and
-        manipulate points in the QListWidget."""
+        manipulate points in the QListWidget.
+        """
+
+        currentPoint = self.pointListWidget.currentItem()
+        dx, dy = 0, 0
+
+        # check if the Shift key was held
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            isShift = True
+        else:
+            isShift = False
 
         # WASD to move individual points around.
-        dx = 0
-        dy = 0
         if event.key() == QtCore.Qt.Key_W:
             dy = -1
+
         elif event.key() == QtCore.Qt.Key_S:
             dy = 1
+
         elif event.key() == QtCore.Qt.Key_D:
             dx = 1
+
         elif event.key() == QtCore.Qt.Key_A:
             dx = -1
 
-        # if shift was pressed 10x the movement
-        if event.modifiers() & QtCore.Qt.ShiftModifier:
-            # multiple the movement by the circle radius
-            pen, size = self.getPointPenSize()
-            dx *= size/2
-            dy *= size/2
+        if dx or dy:
+            if isShift and self.sizeOfEllipse >= 2:
+                dx *= self.sizeOfEllipse/2
+                dy *= self.sizeOfEllipse/2
+            if currentPoint:
+                currentPoint.move(dx, dy)
+                #self.scene.update()
         
         # F/V to select points in list.
-        if event.key() == QtCore.Qt.Key_V:
-            current_row = self.pointListWidget.currentRow()
-            num_rows = self.pointListWidget.count()
-            if current_row == -1 or current_row == num_rows - 1:
-                return
-            else:
-                self.pointListWidget.setCurrentRow(current_row + 1)
+        elif event.key() == QtCore.Qt.Key_V:
+            self.pointListWidget.selectNext()
+
         elif event.key() == QtCore.Qt.Key_F:
-            current_row = self.pointListWidget.currentRow()
-            if current_row == -1 or current_row == 0:
-                return
-            else:
-                self.pointListWidget.setCurrentRow(current_row - 1)
+            self.pointListWidget.selectPrevious()
 
         # G/H key for setting start and end point
         elif event.key() == QtCore.Qt.Key_G:
-            listPoint = self.pointListWidget.findItems(
-                's - ' + self.startPointName, QtCore.Qt.MatchExactly)
-            for p in listPoint:
-                p.setText(p.text().replace('s - ', ''))
-
-            if(self.pointListWidget.currentItem()):
-                p = self.pointListWidget.currentItem()
-                if('e - ' in p.text()):
-                    p.setText(p.text().replace('e - ', ''))
-                self.startPointName = p.text()
-                p.setText('s - ' + p.text())
-            self.recolourPoint()
+            if currentPoint:
+                self.pointListWidget.setStartPoint(currentPoint)
 
         elif event.key() == QtCore.Qt.Key_H:
-            listPoint = self.pointListWidget.findItems(
-                'e - ' + self.endPointName, QtCore.Qt.MatchExactly)
-
-            for p in listPoint:
-                p.setText(p.text().replace('e - ', ''))
-
-            if(self.pointListWidget.currentItem()):
-                p = self.pointListWidget.currentItem()
-                if('s - ' in p.text()):
-                    p.setText(p.text().replace('s - ', ''))
-                self.endPointName = p.text()
-                p.setText('e - ' + p.text())
-            self.recolourPoint()
+            if currentPoint:
+                self.pointListWidget.setEndPoint(currentPoint)
 
         # Z/X for zoom in/zoom out.
         elif event.key() == QtCore.Qt.Key_Z:
             self.zoomIn()
+
         elif event.key() == QtCore.Qt.Key_X:
             self.zoomOut()
 
@@ -340,9 +278,11 @@ class MainGui(skeleton.GuiSkeleton):
         # M, N, B for calculate functions
         elif event.key() == QtCore.Qt.Key_M:
             self.calcTrackMom()
+
         elif event.key() == QtCore.Qt.Key_N:
             self.calcOptDen()
-        elif event.key() == QtCore.Qt.Key_B:  # calculate angle
+
+        elif event.key() == QtCore.Qt.Key_B:
             self.calcAngle()
 
         # O for open image
@@ -356,7 +296,7 @@ class MainGui(skeleton.GuiSkeleton):
             else:
                 self.placeMarkerButton.setChecked(True)
             self.placeMarkerButtonFunc()
-            #print(vars(self))
+
         elif event.key() == QtCore.Qt.Key_L:
             if self.drawRefButton.isChecked():
                 self.drawRefButton.setChecked(False)
@@ -366,62 +306,12 @@ class MainGui(skeleton.GuiSkeleton):
 
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
-            if self.pointListWidget.count() > 0:
-                deletedItem = self.pointListWidget.takeItem(
-                    self.pointListWidget.currentRow())
-                self.deletePoint(deletedItem.text())
-            return
+            if currentPoint:
+                self.pointListWidget.deleteMarker(currentPoint)
 
-        # Update point location
-        if(self.pointListWidget.currentItem()):
-            self.movePoint(
-                self.pointListWidget.currentItem().text(), dx, dy)
-
-    def movePoint(self, pointName, dx, dy):
-        """The following function moves given point by [dx,dy]"""
-        pen, size = self.getPointPenSize(pointName)
-        pointName = pointName.replace('s - ', '')
-        pointName = pointName.replace('e - ', '')
-        value = self.mapNametoPoint[pointName]
-        drawRec = QtCore.QRectF(
-            value.rect().x(), value.rect().y(), size, size)
-        drawRec.moveCenter(
-            QtCore.QPointF(value.rect().center().x() + dx, value.rect().center().y() + dy))
-        self.mapNametoPoint[pointName].setRect(drawRec)
-        #pen.setColor(self.mapNametoPoint[pointName].pen().color())
-        #self.mapNametoPoint[pointName].setPen(pen)
-
-        self.scene.update()
-
-    def deletePoint(self, pointName):
-        """The following function deletes given point"""
-        itemList = self.scene.items()
-        pointName = pointName.replace('s - ', '')
-        pointName = pointName.replace('e - ', '')
-        for i in itemList:
-            if(i == self.mapNametoPoint[pointName]):
-                self.scene.removeItem(i)
-        del self.mapNametoPoint[pointName]
-
-        if pointName in self.startPointName:
-            self.startPointName = ''
-        if pointName in self.endPointName:
-            self.endPointName = ''
-
-        print(pointName, self.startPointName, self.endPointName)
-
-    def recolourPoint(self):
-        for row in range(self.pointListWidget.count()):
-            point = self.pointListWidget.item(row)
-            strippedPointName = point.text().replace('s - ', '')
-            strippedPointName = strippedPointName.replace('e - ', '')
-            self.mapNametoPoint[strippedPointName].setPen(self.getPointPenSize(point.text())[0])
-        if self.pointListWidget.currentItem():
-            currentPoint = self.pointListWidget.currentItem().text()
-            if currentPoint.startswith('s - ') or currentPoint.startswith('e - '):
-                currentPoint = currentPoint[4:]
-            self.mapNametoPoint[currentPoint].setPen(self.getPointPenSize(currentPoint, QtGui.QColor(235, 233, 0))[0])
-        self.scene.update()
+    def highlightPoint(self):
+        self.pointListWidget.highlightCurrent()
+        #self.scene.update()
 
     ##############################
     # Open Image Method
@@ -488,12 +378,10 @@ class MainGui(skeleton.GuiSkeleton):
                 for row in range(self.pointListWidget.count()):
                     point = self.pointListWidget.item(row)
                     pointDict = {}
-                    pointDict['name'] = point.text()
-                    strippedName = point.text().replace('s - ', '')
-                    strippedName = strippedName.replace('e - ', '')
-                    pointEllipse = self.mapNametoPoint[strippedName]
-                    pointDict['x'] = pointEllipse.rect().center().x()
-                    pointDict['y'] = pointEllipse.rect().center().y()
+                    pointDict['id'] = point.id
+                    pointDict['designation'] = point.designation
+                    pointDict['x'] = point.ellipse.rect().center().x()
+                    pointDict['y'] = point.ellipse.rect().center().y()
                     points.append(pointDict)
                 saveData["points"] = points
 
@@ -546,27 +434,14 @@ class MainGui(skeleton.GuiSkeleton):
                 points = loadData.get('points')
                 if points:
                     for point in points:
-                        pointName = point["name"]
+                        pointId = point["id"]
+                        pointDesignation = point["designation"]
                         x = point['x']
                         y = point['y']
-                        self.nEllipseDrawn += 1
-                        self.pointListWidget.addItem(pointName)
-                        pen, size = self.getPointPenSize(pointName)
-                        drawRec = QtCore.QRectF(x, y, size, size)
-                        drawRec.moveCenter(QtCore.QPointF(x, y))
-                        pointEllipse = self.scene.addEllipse(drawRec, pen)
-                        if pointName.startswith('s - '):
-                            self.startPointName = pointName.replace('s - ', '')
-                            self.mapNametoPoint[
-                                pointName.replace('s - ', '')] = pointEllipse
-                        elif pointName.startswith('e - '):
-                            self.endPointName = pointName.replace('e - ', '')
-                            self.mapNametoPoint[
-                                pointName.replace('e - ', '')] = pointEllipse
-                        else:
-                            self.mapNametoPoint[pointName] = pointEllipse
-                        self.pointListWidget.setCurrentRow(
-                            self.pointListWidget.count() - 1)
+                        addedMarker = self.pointListWidget.addMarker(
+                                          x, y, self.sizeOfEllipse,
+                                          self.widthOfEllipse, self.scene)
+                        addedMarker.setDesignation(pointDesignation)
 
                 dl = loadData.get('dl')
                 if dl:
@@ -617,41 +492,34 @@ class MainGui(skeleton.GuiSkeleton):
     ##############################
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
+
         self.scaleImage(1.25)
 
     def zoomOut(self):
         """The following function zooms image by 80% when called."""
+
         self.scaleImage(0.8)
 
     def scaleImage(self, factor):
         """The following helper function scales images and points."""
+
         self.zoomFactor = self.zoomFactor * factor
         self.sceneView.scale(factor, factor)
         self.adjustScrollBar(
             self.sceneScrollArea.horizontalScrollBar(), factor)
         self.adjustScrollBar(self.sceneScrollArea.verticalScrollBar(), factor)
 
-        # Scale the drawn points when zooming.
+        # scale the drawn points when zooming
         self.sizeOfEllipse /= factor
         self.widthOfEllipse /= factor
         self.widthOfCircle /= factor
         self.sizeAngleRef /= factor
         self.widthAngleRef /= factor
-        pen, size = self.getPointPenSize()
 
-        # Recale the points.
-        for key, value in self.mapNametoPoint.items():
-            self.updateDrawCircleZoom(value, size, pen)
-
-        # rescale the end and start point
-        if len(self.startPointName) > 0:
-            pen, size = self.getPointPenSize('s - ' + self.startPointName)
-            self.updateDrawCircleZoom(
-                self.mapNametoPoint[self.startPointName], size, pen)
-        if len(self.endPointName) > 0:
-            pen, size = self.getPointPenSize('e - ' + self.endPointName)
-            self.updateDrawCircleZoom(
-                self.mapNametoPoint[self.endPointName], size, pen)
+        # rescale the points
+        for row in range(self.pointListWidget.count()):
+            point = self.pointListWidget.item(row)
+            point.rescale(self.sizeOfEllipse, self.widthOfEllipse)
 
         pen = self.getCirclePen('green')
         if self.hasTrackMomentumCalc:
@@ -673,7 +541,7 @@ class MainGui(skeleton.GuiSkeleton):
         if self.lineAnglePointDrawn:
             self.lineAnglePoint.setPen(pen)
 
-        self.scene.update()
+        #self.scene.update()
 
     def updateDrawCircleZoom(self, circle, size, pen):
         """The following helper function scales circles."""
@@ -707,12 +575,11 @@ class MainGui(skeleton.GuiSkeleton):
         """The following function is used to calculate track momentum of
         drawn points on image and then draw a fitted circle to them."""
 
-        # Need a minimum of 3 points to fit a circle.
-        if len(self.mapNametoPoint) < 3:
+        # need a minimum of 3 points to fit a circle
+        if self.pointListWidget.count() < 3:
             self.displayMessage("ERROR: Less than 3 points to fit.")
             return
 
-        # Return if track momentum has already been calculated.
         if self.hasTrackMomentumCalc:
             self.scene.removeItem(self.nominalFittedCenter)
 
@@ -720,14 +587,14 @@ class MainGui(skeleton.GuiSkeleton):
             self.scene.removeItem(self.innerFittedCenter)
             self.scene.removeItem(self.outerFittedCenter)
 
-        # Check if start point was defined.
-        if len(self.startPointName) == 0:
+        # check if start point was defined
+        if not self.pointListWidget.getStartPoint():
             self.displayMessage(
                 "ERROR: Initial point has not been defined yet.")
             return
 
-        # Check if end point was defined
-        if len(self.endPointName) == 0:
+        # check if end point was defined
+        if not self.pointListWidget.getEndPoint():
             self.displayMessage(
                 "ERROR: End point has not been defined yet.")
             return
@@ -735,14 +602,8 @@ class MainGui(skeleton.GuiSkeleton):
         if self.placeMarkerButton.isChecked():
             self.placeMarkerButton.setChecked(False)
 
-        pointList = []
-        for key, value in self.mapNametoPoint.items():
-            pointList.append(value)
-            # print('x: ', value.rect().center().x(),
-            #      ' y: ', value.rect().center().y())
-
-        # Fit a circle to selected points.
-        fitted_circle = circlefit.circleFit(pointList)
+        # fit a circle to placed points.
+        fitted_circle = circlefit.circleFit(self.pointListWidget)
         self.fittedX0 = fitted_circle[0][0]
         self.fittedY0 = fitted_circle[1][0]
         self.fittedR0 = fitted_circle[2][0]
@@ -777,11 +638,11 @@ class MainGui(skeleton.GuiSkeleton):
         drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
 
         self.start_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
-                self.mapNametoPoint[self.startPointName], 
+                self.pointListWidget.getStartPoint().ellipse, 
                 [self.fittedX0 + 1, self.fittedY0 + 0])
         self.span_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
-                self.mapNametoPoint[self.endPointName], 
-                self.mapNametoPoint[self.startPointName])
+                self.pointListWidget.getEndPoint().ellipse, 
+                self.pointListWidget.getStartPoint().ellipse)
 
 
         # Draw circle with specified colour.
@@ -836,11 +697,6 @@ class MainGui(skeleton.GuiSkeleton):
         """The following function is used to calculate optical density of
         drawn points on image with a specified dL."""
 
-        # Need a minimum of 3 points to fit a circle.
-        if len(self.mapNametoPoint) < 3:
-            self.displayMessage("ERROR: Less than 3 points to fit.")
-            return
-
         # Return if track momentum has NOT been calculated.
         if self.hasTrackMomentumCalc is False:
             self.displayMessage(
@@ -854,20 +710,16 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         # Check if start point was defined.
-        if len(self.startPointName) == 0:
+        if not self.pointListWidget.getStartPoint():
             self.displayMessage(
                 "ERROR: Initial point has not been defined yet.")
             return
 
         # Check if end point was defined
-        if len(self.endPointName) == 0:
+        if not self.pointListWidget.getEndPoint():
             self.displayMessage(
                 "ERROR: End point has not been defined yet.")
             return
-
-        pointList = []
-        for key, value in self.mapNametoPoint.items():
-            pointList.append(value)
 
         # Assigned fitted circle to pass to optical density function.
         self.tmp_circle = self.circleInfo
@@ -883,9 +735,9 @@ class MainGui(skeleton.GuiSkeleton):
         self.displayMessage("Computing optical density...")
 
         self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
-            self, self.sceneImage, pointList, self.tmp_circle, self.dL,
-            self.mapNametoPoint[self.startPointName],
-            self.mapNametoPoint[self.endPointName])
+            self, self.sceneImage, self.tmp_circle, self.dL,
+            self.pointListWidget.getStartPoint().ellipse,
+            self.pointListWidget.getEndPoint().ellipse)
         self.displayMessage(str("Total optical density: %f +/- %f" % (self.optDens, self.errOptDens)))
         self.displayMessage(str("Track Length: %f [Pixel]" % (self.trackLengthPix)))
 
@@ -908,7 +760,7 @@ class MainGui(skeleton.GuiSkeleton):
                 "ERROR: Track momentum has not been calculated yet.")
             return
 
-        if len(self.startPointName) == 0:
+        if not self.pointListWidget.getStartPoint():
             self.displayMessage(
                 "ERROR: Initial point has not been defined yet.")
             return
@@ -919,7 +771,7 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         angleInfo = anglecalc.angleCalc(self, self.circleInfo,
-                              self.mapNametoPoint[self.startPointName],
+                              self.pointListWidget.getStartPoint().ellipse,
                               self.lineAnglePoint)
 
         self.displayMessage(
@@ -960,7 +812,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.innerFittedCenter.setRect(drawRec)
 
-        self.scene.update()
+        #self.scene.update()
 
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the
@@ -991,7 +843,7 @@ class MainGui(skeleton.GuiSkeleton):
     ##############################
     def resizeEvent(self, event):
         self.sceneScrollArea.setMinimumSize(
-            QtCore.QSize(0, self.baseWidget.size().height() / 1.6))
+            QtCore.QSize(0, self.baseWidget.size().height() / 1.65))
 
     ##############################
     # Reset
@@ -1001,7 +853,7 @@ class MainGui(skeleton.GuiSkeleton):
         and clears point list and console output."""
 
         # Clear the list of points.
-        self.pointListWidget.clear()
+        self.pointListWidget.empty()
 
         # Clear drawn points.
         itemList = self.scene.items()
@@ -1010,29 +862,24 @@ class MainGui(skeleton.GuiSkeleton):
                 continue
             self.scene.removeItem(i)
 
-
         # Clear console output.
         self.consoleTextBrowser.clear()
 
         # Reset the number of points.
-        self.nEllipseDrawn = 0
-        self.mapNametoPoint = {}
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
         self.initialAnglePointDrawn = False
         self.finalAnglePointDrawn = False
         self.lineAnglePointDrawn = False
-        self.startPointName = ""
-        self.endPointName = ""
 
         # reset view scale and fit image in view
         self.scaleImage(1 / self.zoomFactor)
 
-        self.sizeOfEllipse *= self.zoomFactor
-        self.widthOfEllipse *= self.zoomFactor
-        self.widthOfCircle *= self.zoomFactor
-        self.sizeAngleRef *= self.zoomFactor
-        self.widthAngleRef *= self.zoomFactor
+        self.sizeOfEllipse = 10
+        self.widthOfEllipse = 2.5
+        self.widthOfCircle = 2.5
+        self.sizeAngleRef = 10
+        self.widthAngleRef = 2.5
 
         if not self.sceneImage.isNull():
             scaleFactor = 1
@@ -1055,6 +902,5 @@ class MainGui(skeleton.GuiSkeleton):
         self.dlLineEdit.setText("0")
         self.dL = 0
 
-        self.mapNametoPoint = {}
         # reset count of messages printed to console
         self.num_messages = 0

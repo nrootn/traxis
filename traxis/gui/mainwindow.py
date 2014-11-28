@@ -25,3 +25,6 @@ class TraxisApplicationWindow(QtWidgets.QMainWindow):
 
         # set the window's central widget
         self.setCentralWidget(self.ui.baseWidget)
+
+        # set keyboard focus to the graphics view by default
+        self.ui.sceneView.setFocus()

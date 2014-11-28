@@ -9,7 +9,7 @@ from traxis.gui.maingui import *
 # Input: C - list of tuples [(x,dx),(y,dy),(r,dr)]
 # Input: dL - float specifying track width
 # Output: tuple with calculated optical density, associated error and track lenght
-def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
+def calcOptDensity(gui, Img, Circle, dL, startPt, endPt):
 
     # Create variables for circle parameters to make code more readable
     x0 = Circle[0][0]
