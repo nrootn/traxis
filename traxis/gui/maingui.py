@@ -20,29 +20,14 @@ class MainGui(skeleton.GuiSkeleton):
 
         super().__init__()
 
-        # Calibration
+        # calibration
         self.nomCalcmPerPix = 0.01188
         self.errCalcmPerPix = 0.00090
 
-        # number of messages printed to the console
+        # set gui state variables
         self.num_messages = 0
-
-        # Set up button to open images.
-        self.openImageButton.clicked.connect(self.openImage)
-
-        # Set up buttons to save and load analysis sessions
-        self.saveSessionButton.clicked.connect(self.saveSession)
-        self.loadSessionButton.clicked.connect(self.loadSession)
-
-        # Set up button for taking a screenshot of the scroll area
-        self.screenshotButton.clicked.connect(self.saveScreenshot)
-
-        # Set up buttons to zoom in/out on image.
+        self.nUserClickOnPicture = 0
         self.zoomFactor = 1
-        self.zoomInButton.clicked.connect(self.zoomIn)
-        self.zoomOutButton.clicked.connect(self.zoomOut)
-
-        # Set up point drawing at mousepress on image.
         self.sizeOfEllipse = 10
         self.widthOfEllipse = 2.5
         self.widthOfCircle = 2.5
@@ -50,57 +35,54 @@ class MainGui(skeleton.GuiSkeleton):
         self.widthAngleRef = 2.5
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
-        self.initialAnglePointDrawn = False
-        self.finalAnglePointDrawn = False
-        self.lineAnglePointDrawn = False
         self.imageFileName = None
-        self.scenePixmap.mousePressEvent = self.pixelSelect
-        self.scenePixmap.mouseReleaseEvent = self.angleSelect
-        self.scenePixmap.mouseMoveEvent = self.pixelSelectMouseEvent
 
-        # Set up shortCuts
-        self.baseWidget.keyPressEvent = self.keyPressEvent
-
-        # Set up button to reset the tool.
+        # connect buttons
+        self.openImageButton.clicked.connect(self.openImage)
+        self.saveSessionButton.clicked.connect(self.saveSession)
+        self.loadSessionButton.clicked.connect(self.loadSession)
+        self.screenshotButton.clicked.connect(self.saveScreenshot)
+        self.zoomInButton.clicked.connect(self.zoomIn)
+        self.zoomOutButton.clicked.connect(self.zoomOut)
         self.resetButton.clicked.connect(self.resetImage)
-
-        # Set up button to calculate track momentum.
         self.calcMomentumButton.clicked.connect(self.calcTrackMom)
-
-        # Set up button to calculate optical density.
         self.calcDensityButton.clicked.connect(self.calcOptDen)
-
-        # Set up button to calculate angle.
         self.calcAngleButton.clicked.connect(self.calcAngle)
-
-        # Set up text field that specifies dL (user-specified width).
-        self.dlLineEdit.textEdited.connect(self.changedLCircles)
-
-        # Mode buttons
         self.placeMarkerButton.clicked.connect(self.placeMarkerButtonFunc)
         self.drawRefButton.clicked.connect(self.drawRefButtonFunc)
 
-        # Used for debugging purposes.
-        self.nUserClickOnPicture = 0
+        # connect mouse events
+        self.scenePixmap.mousePressEvent = self.mousePress
+        self.scenePixmap.mouseReleaseEvent = self.mouseRelease
+        self.scenePixmap.mouseMoveEvent = self.mouseMove
 
+        # connect key presses
+        self.baseWidget.keyPressEvent = self.keyPressEvent
+
+        # connect other events
+        self.dlLineEdit.textEdited.connect(self.changedLCircles)
         self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
-
         self.baseWidget.resizeEvent = self.resizeEvent
 
     ###########################
-    # Drawing Functions
+    # Mouse Event Methods
     ###########################
-    def pixelSelect(self, event):
+    def mousePress(self, event):
         """The following function draws a point (ellipse) when called with
         a mousePressEvent at specified event location. Or if the Angle draw
         mode is selected, it will send the drawing to the respective function"""
 
-        if self.drawRefButton.isChecked():
-            self.angleSelect(event)
-            return
+        if self.placeMarkerButton.isChecked():
+            self.pointListWidget.addMarker(
+                event.pos().x(), event.pos().y(), 
+                self.sizeOfEllipse, self.widthOfEllipse, self.scene)
 
-        # Place an event only if 'place marker' button has been pressed.
-        if not self.placeMarkerButton.isChecked():
+        elif self.drawRefButton.isChecked():
+            self.angleRefLine.setInitialPoint(
+                event.pos().x(), event.pos().y(),
+                self.sizeAngleRef, self.widthAngleRef)
+
+        else:
             # Count the number of times user has clicked on the picture.
             # If more than 3 times, display a help message.
             self.nUserClickOnPicture += 1
@@ -110,67 +92,22 @@ class MainGui(skeleton.GuiSkeleton):
                     "HELP - To place track marker, first select 'Place Track Marker' button")
                 self.displayMessage(
                     "HELP - To draw angle reference, first select 'Draw Angle Reference' button")
-            return
 
-        self.pointListWidget.addMarker(
-            event.pos().x(), event.pos().y(), 
-            self.sizeOfEllipse, self.widthOfEllipse, self.scene)
-
-    def angleSelect(self, event):
+    def mouseRelease(self, event):
         """The following function draws the intial and final points for the
         angle reference. It is also connected to the mouse release event signal
         as well"""
 
-        # if the draw angle reference buttons is not checked,
-        # just simply return. This occurs if mode is unselected or
-        # track marker mode is selected
-        if not self.drawRefButton.isChecked():
-            return
+        self.angleRefLine.setFinalPoint(
+            event.pos().x(), event.pos().y(),
+            self.sizeAngleRef, self.widthAngleRef)
 
-        # if both intial and final point drawn, not need to draw another one
-        if self.initialAnglePointDrawn and self.finalAnglePointDrawn:
-            return
-
-        pen, size = self.getAnglePenSize()
-        # Create a drawing rectangle for the ellipse.
-        drawRec = QtCore.QRectF(event.pos().x(), event.pos().y(), size, size)
-        # Translate top left corner of rectangle to match the clicked position.
-        drawRec.moveCenter(QtCore.QPointF(event.pos().x(), event.pos().y()))
-        # Draw ellipse with specified colour.
-
-        if not self.initialAnglePointDrawn:
-            self.initialAnglePointDrawn = True
-            self.initialAnglePoint = self.scene.addEllipse(drawRec, pen)
-        else:
-            self.finalAnglePointDrawn = True
-            self.finalAnglePoint = self.scene.addEllipse(drawRec, pen)
-
-    def pixelSelectMouseEvent(self, event):
+    def mouseMove(self, event):
         """The following function draws a line between the intial point and the current
         mouse position. It is connected to mouse drag signal"""
 
-        # if the intial point doesn't existed, return
-        if not self.initialAnglePointDrawn:
-            return
-
-        # if the final point has been draw, just return
-        if self.finalAnglePointDrawn:
-            return
-
-        # if a line has been previously draw, just return
-        if self.lineAnglePointDrawn:
-            self.scene.removeItem(self.lineAnglePoint)
-
-        pen, size = self.getAnglePenSize()
-        self.lineAnglePoint = self.scene.addLine(
-            self.initialAnglePoint.rect().center().x(),
-            self.initialAnglePoint.rect().center().y(),
-            event.pos().x(), event.pos().y(), pen)
-
-        # for latter keeping
-        self.lineAnglePointDrawn = True
-
-        return
+        self.angleRefLine.drawLine(
+            event.pos().x(), event.pos().y(), self.widthAngleRef)
 
     ###########################
     # Drawing Helper Functions
@@ -192,23 +129,6 @@ class MainGui(skeleton.GuiSkeleton):
             pen.setWidth(1)
 
         return pen
-
-    def getAnglePenSize(self):
-        """The following function moves gets the size and pen for the angle markers"""
-        # Set colour of ellipse to be drawn.
-        pen = QtGui.QPen(QtGui.QColor(243, 42, 31))
-        pen.setWidth(self.widthAngleRef)
-        # set a mimimum width
-        if(self.widthAngleRef < 1):
-            pen.setWidth(1)
-
-        # Set size of ellipse to be drawn.
-        size = self.sizeAngleRef
-        # set a mimimum size
-        if(size < 1):
-            size = 1
-
-        return pen, size
 
     ##############################
     # Point Manipulation Methods
@@ -314,7 +234,7 @@ class MainGui(skeleton.GuiSkeleton):
         #self.scene.update()
 
     ##############################
-    # Open Image Method
+    # File Dialog Method
     ##############################
     def openImage(self, fileName=None):
         """The following function opens a file dialog and then loads
@@ -388,19 +308,19 @@ class MainGui(skeleton.GuiSkeleton):
             if self.dlLineEdit.text() != "0":
                 saveData['dl'] = self.dlLineEdit.text()
 
-            if self.finalAnglePointDrawn:
+            if self.angleRefLine.finalPoint:
                 initialPointDict = {}
                 initialPointDict[
-                    'x'] = self.initialAnglePoint.rect().center().x()
+                    'x'] = self.angleRefLine.initialPoint.rect().center().x()
                 initialPointDict[
-                    'y'] = self.initialAnglePoint.rect().center().y()
-                saveData['initialAnglePoint'] = initialPointDict
+                    'y'] = self.angleRefLine.initialPoint.rect().center().y()
+                saveData['refInitialPoint'] = initialPointDict
                 finalPointDict = {}
                 finalPointDict[
-                    'x'] = self.finalAnglePoint.rect().center().x()
+                    'x'] = self.angleRefLine.finalPoint.rect().center().x()
                 finalPointDict[
-                    'y'] = self.finalAnglePoint.rect().center().y()
-                saveData['finalAnglePoint'] = finalPointDict
+                    'y'] = self.angleRefLine.finalPoint.rect().center().y()
+                saveData['refFinalPoint'] = finalPointDict
 
             # serialize the save data dictionary and save to file
             with open(fileName, 'w') as saveFile:
@@ -448,30 +368,18 @@ class MainGui(skeleton.GuiSkeleton):
                     self.dlLineEdit.setText(dl)
                     self.dL = float(dl)
 
-                initialAnglePoint = loadData.get('initialAnglePoint')
-                finalAnglePoint = loadData.get('finalAnglePoint')
-                if initialAnglePoint and finalAnglePoint:
-                    self.initialAnglePointDrawn = True
-                    self.finalAnglePointDrawn = True
-                    self.lineAnglePointDrawn = True
-                    pen, size = self.getAnglePenSize()
-                    drawRecInitial = QtCore.QRectF(initialAnglePoint['x'],
-                                              initialAnglePoint['y'], size,
-                                              size)
-                    drawRecInitial.moveCenter(QtCore.QPointF(initialAnglePoint['x'],
-                                              initialAnglePoint['y']))
-                    drawRecFinal = QtCore.QRectF(finalAnglePoint['x'],
-                                              finalAnglePoint['y'], size,
-                                              size)
-                    drawRecFinal.moveCenter(QtCore.QPointF(finalAnglePoint['x'],
-                                              finalAnglePoint['y']))
-                    self.initialAnglePoint = self.scene.addEllipse(
-                        drawRecInitial, pen)
-                    self.finalAnglePoint = self.scene.addEllipse(
-                        drawRecFinal, pen)
-                    self.lineAnglePoint = self.scene.addLine(
-                        initialAnglePoint['x'], initialAnglePoint['y'],
-                        finalAnglePoint['x'], finalAnglePoint['y'], pen)
+                refInitialPoint = loadData.get('refInitialPoint')
+                refFinalPoint = loadData.get('refFinalPoint')
+                if refInitialPoint and refFinalPoint:
+                    self.angleRefLine.setInitialPoint(
+                        refInitialPoint['x'], refInitialPoint['y'],
+                        self.sizeAngleRef, self.widthAngleRef)
+                    self.angleRefLine.drawLine(
+                        refFinalPoint['x'], refFinalPoint['y'],
+                        self.widthAngleRef)
+                    self.angleRefLine.setFinalPoint(
+                        refFinalPoint['x'], refFinalPoint['y'],
+                        self.sizeAngleRef, self.widthAngleRef)
 
     def saveScreenshot(self):
         """Save the currently visible part of the scene scroll area to an
@@ -488,7 +396,7 @@ class MainGui(skeleton.GuiSkeleton):
             self.displayMessage("Unable to save screenshot")
 
     ##############################
-    # Zoom and Helper Functions
+    # Zoom Methods
     ##############################
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
@@ -533,13 +441,7 @@ class MainGui(skeleton.GuiSkeleton):
             self.updateDrawCircleZoom(
                 self.outerFittedCenter, self.outerFittedCenter.rect().width(), pen)
 
-        pen, size = self.getAnglePenSize()
-        if self.initialAnglePointDrawn:
-            self.updateDrawCircleZoom(self.initialAnglePoint, size, pen)
-        if self.finalAnglePointDrawn:
-            self.updateDrawCircleZoom(self.finalAnglePoint, size, pen)
-        if self.lineAnglePointDrawn:
-            self.lineAnglePoint.setPen(pen)
+        self.angleRefLine.rescale(self.sizeAngleRef, self.widthAngleRef)
 
         #self.scene.update()
 
@@ -765,14 +667,14 @@ class MainGui(skeleton.GuiSkeleton):
                 "ERROR: Initial point has not been defined yet.")
             return
 
-        if self.lineAnglePointDrawn is False:
+        if not self.angleRefLine.finalPoint:
             self.displayMessage(
                 "ERROR: Angle Line reference not drawn.")
             return
 
         angleInfo = anglecalc.angleCalc(self, self.circleInfo,
                               self.pointListWidget.getStartPoint().ellipse,
-                              self.lineAnglePoint)
+                              self.angleRefLine.line)
 
         self.displayMessage(
             str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
@@ -825,18 +727,6 @@ class MainGui(skeleton.GuiSkeleton):
         angle reference as well"""
 
         self.placeMarkerButton.setChecked(False)
-        if self.drawRefButton.isChecked():
-            # reset if check in
-            if self.lineAnglePointDrawn:
-                self.scene.removeItem(self.lineAnglePoint)
-            if self.finalAnglePointDrawn:
-                self.scene.removeItem(self.finalAnglePoint)
-            if self.initialAnglePointDrawn:
-                self.scene.removeItem(self.initialAnglePoint)
-
-            self.initialAnglePointDrawn = False
-            self.finalAnglePointDrawn = False
-            self.lineAnglePointDrawn = False
 
     ##############################
     # Resize Function
@@ -868,9 +758,6 @@ class MainGui(skeleton.GuiSkeleton):
         # Reset the number of points.
         self.hasTrackMomentumCalc = False
         self.hasDrawndLCurves = False
-        self.initialAnglePointDrawn = False
-        self.finalAnglePointDrawn = False
-        self.lineAnglePointDrawn = False
 
         # reset view scale and fit image in view
         self.scaleImage(1 / self.zoomFactor)

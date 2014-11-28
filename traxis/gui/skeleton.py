@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-from traxis.graphics import markers
+from traxis.graphics import markers, angleref
 
 
 class GuiSkeleton(object):
@@ -128,9 +128,9 @@ class GuiSkeleton(object):
         self.topUiLayout.addLayout(self.userSelectionLayout)
 
         self.userInputLabel = QtWidgets.QLabel(
-            self.baseWidget)  # user input label
+            self.baseWidget)  # open/save label
         self.userSelectionLayout.addWidget(self.userInputLabel)
-        self.userInputLabel.setText("User Input")
+        self.userInputLabel.setText("Open/Save")
 
         self.openImageButton = QtWidgets.QPushButton(
             self.baseWidget)  # open image button widget
@@ -263,3 +263,6 @@ class GuiSkeleton(object):
         self.sceneImage = QtGui.QImage()
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
         self.scene.addItem(self.scenePixmap)
+
+        # instantiate a reference line object
+        self.angleRefLine = angleref.ReferenceLine(self.scene)

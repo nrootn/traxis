@@ -44,6 +44,7 @@ class MarkerList(QtWidgets.QListWidget):
         oldStartPoint = self.getStartPoint()
         if oldStartPoint:
             oldStartPoint.setDesignation()
+            oldStartPoint.recolor()
 
         marker.setDesignation('start')
 
@@ -52,6 +53,7 @@ class MarkerList(QtWidgets.QListWidget):
         oldEndPoint = self.getEndPoint()
         if oldEndPoint:
             oldEndPoint.setDesignation()
+            oldEndPoint.recolor()
 
         marker.setDesignation('end')
 
