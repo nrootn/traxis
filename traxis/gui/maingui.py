@@ -357,13 +357,10 @@ class MainGui(skeleton.GuiSkeleton):
                         self.pointSize, self.lineWidth)
 
     def saveScreenshot(self):
-        """Save the currently visible part of the scene scroll area to an
+        """Save the currently visible part of the scene view to an
         image.
         """
-        screenshot = QtGui.QPixmap(self.sceneScrollArea.rect().size())
-        self.sceneScrollArea.render(
-            screenshot, QtCore.QPoint(),
-            QtGui.QRegion(self.sceneScrollArea.rect()))
+        screenshot = self.sceneView.grab()
         fileName = QtWidgets.QFileDialog.getSaveFileName(
             self.baseWidget, "Save Screenshot", "./untitled.png",
             "PNG (*.png);;JPEG (*.jpg);;TIFF (*.tiff *.tif)")[0]
@@ -388,9 +385,6 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.zoomFactor = self.zoomFactor * factor
         self.sceneView.scale(factor, factor)
-        self.adjustScrollBar(
-            self.sceneScrollArea.horizontalScrollBar(), factor)
-        self.adjustScrollBar(self.sceneScrollArea.verticalScrollBar(), factor)
 
         # scale the drawn points when zooming
         self.pointSize /= factor
@@ -401,11 +395,6 @@ class MainGui(skeleton.GuiSkeleton):
         self.angleRefLine.rescale(self.pointSize, self.lineWidth)
 
         #self.scene.update()
-
-    def adjustScrollBar(self, scrollBar, factor):
-        """The following helper function adjusts size of scrollbar."""
-        scrollBar.setValue(
-            int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep() / 2)))
 
     ##############################
     # Console Methods
@@ -599,7 +588,7 @@ class MainGui(skeleton.GuiSkeleton):
     # Resize Function
     ##############################
     def resizeEvent(self, event):
-        self.sceneScrollArea.setMinimumSize(
+        self.sceneView.setMinimumSize(
             QtCore.QSize(0, self.baseWidget.size().height() / 1.65))
 
     ##############################
@@ -630,11 +619,9 @@ class MainGui(skeleton.GuiSkeleton):
             width_ratio = self.sceneView.width() / self.sceneImage.width()
 
             if height_ratio < width_ratio:
-                if height_ratio < 1:
-                    scaleFactor = 0.8 ** math.ceil(math.log(height_ratio, 0.8))
+                scaleFactor = height_ratio
             else:
-                if width_ratio < 1:
-                    scaleFactor = 0.8 ** math.ceil(math.log(width_ratio, 0.8))
+                scaleFactor = width_ratio
 
             self.scaleImage(scaleFactor)
 

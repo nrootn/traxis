@@ -247,23 +247,16 @@ class GuiSkeleton(object):
         self.bottomUiLayout = QtWidgets.QHBoxLayout()
         self.mainLayout.addLayout(self.bottomUiLayout)
 
-        # scroll area on which the graphics scene will be displayed
-        self.sceneScrollArea = QtWidgets.QScrollArea(
-            self.baseWidget)  # scroll area widget
-        self.bottomUiLayout.addWidget(self.sceneScrollArea)
-        self.sceneScrollArea.setWidgetResizable(True)
-        self.sceneScrollArea.setFocusPolicy(QtCore.Qt.NoFocus)
-
         # create graphics scene on which images will be displayed
         self.scene = QtWidgets.QGraphicsScene()  # graphics scene widget
-        self.sceneView = QtWidgets.QGraphicsView(self.scene)  # grahics view widget
-        # specify the graphics scene as the child widget of the scroll area
-        self.sceneScrollArea.setWidget(self.sceneView)
+        self.sceneView = QtWidgets.QGraphicsView(self.scene, self.baseWidget)  # grahics view widget
+        self.bottomUiLayout.addWidget(self.sceneView)
+
         # instantiate QImage and PixmapItem
         self.sceneImage = QtGui.QImage()
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
         self.scene.addItem(self.scenePixmap)
 
-        # instantiate a reference line object
+        # instantiate reference line and momentum arc objects
         self.angleRefLine = angleref.ReferenceLine(self.scene)
         self.momentumArc = fittedarc.MomentumArc(self.scene)
