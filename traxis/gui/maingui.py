@@ -78,15 +78,9 @@ class MainGui(skeleton.GuiSkeleton):
                 self.pointSize, self.lineWidth)
 
         else:
-            # Count the number of times user has clicked on the picture.
-            # If more than 3 times, display a help message.
-            self.nUserClickOnPicture += 1
-            if self.nUserClickOnPicture == 3:
-                self.nUserClickOnPicture = 0
-                self.displayMessage(
-                    "HELP - To place track marker, first select 'Place Track Marker' button")
-                self.displayMessage(
-                    "HELP - To draw angle reference, first select 'Draw Angle Reference' button")
+            # set initial reference for an image pan
+            self.sceneView.lastMousePos = self.sceneView.mapFromScene(
+                                              event.pos())
 
     def mouseRelease(self, event):
         """The following function draws the intial and final points for the
@@ -103,6 +97,18 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.angleRefLine.drawLine(
             event.pos().x(), event.pos().y(), self.lineWidth)
+
+        if not (self.placeMarkerButton.isChecked()
+                or self.drawRefButton.isChecked()):
+            # manually implement image panning
+            hbar = self.sceneView.horizontalScrollBar()
+            vbar = self.sceneView.verticalScrollBar()
+            delta = self.sceneView.mapFromScene(
+                        event.pos()) - self.sceneView.lastMousePos
+            self.sceneView.lastMousePos = self.sceneView.mapFromScene(
+                                              event.pos())
+            hbar.setValue(hbar.value() - delta.x())
+            vbar.setValue(vbar.value() - delta.y())
 
     ##############################
     # Keypress Events
@@ -204,10 +210,6 @@ class MainGui(skeleton.GuiSkeleton):
         elif event.key() == QtCore.Qt.Key_Delete:
             if currentPoint:
                 self.pointListWidget.deleteMarker(currentPoint)
-
-    def highlightPoint(self):
-        self.pointListWidget.highlightCurrent()
-        #self.scene.update()
 
     ##############################
     # File Dialog Methods
@@ -571,6 +573,14 @@ class MainGui(skeleton.GuiSkeleton):
 
         #self.scene.update()
 
+    def highlightPoint(self):
+        self.pointListWidget.highlightCurrent()
+        #self.scene.update()
+
+    def resizeEvent(self, event):
+        self.sceneView.setMinimumSize(
+            QtCore.QSize(0, self.baseWidget.size().height() / 1.65))
+
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the
         place track marker mode button is toggled"""
@@ -583,13 +593,6 @@ class MainGui(skeleton.GuiSkeleton):
         angle reference as well"""
 
         self.placeMarkerButton.setChecked(False)
-
-    ##############################
-    # Resize Function
-    ##############################
-    def resizeEvent(self, event):
-        self.sceneView.setMinimumSize(
-            QtCore.QSize(0, self.baseWidget.size().height() / 1.65))
 
     ##############################
     # Reset
