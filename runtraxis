@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import ctypes
+from PyQt5 import QtWidgets
+from traxis.gui import mainwindow
+
+
+# if running on Windows, create an application user model id for this app
+# so that a custom taskbar icon can be used
+if hasattr(ctypes, 'windll'):
+    appId = 'traxis.0.2.0'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
+
+basePath = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, basePath)
+
+app = QtWidgets.QApplication(sys.argv)
+window = mainwindow.TraxisApplicationWindow()
+
+window.show()
+sys.exit(app.exec_())

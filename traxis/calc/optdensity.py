@@ -1,8 +1,5 @@
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtGui import QImage, QColor
-from PyQt5.QtWidgets import QGraphicsEllipseItem
 import numpy as np
-from mainGUI import *
 
 
 # Input: gui - mainGUI class to be used ONLY for printing messages
@@ -11,7 +8,7 @@ from mainGUI import *
 # Input: C - list of tuples [(x,dx),(y,dy),(r,dr)]
 # Input: dL - float specifying track width
 # Output: tuple with calculated optical density, associated error and track lenght
-def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
+def calcOptDensity(Img, Circle, dL, startPt, endPt):
 
     # Create variables for circle parameters to make code more readable
     x0 = Circle[0][0]
@@ -27,22 +24,6 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     # Get angle that spans the start vector and end vector
     # This is in degrees
     span_angle = getAngle([x0, y0], endPt, startPt)
-
-    # Create and draw outer arc
-    outer_arc = QGraphicsEllipseItem(
-        x0 - r0 - dL, y0 - r0 - dL, 2 * (r0 + dL), 2 * (r0 + dL))
-    # Need to multiply by 16.0 b cause function uses units of 1/16th degrees
-    outer_arc.setStartAngle(16.0 * start_angle)
-    outer_arc.setSpanAngle(16.0 * span_angle)
-    #gui.scene.addItem(outer_arc)
-
-    # Create and draw inner arc
-    inner_arc = QGraphicsEllipseItem(
-        x0 - r0 + dL, y0 - r0 + dL, 2 * (r0 - dL), 2 * (r0 - dL))
-    # Need to multiply by 16.0 because function uses units of 1/16th degrees
-    inner_arc.setStartAngle(16.0 * start_angle)
-    inner_arc.setSpanAngle(16.0 * span_angle)
-    # gui.scene.addItem(inner_arc)
 
     # Get points along arc
     dR = np.linspace(
@@ -68,13 +49,13 @@ def calcOptDensity(gui, Img, P, Circle, dL, startPt, endPt):
     blackness = 0.
     for p in pointSet:
         c = Img.pixel(p[0], p[1])
-        blackness += QColor(c).blackF()
+        blackness += QtGui.QColor(c).blackF()
 
     # Repeat the calculation above for error region
     errBlackness = 0.
     for p in errPointSet:
         c = Img.pixel(p[0], p[1])
-        errBlackness += QColor(c).blackF()
+        errBlackness += QtGui.QColor(c).blackF()
 
     # Calculate and return optical density
     optDens = blackness 

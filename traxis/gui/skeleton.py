@@ -1,27 +1,23 @@
+import sys
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
+from traxis.graphics import markers, angleref, fittedarc
 
 
 class GuiSkeleton(object):
 
     """The skeleton of the GUI."""
 
-    def __init__(self, mainWindow):
+    def __init__(self):
         """Setup the base user interface - create layouts and place widgets
         and labels on main window.
         """
 
-        # instantiate a base widget and set it as the main window's central
-        # widget
-        self.centralWidget = QtWidgets.QWidget(mainWindow)
-        mainWindow.setCentralWidget(self.centralWidget)
-
-        # set main window icon
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./traxis.png"))
-        mainWindow.setWindowIcon(icon)
+        # instantiate a base widget
+        self.baseWidget = QtWidgets.QWidget()
 
         # layout of the main window
-        self.mainLayout = QtWidgets.QVBoxLayout(self.centralWidget)
+        self.mainLayout = QtWidgets.QVBoxLayout(self.baseWidget)
 
         # layout for the top half of the user interface
         self.topUiLayout = QtWidgets.QHBoxLayout()
@@ -32,12 +28,12 @@ class GuiSkeleton(object):
         self.topUiLayout.addLayout(self.pointListLayout)
 
         self.pointListLabel = QtWidgets.QLabel(
-            self.centralWidget)  # marker list label
+            self.baseWidget)  # marker list label
         self.pointListLayout.addWidget(self.pointListLabel)
         self.pointListLabel.setText("Track Markers")
 
-        self.pointListWidget = QtWidgets.QListWidget(
-            self.centralWidget)  # marker list widget
+        self.pointListWidget = markers.MarkerList(
+            self.baseWidget)  # marker list widget
         self.pointListLayout.addWidget(self.pointListWidget)
         # don't focus on this widget when clicked
         self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -46,7 +42,7 @@ class GuiSkeleton(object):
 
         # first vertical gui segment divider in top half layout
         self.vLineDiv1 = QtWidgets.QFrame(
-            self.centralWidget)  # vertical divider widget
+            self.baseWidget)  # vertical divider widget
         self.topUiLayout.addWidget(self.vLineDiv1)
         self.vLineDiv1.setFrameShape(QtWidgets.QFrame.VLine)
         self.vLineDiv1.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -57,19 +53,19 @@ class GuiSkeleton(object):
         self.topUiLayout.addLayout(self.techButtonLayout)
 
         self.resetButtonLabel = QtWidgets.QLabel(
-            self.centralWidget)  # reset button label
+            self.baseWidget)  # reset button label
         self.techButtonLayout.addWidget(self.resetButtonLabel)
         self.resetButtonLabel.setText("Reset Analysis")
 
         self.resetButton = QtWidgets.QPushButton(
-            self.centralWidget)  # reset button widget
+            self.baseWidget)  # reset button widget
         self.techButtonLayout.addWidget(self.resetButton)
         self.resetButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip(
             "Reset all the selected points and calculated variables")
 
-        self.zoomLabel = QtWidgets.QLabel(self.centralWidget)  # zoom label
+        self.zoomLabel = QtWidgets.QLabel(self.baseWidget)  # zoom label
         self.techButtonLayout.addWidget(self.zoomLabel)
         self.zoomLabel.setText("Zoom")
 
@@ -78,40 +74,40 @@ class GuiSkeleton(object):
         self.techButtonLayout.addLayout(self.zoomLayout)
 
         self.zoomInButton = QtWidgets.QPushButton(
-            self.centralWidget)  # zoom in button widget
+            self.baseWidget)  # zoom in button widget
         self.zoomLayout.addWidget(self.zoomInButton)
         self.zoomInButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomInButton.setText("Zoom In")
         self.zoomInButton.setToolTip("Zoom into the picture")
 
         self.zoomOutButton = QtWidgets.QPushButton(
-            self.centralWidget)  # zoom out button widget
+            self.baseWidget)  # zoom out button widget
         self.zoomLayout.addWidget(self.zoomOutButton)
         self.zoomOutButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomOutButton.setText("Zoom Out")
         self.zoomOutButton.setToolTip("Zoom out from the picture")
 
         self.calcLabel = QtWidgets.QLabel(
-            self.centralWidget)  # calculate label
+            self.baseWidget)  # calculate label
         self.techButtonLayout.addWidget(self.calcLabel)
         self.calcLabel.setText("Calculate")
 
         self.calcMomentumButton = QtWidgets.QPushButton(
-            self.centralWidget)  # calculate momentum button widget
+            self.baseWidget)  # calculate momentum button widget
         self.techButtonLayout.addWidget(self.calcMomentumButton)
         self.calcMomentumButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcMomentumButton.setText("Calculate Track Momentum")
         self.calcMomentumButton.setToolTip("Calculate Track momentum")
 
         # calculate optical density button widget
-        self.calcDensityButton = QtWidgets.QPushButton(self.centralWidget)
+        self.calcDensityButton = QtWidgets.QPushButton(self.baseWidget)
         self.techButtonLayout.addWidget(self.calcDensityButton)
         self.calcDensityButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcDensityButton.setText("Calculate Optical Density")
         self.calcDensityButton.setToolTip("Calculate Optical Density")
 
         self.calcAngleButton = QtWidgets.QPushButton(
-            self.centralWidget)  # calculate angle button widget
+            self.baseWidget)  # calculate angle button widget
         self.techButtonLayout.addWidget(self.calcAngleButton)
         self.calcAngleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcAngleButton.setText("Calculate Angle")
@@ -121,7 +117,7 @@ class GuiSkeleton(object):
 
         # second vertical gui segment divider in top half layout
         self.vLineDiv2 = QtWidgets.QFrame(
-            self.centralWidget)  # vertical divider widget
+            self.baseWidget)  # vertical divider widget
         self.topUiLayout.addWidget(self.vLineDiv2)
         self.vLineDiv2.setFrameShape(QtWidgets.QFrame.VLine)
         self.vLineDiv2.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -132,12 +128,12 @@ class GuiSkeleton(object):
         self.topUiLayout.addLayout(self.userSelectionLayout)
 
         self.userInputLabel = QtWidgets.QLabel(
-            self.centralWidget)  # user input label
+            self.baseWidget)  # open/save label
         self.userSelectionLayout.addWidget(self.userInputLabel)
         self.userInputLabel.setText("Open/Save")
 
         self.openImageButton = QtWidgets.QPushButton(
-            self.centralWidget)  # open image button widget
+            self.baseWidget)  # open image button widget
         self.userSelectionLayout.addWidget(self.openImageButton)
         self.openImageButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.openImageButton.setText("Open Image")
@@ -147,14 +143,14 @@ class GuiSkeleton(object):
         self.userSelectionLayout.addLayout(self.saveLayout)
 
         self.saveSessionButton = QtWidgets.QPushButton(
-            self.centralWidget) # save session button widget
+            self.baseWidget) # save session button widget
         self.saveLayout.addWidget(self.saveSessionButton)
         self.saveSessionButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.saveSessionButton.setText("Save")
         self.saveSessionButton.setToolTip("Save current analysis session")
         
         self.loadSessionButton = QtWidgets.QPushButton(
-            self.centralWidget) # load session button widget
+            self.baseWidget) # load session button widget
         self.saveLayout.addWidget(self.loadSessionButton)
         self.loadSessionButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.loadSessionButton.setText("Load")
@@ -162,19 +158,19 @@ class GuiSkeleton(object):
             "Load a previously saved analysis session")
 
         self.screenshotButton = QtWidgets.QPushButton(
-            self.centralWidget)  # screenshot button widget
+            self.baseWidget)  # screenshot button widget
         self.userSelectionLayout.addWidget(self.screenshotButton)
         self.screenshotButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.screenshotButton.setText("Save Screenshot")
         self.screenshotButton.setToolTip(
             "Take a screenshot of the scroll area contents and save to image")
 
-        self.modeLabel = QtWidgets.QLabel(self.centralWidget) # mode label
+        self.modeLabel = QtWidgets.QLabel(self.baseWidget) # mode label
         self.userSelectionLayout.addWidget(self.modeLabel)
         self.modeLabel.setText("Mode")
 
         self.placeMarkerButton = QtWidgets.QPushButton(
-            self.centralWidget)  # place marker mode button widget
+            self.baseWidget)  # place marker mode button widget
         self.userSelectionLayout.addWidget(self.placeMarkerButton)
         # make the button checkable (i.e. stays depressed when clicked)
         self.placeMarkerButton.setCheckable(True)
@@ -184,7 +180,7 @@ class GuiSkeleton(object):
             "Enter mode for placing markers on loaded image.")
 
         # draw angle reference mode button widget
-        self.drawRefButton = QtWidgets.QPushButton(self.centralWidget)
+        self.drawRefButton = QtWidgets.QPushButton(self.baseWidget)
         self.userSelectionLayout.addWidget(self.drawRefButton)
         # make the button checkable (i.e. stays depressed when clicked)
         self.drawRefButton.setCheckable(True)
@@ -200,7 +196,7 @@ class GuiSkeleton(object):
         self.dlFormLayout.setFormAlignment(
             QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
-        self.dlLabel = QtWidgets.QLabel(self.centralWidget)  # dl label
+        self.dlLabel = QtWidgets.QLabel(self.baseWidget)  # dl label
         self.dlLabel.setSizePolicy(
             QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.dlFormLayout.setWidget(
@@ -209,7 +205,7 @@ class GuiSkeleton(object):
         self.dlLabel.setText("Set DL")
 
         # dl text box (line edit) widget
-        self.dlLineEdit = QtWidgets.QLineEdit(self.centralWidget)
+        self.dlLineEdit = QtWidgets.QLineEdit(self.baseWidget)
         self.dlLineEdit.setSizePolicy(
             QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.dlFormLayout.setWidget(
@@ -222,7 +218,7 @@ class GuiSkeleton(object):
 
         # third vertical gui segment divider in top half layout
         self.vLineDiv3 = QtWidgets.QFrame(
-            self.centralWidget)  # vertical divider widget
+            self.baseWidget)  # vertical divider widget
         self.topUiLayout.addWidget(self.vLineDiv3)
         self.vLineDiv3.setFrameShape(QtWidgets.QFrame.VLine)
         self.vLineDiv3.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -232,17 +228,17 @@ class GuiSkeleton(object):
         self.topUiLayout.addLayout(self.consoleLayout)
 
         self.consoleLabel = QtWidgets.QLabel(
-            self.centralWidget)  # console label
+            self.baseWidget)  # console label
         self.consoleLayout.addWidget(self.consoleLabel)
         self.consoleLabel.setText("Console")
 
         self.consoleTextBrowser = QtWidgets.QTextBrowser(  # console text browser widget
-            self.centralWidget)
+            self.baseWidget)
         self.consoleLayout.addWidget(self.consoleTextBrowser)
         self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
 
         # horizontal gui segment divider between top half and bottom half of ui
-        self.hLineDiv = QtWidgets.QFrame(self.centralWidget)
+        self.hLineDiv = QtWidgets.QFrame(self.baseWidget)
         self.mainLayout.addWidget(self.hLineDiv)
         self.hLineDiv.setFrameShape(QtWidgets.QFrame.HLine)
         self.hLineDiv.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -253,10 +249,8 @@ class GuiSkeleton(object):
 
         # scroll area on which the graphics scene will be displayed
         self.sceneScrollArea = QtWidgets.QScrollArea(
-            self.centralWidget)  # scroll area widget
+            self.baseWidget)  # scroll area widget
         self.bottomUiLayout.addWidget(self.sceneScrollArea)
-        self.sceneScrollArea.setMinimumSize(
-            QtCore.QSize(0, mainWindow.size().height() / 1.5))
         self.sceneScrollArea.setWidgetResizable(True)
         self.sceneScrollArea.setFocusPolicy(QtCore.Qt.NoFocus)
 
@@ -265,13 +259,11 @@ class GuiSkeleton(object):
         self.sceneView = QtWidgets.QGraphicsView(self.scene)  # grahics view widget
         # specify the graphics scene as the child widget of the scroll area
         self.sceneScrollArea.setWidget(self.sceneView)
-        # set keyboard focus to the graphics view by default
-        self.sceneView.setFocus()
         # instantiate QImage and PixmapItem
         self.sceneImage = QtGui.QImage()
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
         self.scene.addItem(self.scenePixmap)
 
-        # status bar at the bottom of the window
-        self.statusBar = QtWidgets.QStatusBar(mainWindow)
-        mainWindow.setStatusBar(self.statusBar)
+        # instantiate a reference line object
+        self.angleRefLine = angleref.ReferenceLine(self.scene)
+        self.momentumArc = fittedarc.MomentumArc(self.scene)
