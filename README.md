@@ -13,17 +13,17 @@ Python-based toolkit with GUI that computes track momentum and optical density o
 On Linux, UNIX, Mac:
 
 ```
-tar xzvf traxis-0.1.0.tgz
-cd traxis-0.1.0/src
-python3 main.py
+tar xzvf traxis-1.0.0.tgz
+cd traxis-1.0.0
+./runtraxis
 ```
 
 On Windows:
 
 ```
-Extract traxis-0.1.0.zip
-Go to extracted traxis-0.1.0 folder
-Run main.py
+Extract traxis-1.0.0.zip
+Go to extracted traxis-1.0.0 folder
+Execute runtraxis with Python 3
 ```
 
 ####Dependencies
