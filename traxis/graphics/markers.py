@@ -153,8 +153,20 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         self.ellipse.setPen(newPen)
 
     def move(self, dx, dy):
+        # simple moveBy doesn't work. It doesn't update the center of the point
+        #self.ellipse.moveBy(dx, dy)
+        drawRect = QtCore.QRectF(
+                self.ellipse.rect().x(),
+                self.ellipse.rect().y(),
+                self.ellipse.rect().height(),
+                self.ellipse.rect().width())
 
-        self.ellipse.moveBy(dx, dy)
+        drawRect.moveCenter(QtCore.QPointF(
+            self.ellipse.rect().center().x() + dx,
+            self.ellipse.rect().center().y() + dy))
+
+        self.ellipse.setRect(drawRect)
+
 
     def rescale(self, size, width):
 

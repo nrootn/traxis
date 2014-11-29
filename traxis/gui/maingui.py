@@ -445,18 +445,15 @@ class MainGui(skeleton.GuiSkeleton):
         self.displayMessage(
             str("Fitted R_o:\t %f +/- %f [pixel]" % (fitted_circle[2][0], fitted_circle[2][1])))
         self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % (fitted_circle[2][0]*self.nomCalcmPerPix, 
-                fitted_circle[2][1]*self.nomCalcmPerPix, fitted_circle[2][0]*self.errCalcmPerPix)))
-
-        # TODO: Remove this
-        r_temp = fitted_circle[2][0]*self.nomCalcmPerPix
-        r_err = r_temp*math.sqrt(math.pow(fitted_circle[2][1]/fitted_circle[2][0],2)+math.pow(self.errCalcmPerPix/self.nomCalcmPerPix,2))  
-        self.displayMessage("Remove this from the final product")
+            str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % 
+                (fitted_circle[2][0]*self.nomCalcmPerPix, 
+                fitted_circle[2][1]*self.nomCalcmPerPix, 
+                fitted_circle[2][0]*self.errCalcmPerPix)))
         self.displayMessage(
-                str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" % (0.3*15.5*fitted_circle[2][0]*self.nomCalcmPerPix, 
-                    0.3*15.5*fitted_circle[2][1]*self.nomCalcmPerPix, 0.3*15.5*fitted_circle[2][0]*self.errCalcmPerPix)))
-        self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f [MeV]" % (0.3*15.5*r_temp, 0.3*15.5*r_err)))
+            str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" 
+                % (0.3*15.5*fitted_circle[2][0]*self.nomCalcmPerPix, 
+                0.3*15.5*fitted_circle[2][1]*self.nomCalcmPerPix, 
+                0.3*15.5*fitted_circle[2][0]*self.errCalcmPerPix)))
 
         startAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.pointListWidget.getStartPoint().ellipse, 

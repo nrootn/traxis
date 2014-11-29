@@ -17,8 +17,8 @@ def _createXYArrays(marker_list):
     # of the points; populate y_array with y_coordinates
     for row in range(num_points):
         point = marker_list.item(row)
-        x_array[row] = point.ellipse.rect().center().x()
-        y_array[row] = point.ellipse.rect().center().y()
+        x_array[row] = np.float64(point.ellipse.rect().center().x())
+        y_array[row] = np.float64(point.ellipse.rect().center().y())
 
     return x_array, y_array
 
@@ -37,7 +37,8 @@ def circleFit(marker_list):
     # use the means of the x coorindates, y_coordinates as initial guesses for the circle centre coordinates
     center_estimate = (x_array.mean(), y_array.mean())
 
-    center_lsq, cov_matrix, infodict, mesg, ier = optimize.leastsq(_distanceResiduals, center_estimate, args=(x_array, y_array), full_output=True)
+    center_lsq, cov_matrix, infodict, mesg, ier = optimize.leastsq(_distanceResiduals, center_estimate, args=(x_array, y_array), full_output=True, 
+             ftol=1.49012e-15, xtol=1.49012e-15)
     chi2_dof = (_distanceResiduals(center_lsq, x_array, y_array)**2).sum()/(len(y_array)-len(center_estimate))
     pcov = cov_matrix * chi2_dof
     center_x, center_y = center_lsq
