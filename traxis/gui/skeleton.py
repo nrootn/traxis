@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-from traxis.graphics import markers, angleref
+from traxis.graphics import markers, angleref, fittedarc
 
 
 class GuiSkeleton(object):
@@ -266,3 +266,4 @@ class GuiSkeleton(object):
 
         # instantiate a reference line object
         self.angleRefLine = angleref.ReferenceLine(self.scene)
+        self.momentumArc = fittedarc.MomentumArc(self.scene)

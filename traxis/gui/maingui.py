@@ -28,13 +28,8 @@ class MainGui(skeleton.GuiSkeleton):
         self.num_messages = 0
         self.nUserClickOnPicture = 0
         self.zoomFactor = 1
-        self.sizeOfEllipse = 10
-        self.widthOfEllipse = 2.5
-        self.widthOfCircle = 2.5
-        self.sizeAngleRef = 10
-        self.widthAngleRef = 2.5
-        self.hasTrackMomentumCalc = False
-        self.hasDrawndLCurves = False
+        self.pointSize = 10
+        self.lineWidth = 2.5
         self.imageFileName = None
 
         # connect buttons
@@ -75,12 +70,12 @@ class MainGui(skeleton.GuiSkeleton):
         if self.placeMarkerButton.isChecked():
             self.pointListWidget.addMarker(
                 event.pos().x(), event.pos().y(), 
-                self.sizeOfEllipse, self.widthOfEllipse, self.scene)
+                self.pointSize, self.lineWidth, self.scene)
 
         elif self.drawRefButton.isChecked():
             self.angleRefLine.setInitialPoint(
                 event.pos().x(), event.pos().y(),
-                self.sizeAngleRef, self.widthAngleRef)
+                self.pointSize, self.lineWidth)
 
         else:
             # Count the number of times user has clicked on the picture.
@@ -100,38 +95,17 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.angleRefLine.setFinalPoint(
             event.pos().x(), event.pos().y(),
-            self.sizeAngleRef, self.widthAngleRef)
+            self.pointSize, self.lineWidth)
 
     def mouseMove(self, event):
         """The following function draws a line between the intial point and the current
         mouse position. It is connected to mouse drag signal"""
 
         self.angleRefLine.drawLine(
-            event.pos().x(), event.pos().y(), self.widthAngleRef)
-
-    ###########################
-    # Drawing Helper Functions
-    ###########################
-    def getCirclePen(self, colour):
-        """The following function moves gets the size and pen for the fitted circle"""
-        # Set colour of ellipse to be drawn.
-        if colour is 'red':
-            pen = QtGui.QPen(QtCore.Qt.red)
-        elif colour is 'blue':
-            pen = QtGui.QPen()
-        elif colour is 'yellow':
-            pen = QtGui.QPen(QtCore.Qt.yellow)
-        else:
-            pen = QtGui.QPen(QtGui.QColor(33, 95, 147))
-        pen.setWidth(self.widthOfCircle)
-        # set a mimimum width
-        if(self.widthOfCircle < 1):
-            pen.setWidth(1)
-
-        return pen
+            event.pos().x(), event.pos().y(), self.lineWidth)
 
     ##############################
-    # Point Manipulation Methods
+    # Keypress Events
     ##############################
     def keyPressEvent(self, event):
         """The following function handles keypressEvents used to select and
@@ -161,9 +135,9 @@ class MainGui(skeleton.GuiSkeleton):
             dx = -1
 
         if dx or dy:
-            if isShift and self.sizeOfEllipse >= 2:
-                dx *= self.sizeOfEllipse/2
-                dy *= self.sizeOfEllipse/2
+            if isShift and self.pointSize >= 2:
+                dx *= self.pointSize / 2
+                dy *= self.pointSize / 2
             if currentPoint:
                 currentPoint.move(dx, dy)
                 #self.scene.update()
@@ -215,6 +189,7 @@ class MainGui(skeleton.GuiSkeleton):
                 self.placeMarkerButton.setChecked(False)
             else:
                 self.placeMarkerButton.setChecked(True)
+
             self.placeMarkerButtonFunc()
 
         elif event.key() == QtCore.Qt.Key_L:
@@ -222,6 +197,7 @@ class MainGui(skeleton.GuiSkeleton):
                 self.drawRefButton.setChecked(False)
             else:
                 self.drawRefButton.setChecked(True)
+
             self.drawRefButtonFunc()
 
         # Delete to delete highlighted pointed
@@ -234,7 +210,7 @@ class MainGui(skeleton.GuiSkeleton):
         #self.scene.update()
 
     ##############################
-    # File Dialog Method
+    # File Dialog Methods
     ##############################
     def openImage(self, fileName=None):
         """The following function opens a file dialog and then loads
@@ -305,7 +281,7 @@ class MainGui(skeleton.GuiSkeleton):
                     points.append(pointDict)
                 saveData["points"] = points
 
-            if self.dlLineEdit.text() != "0":
+            if self.dlLineEdit.text() not in ["0", ""]:
                 saveData['dl'] = self.dlLineEdit.text()
 
             if self.angleRefLine.finalPoint:
@@ -359,27 +335,26 @@ class MainGui(skeleton.GuiSkeleton):
                         x = point['x']
                         y = point['y']
                         addedMarker = self.pointListWidget.addMarker(
-                                          x, y, self.sizeOfEllipse,
-                                          self.widthOfEllipse, self.scene)
+                                          x, y, self.pointSize,
+                                          self.lineWidth, self.scene)
                         addedMarker.setDesignation(pointDesignation)
 
                 dl = loadData.get('dl')
                 if dl:
                     self.dlLineEdit.setText(dl)
-                    self.dL = float(dl)
 
                 refInitialPoint = loadData.get('refInitialPoint')
                 refFinalPoint = loadData.get('refFinalPoint')
                 if refInitialPoint and refFinalPoint:
                     self.angleRefLine.setInitialPoint(
                         refInitialPoint['x'], refInitialPoint['y'],
-                        self.sizeAngleRef, self.widthAngleRef)
+                        self.pointSize, self.lineWidth)
                     self.angleRefLine.drawLine(
                         refFinalPoint['x'], refFinalPoint['y'],
-                        self.widthAngleRef)
+                        self.lineWidth)
                     self.angleRefLine.setFinalPoint(
                         refFinalPoint['x'], refFinalPoint['y'],
-                        self.sizeAngleRef, self.widthAngleRef)
+                        self.pointSize, self.lineWidth)
 
     def saveScreenshot(self):
         """Save the currently visible part of the scene scroll area to an
@@ -418,42 +393,14 @@ class MainGui(skeleton.GuiSkeleton):
         self.adjustScrollBar(self.sceneScrollArea.verticalScrollBar(), factor)
 
         # scale the drawn points when zooming
-        self.sizeOfEllipse /= factor
-        self.widthOfEllipse /= factor
-        self.widthOfCircle /= factor
-        self.sizeAngleRef /= factor
-        self.widthAngleRef /= factor
+        self.pointSize /= factor
+        self.lineWidth /= factor
 
-        # rescale the points
-        for row in range(self.pointListWidget.count()):
-            point = self.pointListWidget.item(row)
-            point.rescale(self.sizeOfEllipse, self.widthOfEllipse)
-
-        pen = self.getCirclePen('green')
-        if self.hasTrackMomentumCalc:
-            self.updateDrawCircleZoom(
-                self.nominalFittedCenter, self.nominalFittedCenter.rect().width(), pen)
-
-        pen.setStyle(QtCore.Qt.DashDotLine)
-        if self.hasDrawndLCurves:
-            self.updateDrawCircleZoom(
-                self.innerFittedCenter, self.innerFittedCenter.rect().width(), pen)
-            self.updateDrawCircleZoom(
-                self.outerFittedCenter, self.outerFittedCenter.rect().width(), pen)
-
-        self.angleRefLine.rescale(self.sizeAngleRef, self.widthAngleRef)
+        self.pointListWidget.rescale(self.pointSize, self.lineWidth)
+        self.momentumArc.rescale(self.lineWidth)
+        self.angleRefLine.rescale(self.pointSize, self.lineWidth)
 
         #self.scene.update()
-
-    def updateDrawCircleZoom(self, circle, size, pen):
-        """The following helper function scales circles."""
-        drawRec = QtCore.QRectF(
-            circle.rect().x(), circle.rect().y(), size, size)
-        drawRec.moveCenter(
-            QtCore.QPointF(circle.rect().center().x(), circle.rect().center().y()))
-        circle.setRect(drawRec)
-        pen.setColor(circle.pen().color())
-        circle.setPen(pen)
 
     def adjustScrollBar(self, scrollBar, factor):
         """The following helper function adjusts size of scrollbar."""
@@ -482,13 +429,6 @@ class MainGui(skeleton.GuiSkeleton):
             self.displayMessage("ERROR: Less than 3 points to fit.")
             return
 
-        if self.hasTrackMomentumCalc:
-            self.scene.removeItem(self.nominalFittedCenter)
-
-        if self.hasDrawndLCurves:
-            self.scene.removeItem(self.innerFittedCenter)
-            self.scene.removeItem(self.outerFittedCenter)
-
         # check if start point was defined
         if not self.pointListWidget.getStartPoint():
             self.displayMessage(
@@ -500,9 +440,6 @@ class MainGui(skeleton.GuiSkeleton):
             self.displayMessage(
                 "ERROR: End point has not been defined yet.")
             return
-
-        if self.placeMarkerButton.isChecked():
-            self.placeMarkerButton.setChecked(False)
 
         # fit a circle to placed points.
         fitted_circle = circlefit.circleFit(self.pointListWidget)
@@ -531,84 +468,41 @@ class MainGui(skeleton.GuiSkeleton):
                     0.3*15.5*fitted_circle[2][1]*self.nomCalcmPerPix, 0.3*15.5*fitted_circle[2][0]*self.errCalcmPerPix)))
         self.displayMessage(
             str("Fitted R_o:\t %f +/- %f [MeV]" % (0.3*15.5*r_temp, 0.3*15.5*r_err)))
-        # Set colour of circle to be drawn.
-        pen = self.getCirclePen('green')
-        # Create a drawing rectangle for the circle.
-        drawRec = QtCore.QRectF(
-            self.fittedX0, self.fittedY0, 2 * self.fittedR0, 2 * self.fittedR0)
-        # Translate top left corner of rectangle to match the center of circle.
-        drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
 
-        self.start_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
+        startAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.pointListWidget.getStartPoint().ellipse, 
                 [self.fittedX0 + 1, self.fittedY0 + 0])
-        self.span_angle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
+        spanAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.pointListWidget.getEndPoint().ellipse, 
                 self.pointListWidget.getStartPoint().ellipse)
 
+        if self.dlLineEdit.text():
+            dl = float(self.dlLineEdit.text())
+        else:
+            dl = 0
 
-        # Draw circle with specified colour.
-        self.nominalFittedCenter = self.scene.addEllipse(drawRec, pen)
-        # Need to multiply by 16.0 because function uses units of 1/16th degrees
-        self.nominalFittedCenter.setStartAngle(16.0 * self.start_angle)
-        self.nominalFittedCenter.setSpanAngle(16.0 * self.span_angle)
-        
-        self.drawdlCurves()
-        self.hasTrackMomentumCalc = True
-
-    def drawdlCurves(self):
-        """The following helper function draws the dL curves."""
-        # Draw dL curves if dL is specified.
-        try:
-            self.dL = float(self.dlLineEdit.text())
-        except ValueError:
-            self.displayMessage("ERROR: dL is not a float")
-            return
-
-        pen = self.getCirclePen('green')
-        pen.setStyle(QtCore.Qt.DashDotLine)
-        # Define outer circle.
-        drawRec = QtCore.QRectF(
-            self.fittedX0, self.fittedY0, 2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
-        # Draw a dotted line.
-        pen.setStyle(QtCore.Qt.DashDotLine)
-        # Translate top left corner of rectangle to match the center of circle.
-        drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-        self.outerFittedCenter = self.scene.addEllipse(drawRec, pen)
-        
-        # Need to multiply by 16.0 because function uses units of 1/16th degrees        
-        self.outerFittedCenter.setStartAngle(16.0 * self.start_angle)
-        self.outerFittedCenter.setSpanAngle(16.0 * self.span_angle)
-
-        # Deine inner circle.
-        drawRec = QtCore.QRectF(
-            self.fittedX0, self.fittedY0,  2 * (self.fittedR0 - self.dL), 2 * (self.fittedR0 - self.dL))
-        # Draw a dotted line.
-        # Translate top left corner of rectangle to match the center of circle.
-        drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-        self.innerFittedCenter = self.scene.addEllipse(drawRec, pen)
-        
-        # Need to multiply by 16.0 because function uses units of 1/16th degrees
-        self.innerFittedCenter.setStartAngle(16.0 * self.start_angle)
-        self.innerFittedCenter.setSpanAngle(16.0 * self.span_angle)
-
-        # Used for debugging purposes.
-        self.hasDrawndLCurves = True
+        self.momentumArc.draw(
+            self.fittedX0, self.fittedY0, self.fittedR0,
+            startAngle, spanAngle, dl, self.lineWidth)
 
     def calcOptDen(self):
         """The following function is used to calculate optical density of
         drawn points on image with a specified dL."""
 
         # Return if track momentum has NOT been calculated.
-        if self.hasTrackMomentumCalc is False:
+        if not self.momentumArc.centralArc:
             self.displayMessage(
                 "ERROR: Track momentum has not been calculated yet.")
             return
 
-        # Return if value of dL was not specified.
-        if self.dL <= 0:
+        if self.dlLineEdit.text():
+            dl = float(self.dlLineEdit.text())
+        else:
+            dl = 0
+
+        if dl == 0:
             self.displayMessage(
-                "ERROR: Positive non-zero value for dL was not specified.")
+                "ERROR: dL must be non-zero.")
             return
 
         # Check if start point was defined.
@@ -626,18 +520,11 @@ class MainGui(skeleton.GuiSkeleton):
         # Assigned fitted circle to pass to optical density function.
         self.tmp_circle = self.circleInfo
 
-        # Draw dL curves if dL is specified.
-        try:
-            self.dL = float(self.dlLineEdit.text())
-        except ValueError:
-            self.displayMessage("ERROR: dL is not a float")
-            return
-
         # Call function to compute optical density.
         self.displayMessage("Computing optical density...")
 
         self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
-            self, self.sceneImage, self.tmp_circle, self.dL,
+            self.sceneImage, self.tmp_circle, dl,
             self.pointListWidget.getStartPoint().ellipse,
             self.pointListWidget.getEndPoint().ellipse)
         self.displayMessage(str("Total optical density: %f +/- %f" % (self.optDens, self.errOptDens)))
@@ -657,7 +544,7 @@ class MainGui(skeleton.GuiSkeleton):
         """The following function is used to calculate the angle between
         intial tangent and specified references"""
 
-        if self.hasTrackMomentumCalc is False:
+        if not self.momentumArc.centralArc:
             self.displayMessage(
                 "ERROR: Track momentum has not been calculated yet.")
             return
@@ -686,39 +573,19 @@ class MainGui(skeleton.GuiSkeleton):
         """The following helper function changes the diameter of dL curves.
         Connected to changing values on the dL field"""
 
-        if len(value) is 0:
+        if not value:
             return
 
-        try:
-            self.dL = float(value)
-        except ValueError:
-            self.displayMessage("ERROR: dL is not a float")
-            return
+        dl = float(value)
 
-        # Return if track momentum has already been calculated.
-        if not self.hasTrackMomentumCalc:
-            return
-
-        # If original dL curves have not been drawn, create them.
-        if not self.hasDrawndLCurves:
-            self.drawdlCurves()
-
-        drawRec = QtCore.QRectF(
-            self.fittedX0, self.fittedY0,  2 * (self.fittedR0 + self.dL), 2 * (self.fittedR0 + self.dL))
-        drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-        self.outerFittedCenter.setRect(drawRec)
-
-        drawRec = QtCore.QRectF(
-            self.fittedX0, self.fittedY0, 2 * (self.fittedR0 - self.dL), 2 * (self.fittedR0 - self.dL))
-        drawRec.moveCenter(QtCore.QPointF(self.fittedX0, self.fittedY0))
-
-        self.innerFittedCenter.setRect(drawRec)
+        self.momentumArc.updateArcs(dl)
 
         #self.scene.update()
 
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the
         place track marker mode button is toggled"""
+
         self.drawRefButton.setChecked(False)
 
     def drawRefButtonFunc(self):
@@ -742,31 +609,19 @@ class MainGui(skeleton.GuiSkeleton):
         """The following function resets image transformations,
         and clears point list and console output."""
 
-        # Clear the list of points.
+        # remove all points, arcs and lines
         self.pointListWidget.empty()
+        self.angleRefLine.reset()
+        self.momentumArc.reset()
 
-        # Clear drawn points.
-        itemList = self.scene.items()
-        for i in itemList:
-            if(i.__class__.__name__ == 'QGraphicsPixmapItem'):
-                continue
-            self.scene.removeItem(i)
-
-        # Clear console output.
+        # clear console output
         self.consoleTextBrowser.clear()
-
-        # Reset the number of points.
-        self.hasTrackMomentumCalc = False
-        self.hasDrawndLCurves = False
 
         # reset view scale and fit image in view
         self.scaleImage(1 / self.zoomFactor)
 
-        self.sizeOfEllipse = 10
-        self.widthOfEllipse = 2.5
-        self.widthOfCircle = 2.5
-        self.sizeAngleRef = 10
-        self.widthAngleRef = 2.5
+        self.pointSize = 10
+        self.lineWidth = 2.5
 
         if not self.sceneImage.isNull():
             scaleFactor = 1
@@ -787,7 +642,6 @@ class MainGui(skeleton.GuiSkeleton):
         self.nUserClickOnPicture = 0
 
         self.dlLineEdit.setText("0")
-        self.dL = 0
 
         # reset count of messages printed to console
         self.num_messages = 0

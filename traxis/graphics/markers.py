@@ -39,6 +39,12 @@ class MarkerList(QtWidgets.QListWidget):
 
         self.clear()
 
+    def rescale(self, size, width):
+
+        for row in range(self.count()):
+            point = self.item(row)
+            point.rescale(size, width)
+
     def setStartPoint(self, marker):
         
         oldStartPoint = self.getStartPoint()

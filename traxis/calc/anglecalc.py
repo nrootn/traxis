@@ -1,5 +1,4 @@
 from PyQt5 import QtCore
-from traxis.gui.maingui import *
 
 
 # Input: gui - mainGUI class to be used ONLY for printing messages
@@ -23,9 +22,9 @@ def angleCalc(gui, circle, initialPoint, lineRef):
         0, 0, -(deltaY - circle[1][1]), deltaX - circle[0][1])
 
     # For Debug
-    gui.scene.addLine(initialPoint.rect().center().x() + deltaY, initialPoint.rect().center().y() - deltaX,
-     initialPoint.rect().center().x() - deltaY,
-     initialPoint.rect().center().y() + deltaX)
+    #gui.scene.addLine(initialPoint.rect().center().x() + deltaY, initialPoint.rect().center().y() - deltaX,
+    # initialPoint.rect().center().x() - deltaY,
+    # initialPoint.rect().center().y() + deltaX)
 
     # compute the angles
     angle = lineRef.line().angleTo(tangentLine)
