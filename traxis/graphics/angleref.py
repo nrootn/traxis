@@ -32,9 +32,6 @@ class ReferenceLine(object):
 
     def setFinalPoint(self, x, y, size, width):
 
-        if not self.initialPoint or self.finalPoint:
-            return
-
         if size < 1: # set minimum size
             size = 1
 
@@ -55,9 +52,6 @@ class ReferenceLine(object):
             self.reset()
 
     def drawLine(self, endX, endY, width):
-
-        if not self.initialPoint or self.finalPoint:
-            return
 
         if self.line:
             self.scene.removeItem(self.line)
@@ -109,6 +103,15 @@ class ReferenceLine(object):
             newLinePen = self.line.pen()
             newLinePen.setWidth(width)
             self.line.setPen(newLinePen)
+
+    def isBeingDrawn(self):
+        """Return True is the ReferenceLine object is in the process of being
+        drawn, False otherwise.
+        """
+
+        # line is in process of being drawn if the initial point exists but the
+        # final point does not
+        return self.initialPoint and not self.finalPoint
 
     def reset(self):
 

@@ -87,16 +87,18 @@ class MainGui(skeleton.GuiSkeleton):
         angle reference. It is also connected to the mouse release event signal
         as well"""
 
-        self.angleRefLine.setFinalPoint(
-            event.pos().x(), event.pos().y(),
-            self.pointSize, self.lineWidth)
+        if self.angleRefLine.isBeingDrawn():
+            self.angleRefLine.setFinalPoint(
+                event.pos().x(), event.pos().y(),
+                self.pointSize, self.lineWidth)
 
     def mouseMove(self, event):
         """The following function draws a line between the intial point and the current
         mouse position. It is connected to mouse drag signal"""
 
-        self.angleRefLine.drawLine(
-            event.pos().x(), event.pos().y(), self.lineWidth)
+        if self.angleRefLine.isBeingDrawn():
+            self.angleRefLine.drawLine(
+                event.pos().x(), event.pos().y(), self.lineWidth)
 
         if not (self.placeMarkerButton.isChecked()
                 or self.drawRefButton.isChecked()):
