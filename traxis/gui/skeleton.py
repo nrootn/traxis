@@ -20,8 +20,12 @@ class GuiSkeleton(object):
         self.mainLayout = QtWidgets.QVBoxLayout(self.baseWidget)
 
         # layout for the top half of the user interface
-        self.topUiLayout = QtWidgets.QHBoxLayout()
-        self.mainLayout.addLayout(self.topUiLayout)
+        self.topWidget = QtWidgets.QWidget()
+        self.mainLayout.addWidget(self.topWidget)
+        self.topWidget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.topUiLayout = QtWidgets.QHBoxLayout(self.topWidget)
+        self.topUiLayout.setContentsMargins(0, 0, 0, 0)
 
         # track marker list gui segment
         self.pointListLayout = QtWidgets.QVBoxLayout()  # marker segment layout
@@ -37,8 +41,7 @@ class GuiSkeleton(object):
         self.pointListLayout.addWidget(self.pointListWidget)
         # don't focus on this widget when clicked
         self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pointListWidget.setMaximumSize(QtCore.QSize(100, 2000))
-        self.pointListWidget.setMinimumSize(QtCore.QSize(100, 0))
+        self.pointListWidget.setFixedWidth(100)
 
         # first vertical gui segment divider in top half layout
         self.vLineDiv1 = QtWidgets.QFrame(
@@ -113,7 +116,7 @@ class GuiSkeleton(object):
         self.calcAngleButton.setText("Calculate Angle")
         self.calcAngleButton.setToolTip("Calculate Opening Angle")
 
-        self.techButtonLayout.addStretch(1)  # add stretch to segment
+        self.techButtonLayout.addStretch(0)  # add stretch to segment
 
         # second vertical gui segment divider in top half layout
         self.vLineDiv2 = QtWidgets.QFrame(
@@ -127,10 +130,10 @@ class GuiSkeleton(object):
         self.userSelectionLayout = QtWidgets.QVBoxLayout()
         self.topUiLayout.addLayout(self.userSelectionLayout)
 
-        self.userInputLabel = QtWidgets.QLabel(
+        self.openSaveLabel = QtWidgets.QLabel(
             self.baseWidget)  # open/save label
-        self.userSelectionLayout.addWidget(self.userInputLabel)
-        self.userInputLabel.setText("Open/Save")
+        self.userSelectionLayout.addWidget(self.openSaveLabel)
+        self.openSaveLabel.setText("Open/Save")
 
         self.openImageButton = QtWidgets.QPushButton(
             self.baseWidget)  # open image button widget
@@ -214,7 +217,7 @@ class GuiSkeleton(object):
         self.dlLineEdit.setValidator(
             QtGui.QRegExpValidator(QtCore.QRegExp('[0-9]+\.?[0-9]*')))
 
-        self.userSelectionLayout.addStretch(1)  # add stretch to segment
+        self.userSelectionLayout.addStretch(0)  # add stretch to segment
 
         # third vertical gui segment divider in top half layout
         self.vLineDiv3 = QtWidgets.QFrame(
@@ -235,7 +238,18 @@ class GuiSkeleton(object):
         self.consoleTextBrowser = QtWidgets.QTextBrowser(  # console text browser widget
             self.baseWidget)
         self.consoleLayout.addWidget(self.consoleTextBrowser)
-        self.consoleTextBrowser.setMinimumSize(QtCore.QSize(100, 0))
+        self.consoleTextBrowser.setMinimumWidth(100)
+
+        # get the total height of the second column of buttons
+        topHeight = self.openImageButton.height() + \
+                    self.saveSessionButton.height() + \
+                    self.screenshotButton.height() + \
+                    self.modeLabel.height() + \
+                    self.placeMarkerButton.height() + \
+                    self.drawRefButton.height() + \
+                    self.dlLineEdit.height() + \
+                    6*self.userSelectionLayout.spacing()
+        self.topWidget.setFixedHeight(topHeight)
 
         # horizontal gui segment divider between top half and bottom half of ui
         self.hLineDiv = QtWidgets.QFrame(self.baseWidget)
@@ -251,6 +265,8 @@ class GuiSkeleton(object):
         self.scene = QtWidgets.QGraphicsScene()  # graphics scene widget
         self.sceneView = QtWidgets.QGraphicsView(self.scene, self.baseWidget)  # grahics view widget
         self.bottomUiLayout.addWidget(self.sceneView)
+        self.sceneView.setMinimumWidth(900)
+        self.sceneView.setMinimumHeight(400)
 
         # instantiate QImage and PixmapItem
         self.sceneImage = QtGui.QImage()

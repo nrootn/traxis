@@ -57,7 +57,6 @@ class MainGui(skeleton.GuiSkeleton):
         # connect other events
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
         self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
-        self.baseWidget.resizeEvent = self.resizeEvent
 
     ###########################
     # Mouse Event Methods
@@ -557,7 +556,7 @@ class MainGui(skeleton.GuiSkeleton):
             str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
 
     ##############################
-    # Connection to Other Buttons
+    # Connection to Other Events
     ##############################
     def changedLCircles(self, value):
         """The following helper function changes the diameter of dL curves.
@@ -575,10 +574,6 @@ class MainGui(skeleton.GuiSkeleton):
     def highlightPoint(self):
         self.pointListWidget.highlightCurrent()
         #self.scene.update()
-
-    def resizeEvent(self, event):
-        self.sceneView.setMinimumSize(
-            QtCore.QSize(0, self.baseWidget.size().height() / 1.65))
 
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the
