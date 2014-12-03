@@ -25,8 +25,6 @@ class MainGui(skeleton.GuiSkeleton):
         self.errCalcmPerPix = 0.00090
 
         # set gui state variables
-        self.num_messages = 0
-        self.nUserClickOnPicture = 0
         self.zoomFactor = 1
         self.pointSize = 10
         self.lineWidth = 2.5
@@ -405,8 +403,11 @@ class MainGui(skeleton.GuiSkeleton):
     def displayMessage(self, msg):
         """The following function is used to write messages to console."""
 
-        self.num_messages += 1
-        msg = "[{}]  {}".format(self.num_messages, msg)
+        if self.consoleTextBrowser.document().characterCount() == 1:
+            msgNumber = 1
+        else:
+            msgNumber = self.consoleTextBrowser.document().blockCount() + 1
+        msg = "[{}]  {}".format(msgNumber, msg)
         self.consoleTextBrowser.append(msg)
 
     ##############################
@@ -434,29 +435,29 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         # fit a circle to placed points.
-        fitted_circle = circlefit.circleFit(self.pointListWidget)
-        self.fittedX0 = fitted_circle[0][0]
-        self.fittedY0 = fitted_circle[1][0]
-        self.fittedR0 = fitted_circle[2][0]
+        fittedCircle = circlefit.circleFit(self.pointListWidget)
+        self.fittedX0 = fittedCircle[0][0]
+        self.fittedY0 = fittedCircle[1][0]
+        self.fittedR0 = fittedCircle[2][0]
         
-        self.circleInfo = fitted_circle
+        self.circleInfo = fittedCircle
 
         self.displayMessage(
-            str("Fitted x_o:\t %f +/- %f [pixel]" % (fitted_circle[0][0], fitted_circle[0][1])))
+            str("Fitted x_o:\t %f +/- %f [pixel]" % (fittedCircle[0][0], fittedCircle[0][1])))
         self.displayMessage(
-            str("Fitted y_o:\t %f +/- %f [pixel]" % (fitted_circle[1][0], fitted_circle[1][1])))
+            str("Fitted y_o:\t %f +/- %f [pixel]" % (fittedCircle[1][0], fittedCircle[1][1])))
         self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f [pixel]" % (fitted_circle[2][0], fitted_circle[2][1])))
+            str("Fitted R_o:\t %f +/- %f [pixel]" % (fittedCircle[2][0], fittedCircle[2][1])))
         self.displayMessage(
             str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % 
-                (fitted_circle[2][0]*self.nomCalcmPerPix, 
-                fitted_circle[2][1]*self.nomCalcmPerPix, 
-                fitted_circle[2][0]*self.errCalcmPerPix)))
+                (fittedCircle[2][0]*self.nomCalcmPerPix, 
+                fittedCircle[2][1]*self.nomCalcmPerPix, 
+                fittedCircle[2][0]*self.errCalcmPerPix)))
         self.displayMessage(
             str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" 
-                % (0.3*15.5*fitted_circle[2][0]*self.nomCalcmPerPix, 
-                0.3*15.5*fitted_circle[2][1]*self.nomCalcmPerPix, 
-                0.3*15.5*fitted_circle[2][0]*self.errCalcmPerPix)))
+                % (0.3*15.5*fittedCircle[2][0]*self.nomCalcmPerPix, 
+                0.3*15.5*fittedCircle[2][1]*self.nomCalcmPerPix, 
+                0.3*15.5*fittedCircle[2][0]*self.errCalcmPerPix)))
 
         startAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.pointListWidget.getStartPoint().ellipse, 
@@ -507,13 +508,13 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         # Assigned fitted circle to pass to optical density function.
-        self.tmp_circle = self.circleInfo
+        self.tmpCircle = self.circleInfo
 
         # Call function to compute optical density.
         self.displayMessage("Computing optical density...")
 
         self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
-            self.sceneImage, self.tmp_circle, dl,
+            self.sceneImage, self.tmpCircle, dl,
             self.pointListWidget.getStartPoint().ellipse,
             self.pointListWidget.getEndPoint().ellipse)
         self.displayMessage(str("Total optical density: %f +/- %f" % (self.optDens, self.errOptDens)))
@@ -612,20 +613,14 @@ class MainGui(skeleton.GuiSkeleton):
         if not self.sceneImage.isNull():
             scaleFactor = 1
 
-            height_ratio = self.sceneView.height() / self.sceneImage.height()
-            width_ratio = self.sceneView.width() / self.sceneImage.width()
+            heightRatio = (self.sceneView.height()-2) / self.sceneImage.height()
+            widthRatio = (self.sceneView.width()-2) / self.sceneImage.width()
 
-            if height_ratio < width_ratio:
-                scaleFactor = height_ratio
+            if heightRatio < widthRatio:
+                scaleFactor = heightRatio
             else:
-                scaleFactor = width_ratio
+                scaleFactor = widthRatio
 
             self.scaleImage(scaleFactor)
 
-
-        self.nUserClickOnPicture = 0
-
         self.dlLineEdit.setText("0")
-
-        # reset count of messages printed to console
-        self.num_messages = 0
