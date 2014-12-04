@@ -240,16 +240,10 @@ class GuiSkeleton(object):
         self.consoleLayout.addWidget(self.consoleTextBrowser)
         self.consoleTextBrowser.setMinimumWidth(100)
 
-        # get the total height of the second column of buttons
-        topHeight = self.openImageButton.height() + \
-                    self.saveSessionButton.height() + \
-                    self.screenshotButton.height() + \
-                    self.modeLabel.height() + \
-                    self.placeMarkerButton.height() + \
-                    self.drawRefButton.height() + \
-                    self.dlLineEdit.height() + \
-                    6*self.userSelectionLayout.spacing()
-        self.topWidget.setFixedHeight(topHeight)
+        consoleHeight = self.userSelectionLayout.minimumSize().height() - \
+                    self.openSaveLabel.height()
+        self.pointListWidget.setFixedHeight(consoleHeight)
+        self.consoleTextBrowser.setFixedHeight(consoleHeight)
 
         # horizontal gui segment divider between top half and bottom half of ui
         self.hLineDiv = QtWidgets.QFrame(self.baseWidget)
