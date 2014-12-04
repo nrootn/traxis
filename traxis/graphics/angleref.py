@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+from traxis import constants
 
 
 class ReferenceLine(object):
@@ -24,7 +25,7 @@ class ReferenceLine(object):
         initialRect.moveCenter(QtCore.QPointF(x, y))
         self.initialPoint = QtWidgets.QGraphicsEllipseItem(initialRect)
 
-        initialPen = QtGui.QPen(QtGui.QColor(243, 42, 31))
+        initialPen = QtGui.QPen(constants.REFLINECOLOR)
         initialPen.setWidth(width)
         self.initialPoint.setPen(initialPen)
 
@@ -42,7 +43,7 @@ class ReferenceLine(object):
         finalRect.moveCenter(QtCore.QPointF(x, y))
         self.finalPoint = QtWidgets.QGraphicsEllipseItem(finalRect)
 
-        finalPen = QtGui.QPen(QtGui.QColor(243, 42, 31))
+        finalPen = QtGui.QPen(constants.REFLINECOLOR)
         finalPen.setWidth(width)
         self.finalPoint.setPen(finalPen)
 
@@ -63,7 +64,7 @@ class ReferenceLine(object):
         startY = self.initialPoint.rect().center().y()
         self.line = QtWidgets.QGraphicsLineItem(startX, startY, endX, endY)
 
-        linePen = QtGui.QPen(QtGui.QColor(243, 42, 31))
+        linePen = QtGui.QPen(constants.REFLINECOLOR)
         linePen.setWidth(width)
         self.line.setPen(linePen)
 

@@ -1,6 +1,7 @@
 import math
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
+from traxis import constants
 from traxis.gui import skeleton
 from traxis.calc import anglecalc, circlefit, optdensity
 
@@ -20,14 +21,10 @@ class MainGui(skeleton.GuiSkeleton):
 
         super().__init__()
 
-        # calibration
-        self.nomCalcmPerPix = 0.01188
-        self.errCalcmPerPix = 0.00090
-
         # set gui state variables
         self.zoomFactor = 1
-        self.pointSize = 10
-        self.lineWidth = 2.5
+        self.pointSize = constants.DEFAULTPOINTSIZE
+        self.lineWidth = constants.DEFAULTLINEWIDTH
         self.imageFileName = None
 
         # connect buttons
@@ -374,12 +371,12 @@ class MainGui(skeleton.GuiSkeleton):
     def zoomIn(self):
         """The following function zooms image by 125% when called."""
 
-        self.scaleImage(1.25)
+        self.scaleImage(constants.ZOOMINFACTOR)
 
     def zoomOut(self):
         """The following function zooms image by 80% when called."""
 
-        self.scaleImage(0.8)
+        self.scaleImage(constants.ZOOMOUTFACTOR)
 
     def scaleImage(self, factor):
         """The following helper function scales images and points."""
@@ -450,14 +447,14 @@ class MainGui(skeleton.GuiSkeleton):
             str("Fitted R_o:\t %f +/- %f [pixel]" % (fittedCircle[2][0], fittedCircle[2][1])))
         self.displayMessage(
             str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % 
-                (fittedCircle[2][0]*self.nomCalcmPerPix, 
-                fittedCircle[2][1]*self.nomCalcmPerPix, 
-                fittedCircle[2][0]*self.errCalcmPerPix)))
+                (fittedCircle[2][0]*constants.CMPERPX, 
+                fittedCircle[2][1]*constants.CMPERPX, 
+                fittedCircle[2][0]*constants.ERRCMPERPX)))
         self.displayMessage(
             str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" 
-                % (0.3*15.5*fittedCircle[2][0]*self.nomCalcmPerPix, 
-                0.3*15.5*fittedCircle[2][1]*self.nomCalcmPerPix, 
-                0.3*15.5*fittedCircle[2][0]*self.errCalcmPerPix)))
+                % (0.3*15.5*fittedCircle[2][0]*constants.CMPERPX, 
+                0.3*15.5*fittedCircle[2][1]*constants.CMPERPX, 
+                0.3*15.5*fittedCircle[2][0]*constants.ERRCMPERPX)))
 
         startAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
                 self.pointListWidget.getStartPoint().ellipse, 
@@ -521,8 +518,8 @@ class MainGui(skeleton.GuiSkeleton):
         self.displayMessage(str("Track Length: %f [Pixel]" % (self.trackLengthPix)))
 
         # Calculation of Variables
-        self.trackLengthcm = self.trackLengthPix * self.nomCalcmPerPix;
-        self.trackLengtherr = self.trackLengthPix * self.errCalcmPerPix;
+        self.trackLengthcm = self.trackLengthPix * constants.CMPERPX;
+        self.trackLengtherr = self.trackLengthPix * constants.ERRCMPERPX;
         self.optDenspercm = self.optDens/self.trackLengthcm;
         self.optDenspercmErr = self.optDenspercm * math.sqrt(
                 math.pow(self.trackLengtherr/self.trackLengthcm,2)+math.pow(self.errOptDens/self.optDens,2));
@@ -607,8 +604,8 @@ class MainGui(skeleton.GuiSkeleton):
         # reset view scale and fit image in view
         self.scaleImage(1 / self.zoomFactor)
 
-        self.pointSize = 10
-        self.lineWidth = 2.5
+        self.pointSize = constants.DEFAULTPOINTSIZE
+        self.lineWidth = constants.DEFAULTLINEWIDTH
 
         if not self.sceneImage.isNull():
             scaleFactor = 1

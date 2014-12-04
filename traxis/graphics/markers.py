@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+from traxis import constants
 
 
 class MarkerList(QtWidgets.QListWidget):
@@ -120,7 +121,7 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         ellipseRect.moveCenter(QtCore.QPointF(x, y))
         self.ellipse = QtWidgets.QGraphicsEllipseItem(ellipseRect)
 
-        ellipsePen = QtGui.QPen(QtGui.QColor(176, 30, 125))
+        ellipsePen = QtGui.QPen(constants.DEFAULTMARKERCOLOR)
         ellipsePen.setWidth(width)
         self.ellipse.setPen(ellipsePen)
 
@@ -142,13 +143,13 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         newPen = self.ellipse.pen()
 
         if self.isSelected():
-            newPen.setColor(QtGui.QColor(235, 233, 0))
+            newPen.setColor(constants.HIGHLIGHTMARKERCOLOR)
         elif self.designation == 'start':
-            newPen.setColor(QtGui.QColor(0, 186, 186))
+            newPen.setColor(constants.STARTMARKERCOLOR)
         elif self.designation == 'end':
-            newPen.setColor(QtGui.QColor(34, 197, 25))
+            newPen.setColor(constants.ENDMARKERCOLOR)
         else:
-            newPen.setColor(QtGui.QColor(176, 30, 125))
+            newPen.setColor(constants.DEFAULTMARKERCOLOR)
 
         self.ellipse.setPen(newPen)
 

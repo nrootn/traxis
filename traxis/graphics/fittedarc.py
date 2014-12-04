@@ -1,4 +1,6 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
+from traxis import constants
+
 
 class ArcItem(QtWidgets.QGraphicsEllipseItem):
 
@@ -23,7 +25,7 @@ class MomentumArc(object):
         if width < 1: # set minimum width
             width = 1
 
-        momentumPen = QtGui.QPen(QtGui.QColor(33, 95, 147))
+        momentumPen = QtGui.QPen(constants.ARCCOLOR)
         momentumPen.setWidth(width)
 
         centralRect = QtCore.QRectF(centerX, centerY, 2 * radius, 2 * radius)
