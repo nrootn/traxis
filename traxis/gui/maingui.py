@@ -1,4 +1,3 @@
-import math
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 from traxis import constants
@@ -314,8 +313,6 @@ class MainGui(skeleton.GuiSkeleton):
                         refFinalPoint['x'], refFinalPoint['y'],
                         self.pointSize, self.lineWidth)
 
-                self.resetImage()
-
     def saveScreenshot(self):
         """Save the currently visible part of the scene view to an
         image.
@@ -358,6 +355,7 @@ class MainGui(skeleton.GuiSkeleton):
         self.pointListWidget.rescale(self.pointSize, self.lineWidth)
         self.momentumArc.rescale(self.lineWidth)
         self.angleRefLine.rescale(self.pointSize, self.lineWidth)
+        self.tangentLine.rescale(self.lineWidth)
 
     ##############################
     # Console Methods
@@ -396,6 +394,9 @@ class MainGui(skeleton.GuiSkeleton):
                 "NOTICE: End track point must be selected first.")
             return
 
+        # remove the tangent line if it was drawn
+        self.tangentLine.reset()
+
         # fit a circle to placed points.
         self.fittedCircle = circlefit.circleFit(self.pointListWidget)
 
@@ -425,12 +426,11 @@ class MainGui(skeleton.GuiSkeleton):
                 constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][1]*constants.CMPERPX, 
                 constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][0]*constants.ERRCMPERPX)))
 
-        startAngle = optdensity.getAngle([self.fittedCircle[0][0], self.fittedCircle[1][0]], 
-                self.pointListWidget.getStartPoint().ellipse, 
-                [self.fittedCircle[0][0] + 1, self.fittedCircle[1][0] + 0])
-        spanAngle = optdensity.getAngle([self.fittedCircle[0][0], self.fittedCircle[1][0]], 
-                self.pointListWidget.getEndPoint().ellipse, 
-                self.pointListWidget.getStartPoint().ellipse)
+        startAngle = self.pointListWidget.getStartPoint().getAngle(
+                         (self.fittedCircle[0][0], self.fittedCircle[1][0]))
+        spanAngle = self.pointListWidget.getEndPoint().getAngle(
+                        (self.fittedCircle[0][0], self.fittedCircle[1][0]), 
+                        self.pointListWidget.getStartPoint())
 
         if self.dlLineEdit.text():
             dl = float(self.dlLineEdit.text())
@@ -473,23 +473,28 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         # Call function to compute optical density
-        self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
+        optDens, errOptDens, trackLengthPx  = optdensity.calcOptDensity(
             self.sceneImage, self.fittedCircle, dl,
-            self.pointListWidget.getStartPoint().ellipse,
-            self.pointListWidget.getEndPoint().ellipse)
-        #self.displayMessage("Total track blackness:\t{:.5f} +/- {:.5f}".format(self.optDens, self.errOptDens))
+            self.pointListWidget.getStartPoint(),
+            self.pointListWidget.getEndPoint())
+
+        #self.displayMessage("Total track blackness:\t{:.5f} +/- {:.5f}".format(optDens, errOptDens))
         self.displayMessage("---Track Length & Optical Density---")
-        self.displayMessage("Track Length (px):\t{:.5f} [px]".format(self.trackLengthPix))
+        self.displayMessage("Track Length (px):\t{:.5f} [px]".format(trackLengthPx))
 
         # Calculation of Variables
-        self.trackLengthcm = self.trackLengthPix * constants.CMPERPX;
-        self.trackLengtherr = self.trackLengthPix * constants.ERRCMPERPX;
-        self.optDenspercm = self.optDens/self.trackLengthcm;
-        self.optDenspercmErr = self.optDenspercm * math.sqrt(
-                math.pow(self.trackLengtherr/self.trackLengthcm,2)+math.pow(self.errOptDens/self.optDens,2))
+        trackLengthCm = trackLengthPx * constants.CMPERPX;
+        trackLengthErr = trackLengthPx * constants.ERRCMPERPX;
+        optDensPerCm = optDens/trackLengthCm;
+        optDensPerCmErr = optDensPerCm * (
+                (trackLengthErr/trackLengthCm)**2+(errOptDens/optDens)**2)**0.5
 
-        self.displayMessage("Track Length (cm):\t{:.5f} +/- {:.5f} [cm]".format(self.trackLengthcm, self.trackLengtherr))
-        self.displayMessage("Optical density:\t{:.5f} +/- {:.5f} [1/cm]".format(self.optDenspercm, self.optDenspercmErr))
+        self.displayMessage(
+            "Track Length (cm):\t{:.5f} +/- {:.5f} [cm]".format(
+                trackLengthCm, trackLengthErr))
+        self.displayMessage(
+            "Optical density:\t{:.5f} +/- {:.5f} [1/cm] (with dL={})".format(
+                optDensPerCm, optDensPerCmErr, dl))
 
     def calcAngle(self):
         """The following function is used to calculate the angle between
@@ -510,9 +515,12 @@ class MainGui(skeleton.GuiSkeleton):
                 "NOTICE: Angle Reference Line must be drawn first.")
             return
 
-        angleInfo = anglecalc.angleCalc(self, self.fittedCircle,
-                              self.pointListWidget.getStartPoint().ellipse,
-                              self.angleRefLine.line)
+        tangentInfo = anglecalc.tangentCalc(self.fittedCircle,
+                          self.pointListWidget.getStartPoint())
+
+        self.tangentLine.draw(tangentInfo[0], self.lineWidth)
+
+        angleInfo = anglecalc.openingAngle(tangentInfo, self.angleRefLine.line)
 
         self.displayMessage("---Opening Angle---")
         self.displayMessage("Opening Angle:\t{:.5f} +/- {:.5f}".format(angleInfo[0],
@@ -559,6 +567,7 @@ class MainGui(skeleton.GuiSkeleton):
         self.pointListWidget.empty()
         self.angleRefLine.reset()
         self.momentumArc.reset()
+        self.tangentLine.reset()
 
         # clear console output
         self.consoleTextBrowser.clear()

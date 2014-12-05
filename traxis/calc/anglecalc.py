@@ -1,48 +1,52 @@
+import math
 from PyQt5 import QtCore
 
 
-# Input: gui - mainGUI class to be used ONLY for printing messages
-# Input: initialPoint - point at which angle is calculated [QGraphicsEllipseItem]
-# Input: circle - list of tuples [(x,dx),(y,dy),(r,dr)]
-# Input: lineRef - reference line [QGraphicsLineItem]
-# Output: tuple with calculated angle and associated error
-def angleCalc(gui, circle, initialPoint, lineRef):
-    angle = 0
-    errAngle = 0
+def tangentCalc(circle, initialPoint):
 
-    # create the perpendicularVector
-    deltaX = circle[0][0] - initialPoint.rect().center().x()
-    deltaY = circle[1][0] - initialPoint.rect().center().y()
+    centerX = circle[0][0]
+    centerY = circle[1][0]
+    radius = circle[2][0]
+    errCenterX = circle[0][1]
+    errCenterY = circle[1][1]
 
-    # Tangent vector is inverse of perpendicular vector
-    tangentLine = QtCore.QLineF(0, 0, - deltaY, deltaX)
-    tangentLineUpErr = QtCore.QLineF(
-        0, 0, -(deltaY + circle[1][1]), deltaX + circle[0][1])
-    tangentLineDownErr = QtCore.QLineF(
-        0, 0, -(deltaY - circle[1][1]), deltaX - circle[0][1])
+    initialAngle = initialPoint.getAngle((centerX, centerY))*math.pi/180
 
-    # For Debug
-    #gui.scene.addLine(initialPoint.rect().center().x() + deltaY, initialPoint.rect().center().y() - deltaX,
-    # initialPoint.rect().center().x() - deltaY,
-    # initialPoint.rect().center().y() + deltaX)
+    tangentPointX = radius*math.cos(initialAngle) + centerX
+    tangentPointY = -radius*math.sin(initialAngle) + centerY
 
-    # compute the angles
-    angle = lineRef.line().angleTo(tangentLine)
-    angleUp = abs(lineRef.line().angleTo(tangentLineUpErr) - angle)
-    angleDown = abs(lineRef.line().angleTo(tangentLineDownErr) - angle)
+    # create the perpendicular vector
+    relativeX = tangentPointX - centerX
+    relativeY = tangentPointY - centerY
 
-    errAngle = (angleUp + angleDown) / 2
+    # tangent vector is inverse of perpendicular vector
+    tangentLine = QtCore.QLineF(tangentPointX + relativeY,
+                                tangentPointY - relativeX,
+                                tangentPointX - relativeY,
+                                tangentPointY + relativeX)
+    tangentLineErrA = QtCore.QLineF(tangentPointX + (relativeY - errCenterY),
+                                    tangentPointY - (relativeX + errCenterX),
+                                    tangentPointX - (relativeY - errCenterY),
+                                    tangentPointY + (relativeX + errCenterX))
+    tangentLineErrB = QtCore.QLineF(tangentPointX + (relativeY + errCenterY),
+                                    tangentPointY - (relativeX - errCenterX),
+                                    tangentPointX - (relativeY + errCenterY),
+                                    tangentPointY + (relativeX - errCenterX))
+
+    return tangentLine, tangentLineErrA, tangentLineErrB
+
+def openingAngle(tangent, refLine):
+
+    angle = refLine.line().angleTo(tangent[0])
+    angleErrA = abs(refLine.line().angleTo(tangent[1]) - angle)
+    angleErrB = abs(refLine.line().angleTo(tangent[2]) - angle)
+
+    # special case: reference line is in between the two error tangents
+    if angleErrA > 180:
+        angleErrA = abs(angleErrA - 360)
+    elif angleErrB > 180:
+        angleErrB = abs(angleErrB - 360)
+
+    errAngle = (angleErrA + angleErrB) / 2
 
     return (angle, errAngle)
-
-
-def getAngles(origin, pts, v):
-    angles = []
-    # Compute angles of each point wrt v
-    for p in pts:
-        xx = p.rect().center().x()
-        yy = p.rect().center().y()
-        r = QtCore.QLineF(origin[0], origin[1], xx, yy)
-        print(r)
-        angles.append(QtCore.QLineF.angleTo(r, v))
-    return angles

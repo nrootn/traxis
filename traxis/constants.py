@@ -16,6 +16,9 @@ ARCCOLOR = QtGui.QColor(33, 95, 147)
 # reference line colours
 REFLINECOLOR = QtGui.QColor(243, 42, 31)
 
+# tangent line colours
+TANGENTLINECOLOR = QtGui.QColor(0, 0, 0)
+
 # zoom factors
 ZOOMINFACTOR = 1.25 # this should be greater than 1
 ZOOMOUTFACTOR = 1/ZOOMINFACTOR

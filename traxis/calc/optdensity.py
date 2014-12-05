@@ -19,11 +19,11 @@ def calcOptDensity(Img, Circle, dL, startPt, endPt):
     dr0 = 1 # To give sensical error output, assume 1 pixel error box around the selected area
 
     # Get angle between start point and unit vector
-    start_angle = getAngle([x0, y0], startPt, [x0 + 1, y0 + 0])
+    start_angle = startPt.getAngle((x0, y0))
 
     # Get angle that spans the start vector and end vector
     # This is in degrees
-    span_angle = getAngle([x0, y0], endPt, startPt)
+    span_angle = endPt.getAngle((x0, y0), startPt)
 
     # Get points along arc
     dR = np.linspace(
@@ -62,40 +62,3 @@ def calcOptDensity(Img, Circle, dL, startPt, endPt):
     errOptDens = errBlackness
     trackLength = r0 * span_angle * (np.pi / 180.0)
     return (optDens, errOptDens, trackLength)
-
-
-def getAngles(origin, pts, v_pt):
-    angles = []
-    # Compute angles of each point wrt v
-    for p in pts:
-        angles.append(getAngle(origin, p, v_pt))
-    return angles
-
-
-def getAngle(origin, r_pt, v_pt):
-
-    # Define vector r
-    if r_pt.__class__.__name__ == 'QGraphicsEllipseItem':
-        rx = r_pt.rect().center().x()
-        ry = r_pt.rect().center().y()
-    else:
-        rx = r_pt[0]
-        ry = r_pt[1]
-    r = QtCore.QLineF(origin[0], origin[1], rx, ry)
-
-    # Define vector v
-    if v_pt.__class__.__name__ == 'QGraphicsEllipseItem':
-        vx = v_pt.rect().center().x()
-        vy = v_pt.rect().center().y()
-    else:
-        vx = v_pt[0]
-        vy = v_pt[1]
-    v = QtCore.QLineF(origin[0], origin[1], vx, vy)
-
-    # Compute angle between vector r and v
-    angle = QtCore.QLineF.angleTo(v, r)
-    return angle
-
-
-def getRoi():
-    return

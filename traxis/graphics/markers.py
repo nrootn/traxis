@@ -159,6 +159,27 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         newRect.translate(dx, dy)
         self.ellipse.setRect(newRect)
 
+    def getAngle(self, origin, referenceMarker=None):
+
+        # define marker vector
+        markerX = self.ellipse.rect().center().x()
+        markerY = self.ellipse.rect().center().y()
+        markerVector = QtCore.QLineF(origin[0], origin[1], markerX, markerY)
+
+        # define reference vector
+        if referenceMarker:
+            referenceX = referenceMarker.ellipse.rect().center().x()
+            referenceY = referenceMarker.ellipse.rect().center().y()
+        else:
+            referenceX = origin[0] + 1
+            referenceY = origin[1]
+        referenceVector = QtCore.QLineF(origin[0], origin[1], referenceX, referenceY)
+
+        # compute angle between marker and reference vectors
+        angle = QtCore.QLineF.angleTo(referenceVector, markerVector)
+
+        return angle
+
     def rescale(self, size, width):
 
         if size < 2: # set minimum size
