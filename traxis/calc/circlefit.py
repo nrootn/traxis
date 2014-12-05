@@ -38,7 +38,7 @@ def circleFit(marker_list):
     center_estimate = (x_array.mean(), y_array.mean())
 
     center_lsq, cov_matrix, infodict, mesg, ier = optimize.leastsq(_distanceResiduals, center_estimate, args=(x_array, y_array), full_output=True, 
-             ftol=1.49012e-15, xtol=1.49012e-15)
+             ftol=1e-15, xtol=1e-15)
     chi2_dof = (_distanceResiduals(center_lsq, x_array, y_array)**2).sum()/(len(y_array)-len(center_estimate))
     pcov = cov_matrix * chi2_dof
     center_x, center_y = center_lsq

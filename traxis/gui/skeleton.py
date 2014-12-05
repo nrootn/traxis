@@ -67,6 +67,7 @@ class GuiSkeleton(object):
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip(
             "Reset all the selected points and calculated variables")
+        self.resetButton.setShortcut(QtGui.QKeySequence("R"))
 
         self.zoomLabel = QtWidgets.QLabel(self.baseWidget)  # zoom label
         self.techButtonLayout.addWidget(self.zoomLabel)
@@ -82,6 +83,7 @@ class GuiSkeleton(object):
         self.zoomInButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomInButton.setText("Zoom In")
         self.zoomInButton.setToolTip("Zoom into the picture")
+        self.zoomInButton.setShortcut(QtGui.QKeySequence("Z"))
 
         self.zoomOutButton = QtWidgets.QPushButton(
             self.baseWidget)  # zoom out button widget
@@ -89,6 +91,7 @@ class GuiSkeleton(object):
         self.zoomOutButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zoomOutButton.setText("Zoom Out")
         self.zoomOutButton.setToolTip("Zoom out from the picture")
+        self.zoomOutButton.setShortcut(QtGui.QKeySequence("X"))
 
         self.calcLabel = QtWidgets.QLabel(
             self.baseWidget)  # calculate label
@@ -101,6 +104,7 @@ class GuiSkeleton(object):
         self.calcMomentumButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcMomentumButton.setText("Calculate Track Momentum")
         self.calcMomentumButton.setToolTip("Calculate Track momentum")
+        self.calcMomentumButton.setShortcut(QtGui.QKeySequence("M"))
 
         # calculate optical density button widget
         self.calcDensityButton = QtWidgets.QPushButton(self.baseWidget)
@@ -108,6 +112,7 @@ class GuiSkeleton(object):
         self.calcDensityButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcDensityButton.setText("Calculate Optical Density")
         self.calcDensityButton.setToolTip("Calculate Optical Density")
+        self.calcDensityButton.setShortcut(QtGui.QKeySequence("N"))
 
         self.calcAngleButton = QtWidgets.QPushButton(
             self.baseWidget)  # calculate angle button widget
@@ -115,6 +120,7 @@ class GuiSkeleton(object):
         self.calcAngleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.calcAngleButton.setText("Calculate Angle")
         self.calcAngleButton.setToolTip("Calculate Opening Angle")
+        self.calcAngleButton.setShortcut(QtGui.QKeySequence("B"))
 
         self.techButtonLayout.addStretch(0)  # add stretch to segment
 
@@ -141,6 +147,7 @@ class GuiSkeleton(object):
         self.openImageButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.openImageButton.setText("Open Image")
         self.openImageButton.setToolTip("Open image for analysis")
+        self.openImageButton.setShortcut(QtGui.QKeySequence("O"))
 
         self.saveLayout = QtWidgets.QHBoxLayout()
         self.userSelectionLayout.addLayout(self.saveLayout)
@@ -181,6 +188,7 @@ class GuiSkeleton(object):
         self.placeMarkerButton.setText("[Mode] Place Track Markers")
         self.placeMarkerButton.setToolTip(
             "Enter mode for placing markers on loaded image.")
+        self.placeMarkerButton.setShortcut("P")
 
         # draw angle reference mode button widget
         self.drawRefButton = QtWidgets.QPushButton(self.baseWidget)
@@ -191,6 +199,7 @@ class GuiSkeleton(object):
         self.drawRefButton.setText("[Mode] Draw Angle Reference")
         self.drawRefButton.setToolTip(
             "Enter mode for drawing angle reference on loaded image.")
+        self.drawRefButton.setShortcut("L")
 
         self.dlFormLayout = QtWidgets.QFormLayout()  # dl form layout
         self.userSelectionLayout.addLayout(self.dlFormLayout)
@@ -205,7 +214,7 @@ class GuiSkeleton(object):
         self.dlFormLayout.setWidget(
             0, QtWidgets.QFormLayout.LabelRole, self.dlLabel)
         self.dlLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.dlLabel.setText("Set DL")
+        self.dlLabel.setText("Set dL")
 
         # dl text box (line edit) widget
         self.dlLineEdit = QtWidgets.QLineEdit(self.baseWidget)

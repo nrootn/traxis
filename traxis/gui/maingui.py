@@ -142,7 +142,6 @@ class MainGui(skeleton.GuiSkeleton):
                 dy *= self.pointSize / 2
             if currentPoint:
                 currentPoint.move(dx, dy)
-                #self.scene.update()
         
         # F/V to select points in list.
         elif event.key() == QtCore.Qt.Key_V:
@@ -160,48 +159,6 @@ class MainGui(skeleton.GuiSkeleton):
             if currentPoint:
                 self.pointListWidget.setEndPoint(currentPoint)
 
-        # Z/X for zoom in/zoom out.
-        elif event.key() == QtCore.Qt.Key_Z:
-            self.zoomIn()
-
-        elif event.key() == QtCore.Qt.Key_X:
-            self.zoomOut()
-
-        # R for reset
-        elif event.key() == QtCore.Qt.Key_R:
-            self.resetImage()
-
-        # M, N, B for calculate functions
-        elif event.key() == QtCore.Qt.Key_M:
-            self.calcTrackMom()
-
-        elif event.key() == QtCore.Qt.Key_N:
-            self.calcOptDen()
-
-        elif event.key() == QtCore.Qt.Key_B:
-            self.calcAngle()
-
-        # O for open image
-        elif event.key() == QtCore.Qt.Key_O:
-            self.openImage()
-
-        # P and L for mode switching
-        elif event.key() == QtCore.Qt.Key_P:
-            if self.placeMarkerButton.isChecked():
-                self.placeMarkerButton.setChecked(False)
-            else:
-                self.placeMarkerButton.setChecked(True)
-
-            self.placeMarkerButtonFunc()
-
-        elif event.key() == QtCore.Qt.Key_L:
-            if self.drawRefButton.isChecked():
-                self.drawRefButton.setChecked(False)
-            else:
-                self.drawRefButton.setChecked(True)
-
-            self.drawRefButtonFunc()
-
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
             if currentPoint:
@@ -217,7 +174,7 @@ class MainGui(skeleton.GuiSkeleton):
         if not fileName:
             # open file dialog to obtain image file name
             self.imageFileName = QtWidgets.QFileDialog.getOpenFileName(
-                self.baseWidget, "Open File", QtCore.QDir.currentPath(),
+                None, "Open File", QtCore.QDir.currentPath(),
                 "Images (*.png *.jpg);;All Files (*)")[0]
         else:
             self.imageFileName = fileName
@@ -229,7 +186,7 @@ class MainGui(skeleton.GuiSkeleton):
             image = self.sceneImage.load(self.imageFileName)
         if not image:
             self.displayMessage(
-                "Cannot load {}.".format(self.imageFileName))
+                "NOTICE: Cannot open file as image: {}.".format(self.imageFileName))
             return False # image not loaded successfully
 
         # resize the graphics scene to the loaded image
@@ -251,13 +208,13 @@ class MainGui(skeleton.GuiSkeleton):
     def saveSession(self):
         """Save analysis session to a .json file."""
 
-        if not self.imageFileName:
-            self.displayMessage("Nothing to save.")
+        if self.sceneImage.isNull():
+            self.displayMessage("NOTICE: Nothing to save.")
             return
 
         # open file dialog for selecting a file to save to
         fileName = QtWidgets.QFileDialog.getSaveFileName(
-            self.baseWidget, "Save Session", "./untitled.json",
+            None, "Save Session", "./untitled.json",
             "HEP Track Analysis (*.json);;All Files (*)")[0]
 
         if not fileName:
@@ -305,20 +262,23 @@ class MainGui(skeleton.GuiSkeleton):
 
         # open file dialog for selecting a file to load from
         fileName = QtWidgets.QFileDialog.getOpenFileName(
-            self.baseWidget, "Load Session", QtCore.QDir.currentPath(),
+            None, "Load Session", QtCore.QDir.currentPath(),
             "HEP Track Analysis (*.json);;All Files (*)")[0]
 
         if not fileName:
             return
         else:
             with open(fileName, 'r') as loadFile:
-                loadData = json.load(loadFile)
+                try:
+                    loadData = json.load(loadFile)
+                except:
+                    self.displayMessage("NOTICE: Invalid JSON file: {}".format(fileName))
+                    return
 
                 imageFileName = loadData.get('imageFileName')
 
-                self.resetImage()
-
                 if not imageFileName:
+                    self.displayMessage("NOTICE: No image file name found in saved session data: {}".format(fileName))
                     return
 
                 opened = self.openImage(imageFileName)
@@ -354,16 +314,23 @@ class MainGui(skeleton.GuiSkeleton):
                         refFinalPoint['x'], refFinalPoint['y'],
                         self.pointSize, self.lineWidth)
 
+                self.resetImage()
+
     def saveScreenshot(self):
         """Save the currently visible part of the scene view to an
         image.
         """
+
+        if self.sceneImage.isNull():
+            self.displayMessage("NOTICE: There is nothing to take screenshot of.")
+            return
+
         screenshot = self.sceneView.grab()
         fileName = QtWidgets.QFileDialog.getSaveFileName(
-            self.baseWidget, "Save Screenshot", "./untitled.png",
+            None, "Save Screenshot", "./untitled.png",
             "PNG (*.png);;JPEG (*.jpg);;TIFF (*.tiff *.tif)")[0]
         if not screenshot.save(fileName):
-            self.displayMessage("Unable to save screenshot")
+            self.displayMessage("NOTICE: Unable to save screenshot.")
 
     ##############################
     # Zoom Methods
@@ -392,8 +359,6 @@ class MainGui(skeleton.GuiSkeleton):
         self.momentumArc.rescale(self.lineWidth)
         self.angleRefLine.rescale(self.pointSize, self.lineWidth)
 
-        #self.scene.update()
-
     ##############################
     # Console Methods
     ##############################
@@ -416,50 +381,54 @@ class MainGui(skeleton.GuiSkeleton):
 
         # need a minimum of 3 points to fit a circle
         if self.pointListWidget.count() < 3:
-            self.displayMessage("ERROR: Less than 3 points to fit.")
+            self.displayMessage("NOTICE: Less than 3 points to fit.")
             return
 
         # check if start point was defined
         if not self.pointListWidget.getStartPoint():
             self.displayMessage(
-                "ERROR: Initial point has not been defined yet.")
+                "NOTICE: Start track point must be selected first.")
             return
 
         # check if end point was defined
         if not self.pointListWidget.getEndPoint():
             self.displayMessage(
-                "ERROR: End point has not been defined yet.")
+                "NOTICE: End track point must be selected first.")
             return
 
         # fit a circle to placed points.
-        fittedCircle = circlefit.circleFit(self.pointListWidget)
-        self.fittedX0 = fittedCircle[0][0]
-        self.fittedY0 = fittedCircle[1][0]
-        self.fittedR0 = fittedCircle[2][0]
-        
-        self.circleInfo = fittedCircle
+        self.fittedCircle = circlefit.circleFit(self.pointListWidget)
+
+        self.displayMessage("---Fitted Circle---")
 
         self.displayMessage(
-            str("Fitted x_o:\t %f +/- %f [pixel]" % (fittedCircle[0][0], fittedCircle[0][1])))
+            str("Center (x coord):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[0][0],
+                                                        self.fittedCircle[0][1])))
         self.displayMessage(
-            str("Fitted y_o:\t %f +/- %f [pixel]" % (fittedCircle[1][0], fittedCircle[1][1])))
+            str("Center (y coord):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[1][0],
+                                                        self.fittedCircle[1][1])))
         self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f [pixel]" % (fittedCircle[2][0], fittedCircle[2][1])))
+            str("Radius (px):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[2][0],
+                                                        self.fittedCircle[2][1])))
         self.displayMessage(
-            str("Fitted R_o:\t %f +/- %f (Stat) +/- %f (Cal) [cm]" % 
-                (fittedCircle[2][0]*constants.CMPERPX, 
-                fittedCircle[2][1]*constants.CMPERPX, 
-                fittedCircle[2][0]*constants.ERRCMPERPX)))
-        self.displayMessage(
-            str("Fitted P_o:\t %f +/- %f (Stat) +/- %f (Cal) [MeV]" 
-                % (0.3*15.5*fittedCircle[2][0]*constants.CMPERPX, 
-                0.3*15.5*fittedCircle[2][1]*constants.CMPERPX, 
-                0.3*15.5*fittedCircle[2][0]*constants.ERRCMPERPX)))
+            str("Radius (cm):\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [cm]".format(
+                self.fittedCircle[2][0]*constants.CMPERPX, 
+                self.fittedCircle[2][1]*constants.CMPERPX, 
+                self.fittedCircle[2][0]*constants.ERRCMPERPX)))
 
-        startAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
+        self.displayMessage("---Track Momentum---")
+
+        # http://www.lancaster.ac.uk/users/spc/resources/alevel/motmag.pdf
+        self.displayMessage(
+            str("Track Momentum:\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [MeV/c]".format(
+                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][0]*constants.CMPERPX,
+                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][1]*constants.CMPERPX, 
+                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][0]*constants.ERRCMPERPX)))
+
+        startAngle = optdensity.getAngle([self.fittedCircle[0][0], self.fittedCircle[1][0]], 
                 self.pointListWidget.getStartPoint().ellipse, 
-                [self.fittedX0 + 1, self.fittedY0 + 0])
-        spanAngle = optdensity.getAngle([self.fittedX0, self.fittedY0], 
+                [self.fittedCircle[0][0] + 1, self.fittedCircle[1][0] + 0])
+        spanAngle = optdensity.getAngle([self.fittedCircle[0][0], self.fittedCircle[1][0]], 
                 self.pointListWidget.getEndPoint().ellipse, 
                 self.pointListWidget.getStartPoint().ellipse)
 
@@ -469,7 +438,7 @@ class MainGui(skeleton.GuiSkeleton):
             dl = 0
 
         self.momentumArc.draw(
-            self.fittedX0, self.fittedY0, self.fittedR0,
+            self.fittedCircle[0][0], self.fittedCircle[1][0], self.fittedCircle[2][0],
             startAngle, spanAngle, dl, self.lineWidth)
 
     def calcOptDen(self):
@@ -479,7 +448,7 @@ class MainGui(skeleton.GuiSkeleton):
         # Return if track momentum has NOT been calculated.
         if not self.momentumArc.centralArc:
             self.displayMessage(
-                "ERROR: Track momentum has not been calculated yet.")
+                "NOTICE: Track momentum must be calculated first.")
             return
 
         if self.dlLineEdit.text():
@@ -488,44 +457,39 @@ class MainGui(skeleton.GuiSkeleton):
             dl = 0
 
         if dl == 0:
-            self.displayMessage(
-                "ERROR: dL must be non-zero.")
+            self.displayMessage("NOTICE: dL must be non-zero.")
             return
 
         # Check if start point was defined.
         if not self.pointListWidget.getStartPoint():
             self.displayMessage(
-                "ERROR: Initial point has not been defined yet.")
+                "NOTICE: Start track point must be selected first.")
             return
 
         # Check if end point was defined
         if not self.pointListWidget.getEndPoint():
             self.displayMessage(
-                "ERROR: End point has not been defined yet.")
+                "NOTICE: End track point must be selected first.")
             return
 
-        # Assigned fitted circle to pass to optical density function.
-        self.tmpCircle = self.circleInfo
-
-        # Call function to compute optical density.
-        self.displayMessage("Computing optical density...")
-
+        # Call function to compute optical density
         self.optDens, self.errOptDens, self.trackLengthPix  = optdensity.calcOptDensity(
-            self.sceneImage, self.tmpCircle, dl,
+            self.sceneImage, self.fittedCircle, dl,
             self.pointListWidget.getStartPoint().ellipse,
             self.pointListWidget.getEndPoint().ellipse)
-        self.displayMessage(str("Total optical density: %f +/- %f" % (self.optDens, self.errOptDens)))
-        self.displayMessage(str("Track Length: %f [Pixel]" % (self.trackLengthPix)))
+        #self.displayMessage("Total track blackness:\t{:.5f} +/- {:.5f}".format(self.optDens, self.errOptDens))
+        self.displayMessage("---Track Length & Optical Density---")
+        self.displayMessage("Track Length (px):\t{:.5f} [px]".format(self.trackLengthPix))
 
         # Calculation of Variables
         self.trackLengthcm = self.trackLengthPix * constants.CMPERPX;
         self.trackLengtherr = self.trackLengthPix * constants.ERRCMPERPX;
         self.optDenspercm = self.optDens/self.trackLengthcm;
         self.optDenspercmErr = self.optDenspercm * math.sqrt(
-                math.pow(self.trackLengtherr/self.trackLengthcm,2)+math.pow(self.errOptDens/self.optDens,2));
+                math.pow(self.trackLengtherr/self.trackLengthcm,2)+math.pow(self.errOptDens/self.optDens,2))
 
-        self.displayMessage(str("Optical density/cm: %f +/- %f [1/cm]" % (self.optDenspercm, self.optDenspercmErr)))
-        self.displayMessage(str("Track Length: %f +/- %f [cm]" % (self.trackLengthcm, self.trackLengtherr)))
+        self.displayMessage("Track Length (cm):\t{:.5f} +/- {:.5f} [cm]".format(self.trackLengthcm, self.trackLengtherr))
+        self.displayMessage("Optical density:\t{:.5f} +/- {:.5f} [1/cm]".format(self.optDenspercm, self.optDenspercmErr))
 
     def calcAngle(self):
         """The following function is used to calculate the angle between
@@ -533,25 +497,26 @@ class MainGui(skeleton.GuiSkeleton):
 
         if not self.momentumArc.centralArc:
             self.displayMessage(
-                "ERROR: Track momentum has not been calculated yet.")
+                "NOTICE: Track momentum must be calculated first.")
             return
 
         if not self.pointListWidget.getStartPoint():
             self.displayMessage(
-                "ERROR: Initial point has not been defined yet.")
+                "NOTICE: Start track point must be selected first.")
             return
 
         if not self.angleRefLine.finalPoint:
             self.displayMessage(
-                "ERROR: Angle Line reference not drawn.")
+                "NOTICE: Angle Reference Line must be drawn first.")
             return
 
-        angleInfo = anglecalc.angleCalc(self, self.circleInfo,
+        angleInfo = anglecalc.angleCalc(self, self.fittedCircle,
                               self.pointListWidget.getStartPoint().ellipse,
                               self.angleRefLine.line)
 
-        self.displayMessage(
-            str("opening Angle %f +/- %f" % (angleInfo[0], angleInfo[1])))
+        self.displayMessage("---Opening Angle---")
+        self.displayMessage("Opening Angle:\t{:.5f} +/- {:.5f}".format(angleInfo[0],
+                                                             angleInfo[1]))
 
     ##############################
     # Connection to Other Events
@@ -567,11 +532,8 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.momentumArc.updateArcs(dl)
 
-        #self.scene.update()
-
     def highlightPoint(self):
         self.pointListWidget.highlightCurrent()
-        #self.scene.update()
 
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the

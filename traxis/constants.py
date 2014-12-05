@@ -23,3 +23,9 @@ ZOOMOUTFACTOR = 1/ZOOMINFACTOR
 # default GUI state variables
 DEFAULTPOINTSIZE = 10
 DEFAULTLINEWIDTH = 2.5
+
+# bubble chamber magnetic field
+MAGNETICFIELD = 15.5 # in kG
+
+# speed of light
+C = 0.3 # in giga metres per second
