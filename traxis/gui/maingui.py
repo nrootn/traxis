@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from traxis import constants
 from traxis.gui import skeleton
 from traxis.calc import anglecalc, circlefit, optdensity
+from traxis.graphics import tangent
 
 
 class MainGui(skeleton.GuiSkeleton):
@@ -68,7 +69,7 @@ class MainGui(skeleton.GuiSkeleton):
         elif self.drawRefButton.isChecked():
             self.angleRefLine.setInitialPoint(
                 event.pos().x(), event.pos().y(),
-                self.pointSize, self.lineWidth)
+                self.pointSize, self.lineWidth, self.scene)
 
         else:
             # set initial reference for an image pan
@@ -83,7 +84,7 @@ class MainGui(skeleton.GuiSkeleton):
         if self.angleRefLine.isBeingDrawn():
             self.angleRefLine.setFinalPoint(
                 event.pos().x(), event.pos().y(),
-                self.pointSize, self.lineWidth)
+                self.pointSize, self.lineWidth, self.scene)
 
     def mouseMove(self, event):
         """The following function draws a line between the intial point and the current
@@ -91,7 +92,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         if self.angleRefLine.isBeingDrawn():
             self.angleRefLine.drawLine(
-                event.pos().x(), event.pos().y(), self.lineWidth)
+                event.pos().x(), event.pos().y(), self.lineWidth, self.scene)
 
         if not (self.placeMarkerButton.isChecked()
                 or self.drawRefButton.isChecked()):
@@ -305,13 +306,13 @@ class MainGui(skeleton.GuiSkeleton):
                 if refInitialPoint and refFinalPoint:
                     self.angleRefLine.setInitialPoint(
                         refInitialPoint['x'], refInitialPoint['y'],
-                        self.pointSize, self.lineWidth)
+                        self.pointSize, self.lineWidth, self.scene)
                     self.angleRefLine.drawLine(
                         refFinalPoint['x'], refFinalPoint['y'],
-                        self.lineWidth)
+                        self.lineWidth, self.scene)
                     self.angleRefLine.setFinalPoint(
                         refFinalPoint['x'], refFinalPoint['y'],
-                        self.pointSize, self.lineWidth)
+                        self.pointSize, self.lineWidth, self.scene)
 
     def saveScreenshot(self):
         """Save the currently visible part of the scene view to an
@@ -355,7 +356,8 @@ class MainGui(skeleton.GuiSkeleton):
         self.pointListWidget.rescale(self.pointSize, self.lineWidth)
         self.momentumArc.rescale(self.lineWidth)
         self.angleRefLine.rescale(self.pointSize, self.lineWidth)
-        self.tangentLine.rescale(self.lineWidth)
+        if self.tangentLine:
+            self.tangentLine.rescale(self.lineWidth)
 
     ##############################
     # Console Methods
@@ -395,7 +397,9 @@ class MainGui(skeleton.GuiSkeleton):
             return
 
         # remove the tangent line if it was drawn
-        self.tangentLine.reset()
+        if self.tangentLine:
+            self.tangentLine.scene().removeItem(self.tangentLine)
+            self.tangentLine = None
 
         # fit a circle to placed points.
         self.fittedCircle = circlefit.circleFit(self.pointListWidget)
@@ -439,7 +443,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         self.momentumArc.draw(
             self.fittedCircle[0][0], self.fittedCircle[1][0], self.fittedCircle[2][0],
-            startAngle, spanAngle, dl, self.lineWidth)
+            startAngle, spanAngle, dl, self.lineWidth, self.scene)
 
     def calcOptDen(self):
         """The following function is used to calculate optical density of
@@ -518,7 +522,9 @@ class MainGui(skeleton.GuiSkeleton):
         tangentInfo = anglecalc.tangentCalc(self.fittedCircle,
                           self.pointListWidget.getStartPoint())
 
-        self.tangentLine.draw(tangentInfo[0], self.lineWidth)
+        if self.tangentLine:
+            self.tangentLine.scene().removeItem(self.tangentLine)
+        self.tangentLine = tangent.TangentLine(tangentInfo[0], self.lineWidth, self.scene)
 
         angleInfo = anglecalc.openingAngle(tangentInfo, self.angleRefLine.line)
 
@@ -567,7 +573,9 @@ class MainGui(skeleton.GuiSkeleton):
         self.pointListWidget.empty()
         self.angleRefLine.reset()
         self.momentumArc.reset()
-        self.tangentLine.reset()
+        if self.tangentLine:
+            self.tangentLine.scene().removeItem(self.tangentLine)
+            self.tangentLine = None
 
         # clear console output
         self.consoleTextBrowser.clear()

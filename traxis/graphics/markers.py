@@ -60,10 +60,14 @@ class MarkerList(QtWidgets.QListWidget):
     def empty(self):
         """Remove all TrackMarker objects from this marker list."""
 
-        # loop over all the markers in this list and delete them one by one
+        # loop over all the markers in this list and remove each marker's
+        # ellipse from the graphics scene
         for row in range(self.count()):
             marker = self.item(row)
-            self.deleteMarker(marker)
+            marker.ellipse.scene().removeItem(marker.ellipse)
+
+        # remove all markers from this list
+        self.clear()
 
     def rescale(self, size, width):
         """Set the size of each marker's ellipse in this list to size and the

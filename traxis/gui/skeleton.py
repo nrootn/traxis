@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-from traxis.graphics import markers, angleref, fittedarc, tangent
+from traxis.graphics import markers, angleref, fittedarc
 
 
 class GuiSkeleton(object):
@@ -276,7 +276,7 @@ class GuiSkeleton(object):
         self.scenePixmap = QtWidgets.QGraphicsPixmapItem()
         self.scene.addItem(self.scenePixmap)
 
-        # instantiate reference line and momentum arc objects
-        self.angleRefLine = angleref.ReferenceLine(self.scene)
-        self.momentumArc = fittedarc.MomentumArc(self.scene)
-        self.tangentLine = tangent.TangentLine(self.scene)
+        # instantiate reference line, momentum arc and tangent line objects
+        self.angleRefLine = angleref.ReferenceLine()
+        self.momentumArc = fittedarc.MomentumArc()
+        self.tangentLine = None
