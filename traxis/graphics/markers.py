@@ -307,12 +307,12 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         self.ellipse.setRect(newRect)
 
     def getAngle(self, origin, referenceMarker=None):
-        """Given an origin - a tuple whose first item is an x-coordinate and
-        whose second item is a y-coordinate (both floats)- , return the
+        """Given an origin - a tuple whose first element is an x-coordinate and
+        whose second element is a y-coordinate (both floats)- , return the
         marker's angular coordinate in degrees (a float), where origin is the
         pole in the polar coordinate system. If referenceMarker - a TrackMarker
-        object - is given, return the difference between the marker's angular
-        coordinate and the referenceMarker's angular coordinate.
+        object - is given, return the angle between the line joining the origin
+        to the marker and the line joining the origin to the referenceMarker.
         """
 
         # define the marker vector, a QLineF object joining the origin to the
@@ -321,24 +321,24 @@ class TrackMarker(QtWidgets.QListWidgetItem):
         markerY = self.ellipse.rect().center().y()
         markerVector = QtCore.QLineF(origin[0], origin[1], markerX, markerY)
 
-        # define the polar axis vector (a horizontal line segment terminated
-        # at the left by the pole)
-        polarAxisX = origin[0] + 1
-        polarAxisY = origin[1]
-        polarAxisVector = QtCore.QLineF(origin[0], origin[1], polarAxisX, polarAxisY)
+        # define the reference vector (the vector with respect to which the
+        # angle of the marker vector is to be determined)
+        # if a referenceMarker was given, the reference vector is the line
+        # joining the origin to the center of the reference marker' ellipse
+        if referenceMarker:
+            referenceX = referenceMarker.ellipse.rect().center().x()
+            referenceY = referenceMarker.ellipse.rect().center().y()
+        # otherwise the reference vector is the polar axis (a horizontal line
+        # terminated at the left by the pole)
+        else:
+            referenceX = origin[0] + 1
+            referenceY = origin[1]
+        referenceVector = QtCore.QLineF(origin[0], origin[1], referenceX, referenceY)
 
         # compute the angular coordinate of the marker
-        angle = QtCore.QLineF.angleTo(polarAxisVector, markerVector)
+        angle = referenceVector.angleTo(markerVector)
 
-        # if a referenceMarker was given, compute its angular coordinate with
-        # respect to the same origin and return the difference of the two 
-        # coordinates
-        if referenceMarker:
-            referenceAngle = referenceMarker.getAngle(origin)
-            return angle - referenceAngle
-        # otherwise simply return the marker's angular coordinate
-        else:
-            return angle
+        return angle
 
     def rescale(self, size, width):
         """Set the width and height of the marker's ellipse's rect to size (a

@@ -1,64 +1,66 @@
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtGui
 import numpy as np
 
 
-# Input: gui - mainGUI class to be used ONLY for printing messages
-# Input: Img - image to be analyzed [QImage]
-# Input: P - list of points [QGraphicsEllipseItem]
-# Input: C - list of tuples [(x,dx),(y,dy),(r,dr)]
-# Input: dL - float specifying track width
-# Output: tuple with calculated optical density, associated error and track lenght
-def calcOptDensity(Img, Circle, dL, startPt, endPt):
+def calcBlackness(image, circleParams, dL, startAngle, spanAngle):
+    """Given image, a QImage, a circle defined by circleParams (a dict
+    containing the radius and centre coordinates of a circle), a
+    startAngle and spanAngle (both in degrees) specifying an arc of that
+    circle, and dL, the 'infinitesimal' thickness of a polar rectangle
+    surrounding that arc, return the sum of the blackness of all the pixels
+    in image that are contained within the polar rectangle along with an
+    error on the blackness.
+    """
 
-    # Create variables for circle parameters to make code more readable
-    x0 = Circle[0][0]
-    dx0 = Circle[0][1]
-    y0 = Circle[1][0]
-    dy0 = Circle[1][1]
-    r0 = Circle[2][0]
-    dr0 = 1 # To give sensical error output, assume 1 pixel error box around the selected area
+    # assume 1 px error on the dL
+    dLErr = 1
 
-    # Get angle between start point and unit vector
-    start_angle = startPt.getAngle((x0, y0))
-
-    # Get angle that spans the start vector and end vector
-    # This is in degrees
-    span_angle = endPt.getAngle((x0, y0), startPt)
-
-    # Get points along arc
-    dR = np.linspace(
-        r0 - abs(dr0) - dL, r0 + abs(dr0) + dL, 2 * (dL + dr0) + 1)
+    # initialize a set of distinct points that are contained within the polar
+    # rectangle surrounding an arc of the circle defined by circleParams
+    # from startAngle to startAngle + spanAngle and with radial thickness
+    # 2*dL+1
     pointSet = set()
+    # initialize also a set of distinct points that are in the polar rectangles
+    # of thickness dLErr that lie radially just above and just below the
+    # previously defined polar rectangle
     errPointSet = set()
 
-    # vectorized calculations are easier
-    for r in dR:
-        dTheta = np.linspace(
-            start_angle, start_angle + span_angle, int(2 * r * span_angle * (np.pi / 180.0)))
-        cosTransform = np.cos(dTheta * (np.pi / 180.0))
-        sinTransform = np.sin(dTheta * (np.pi / 180.0))
-        for i in range(0, len(dTheta)):
-            x = x0 + r * cosTransform[i]
-            y = y0 - r * sinTransform[i]
-            if r < (r0 - dL) or r > (r0 + dL):
+    # loop over all the points in the combined area of the three polar
+    # rectangles, adding each point to the appropriate set
+    radii = np.linspace(circleParams['radius'] - dL - dLErr,
+                        circleParams['radius'] + dL + dLErr,
+                        2 * (dL + dLErr) + 1)
+    for r in radii:
+        # for the number of angles to generate, use twice the length of the
+        # arc in pixels to ensure every pixel in the region is covered
+        angles = np.linspace(startAngle, startAngle + spanAngle,
+                             int(2 * r * spanAngle * (np.pi / 180)))
+        # compute cos and sin for each angle
+        cosAngles = np.cos(angles * (np.pi / 180))
+        sinAngles = np.sin(angles * (np.pi / 180))
+        for angleIndex in range(len(angles)):
+            # get the x and y coordinates of the point
+            x = circleParams['centerX'] + r * cosAngles[angleIndex]
+            # note: y values increase going down
+            y = circleParams['centerY'] - r * sinAngles[angleIndex]
+            # add the point to the appropriate set
+            if r < (circleParams['radius'] - dL) or r > (circleParams['radius'] + dL):
                 errPointSet.add((int(x), int(y)))
             else:
                 pointSet.add((int(x), int(y)))
 
-    # Loop over distinct pixel coordinates and sum the blackness of each
-    blackness = 0.
-    for p in pointSet:
-        c = Img.pixel(p[0], p[1])
-        blackness += QtGui.QColor(c).blackF()
+    # sum up the black colour components of pixels located at the points in
+    # pointSet
+    blackness = 0
+    for point in pointSet:
+        pixel = image.pixel(point[0], point[1])
+        blackness += QtGui.QColor(pixel).blackF()
 
-    # Repeat the calculation above for error region
-    errBlackness = 0.
-    for p in errPointSet:
-        c = Img.pixel(p[0], p[1])
-        errBlackness += QtGui.QColor(c).blackF()
+    # sum up the black colour components of pixels located at the points in
+    # errPointSet
+    errBlackness = 0
+    for point in errPointSet:
+        pixel = image.pixel(point[0], point[1])
+        errBlackness += QtGui.QColor(pixel).blackF()
 
-    # Calculate and return optical density
-    optDens = blackness 
-    errOptDens = errBlackness
-    trackLength = r0 * span_angle * (np.pi / 180.0)
-    return (optDens, errOptDens, trackLength)
+    return blackness, errBlackness

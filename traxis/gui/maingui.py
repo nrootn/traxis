@@ -1,4 +1,5 @@
 import json
+import math
 from PyQt5 import QtWidgets, QtGui, QtCore
 from traxis import constants
 from traxis.gui import skeleton
@@ -11,7 +12,7 @@ class MainGui(skeleton.GuiSkeleton):
     """Main GUI class that inherits from base skeleton GUI class and implements
     logic that connects buttons and functions together. Defines internal
     methods to carry out various UI actions (zoom, opening images, etc.)
-    and calls external functions that have been imported below.
+    and calls external functions that have been imported above.
     """
 
     def __init__(self):
@@ -35,8 +36,8 @@ class MainGui(skeleton.GuiSkeleton):
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomOutButton.clicked.connect(self.zoomOut)
         self.resetButton.clicked.connect(self.resetImage)
-        self.calcMomentumButton.clicked.connect(self.calcTrackMom)
-        self.calcDensityButton.clicked.connect(self.calcOptDen)
+        self.calcMomentumButton.clicked.connect(self.calcTrackMomentum)
+        self.calcDensityButton.clicked.connect(self.calcOptDensity)
         self.calcAngleButton.clicked.connect(self.calcAngle)
         self.placeMarkerButton.clicked.connect(self.placeMarkerButtonFunc)
         self.drawRefButton.clicked.connect(self.drawRefButtonFunc)
@@ -51,7 +52,7 @@ class MainGui(skeleton.GuiSkeleton):
 
         # connect other events
         self.dlLineEdit.textEdited.connect(self.changedLCircles)
-        self.pointListWidget.itemSelectionChanged.connect(self.highlightPoint)
+        self.markerList.itemSelectionChanged.connect(self.highlightPoint)
 
     ###########################
     # Mouse Event Methods
@@ -62,7 +63,7 @@ class MainGui(skeleton.GuiSkeleton):
         mode is selected, it will send the drawing to the respective function"""
 
         if self.placeMarkerButton.isChecked():
-            self.pointListWidget.addMarker(
+            self.markerList.addMarker(
                 event.pos().x(), event.pos().y(), 
                 self.pointSize, self.lineWidth, self.scene)
 
@@ -114,7 +115,7 @@ class MainGui(skeleton.GuiSkeleton):
         manipulate points in the QListWidget.
         """
 
-        currentPoint = self.pointListWidget.currentItem()
+        currentPoint = self.markerList.currentItem()
         dx, dy = 0, 0
 
         # check if the Shift key was held
@@ -145,24 +146,24 @@ class MainGui(skeleton.GuiSkeleton):
         
         # F/V to select points in list.
         elif event.key() == QtCore.Qt.Key_V:
-            self.pointListWidget.selectNext()
+            self.markerList.selectNext()
 
         elif event.key() == QtCore.Qt.Key_F:
-            self.pointListWidget.selectPrevious()
+            self.markerList.selectPrevious()
 
-        # G/H key for setting start and end point
+        # G/H for setting start and end point
         elif event.key() == QtCore.Qt.Key_G:
             if currentPoint:
-                self.pointListWidget.setStartPoint(currentPoint)
+                self.markerList.setStartPoint(currentPoint)
 
         elif event.key() == QtCore.Qt.Key_H:
             if currentPoint:
-                self.pointListWidget.setEndPoint(currentPoint)
+                self.markerList.setEndPoint(currentPoint)
 
         # Delete to delete highlighted pointed
         elif event.key() == QtCore.Qt.Key_Delete:
             if currentPoint:
-                self.pointListWidget.deleteMarker(currentPoint)
+                self.markerList.deleteMarker(currentPoint)
 
     ##############################
     # File Dialog Methods
@@ -224,10 +225,10 @@ class MainGui(skeleton.GuiSkeleton):
             saveData = {}
             saveData['imageFileName'] = self.imageFileName
 
-            if self.pointListWidget.count() > 0:
+            if self.markerList.count() > 0:
                 points = []
-                for row in range(self.pointListWidget.count()):
-                    point = self.pointListWidget.item(row)
+                for row in range(self.markerList.count()):
+                    point = self.markerList.item(row)
                     pointDict = {}
                     pointDict['id'] = point.id
                     pointDict['designation'] = point.designation
@@ -292,7 +293,7 @@ class MainGui(skeleton.GuiSkeleton):
                         pointDesignation = point["designation"]
                         x = point['x']
                         y = point['y']
-                        addedMarker = self.pointListWidget.addMarker(
+                        addedMarker = self.markerList.addMarker(
                                           x, y, self.pointSize,
                                           self.lineWidth, self.scene)
                         addedMarker.setDesignation(pointDesignation)
@@ -334,12 +335,12 @@ class MainGui(skeleton.GuiSkeleton):
     # Zoom Methods
     ##############################
     def zoomIn(self):
-        """The following function zooms image by 125% when called."""
+        """Scale the image by ZOOMINFACTOR."""
 
         self.scaleImage(constants.ZOOMINFACTOR)
 
     def zoomOut(self):
-        """The following function zooms image by 80% when called."""
+        """Scale the image by ZOOMOUTFACTOR."""
 
         self.scaleImage(constants.ZOOMOUTFACTOR)
 
@@ -353,7 +354,7 @@ class MainGui(skeleton.GuiSkeleton):
         self.pointSize /= factor
         self.lineWidth /= factor
 
-        self.pointListWidget.rescale(self.pointSize, self.lineWidth)
+        self.markerList.rescale(self.pointSize, self.lineWidth)
         self.momentumArc.rescale(self.lineWidth)
         self.angleRefLine.rescale(self.pointSize, self.lineWidth)
         if self.tangentLine:
@@ -363,37 +364,49 @@ class MainGui(skeleton.GuiSkeleton):
     # Console Methods
     ##############################
     def displayMessage(self, msg):
-        """The following function is used to write messages to console."""
+        """Write msg, a string, along with the message number to the console.
+        """
 
+        # the text browser's document block count will be 1 if there are zero
+        # blocks or one block. Therefore, to check if the block count is zero,
+        # check the document's character count, which is 1 if there are zero
+        # blocks
         if self.consoleTextBrowser.document().characterCount() == 1:
             msgNumber = 1
+        # otherwise the message number is 1 more than the current block count
         else:
             msgNumber = self.consoleTextBrowser.document().blockCount() + 1
+
+        # prepend the message number to msg
         msg = "[{}]  {}".format(msgNumber, msg)
+        # add the message to the console
         self.consoleTextBrowser.append(msg)
 
     ##############################
-    # Main Calculation Methods
+    # Calculation Methods
     ##############################
-    def calcTrackMom(self):
-        """The following function is used to calculate track momentum of
-        drawn points on image and then draw a fitted circle to them."""
+    def calcTrackMomentum(self):
+        """Fit a circle to the track markers in markerList and print the 
+        parameters of the fit along with the momentum computed from these
+        parameters to the console. Draw the momentum arc using the fit
+        parameters.
+        """
 
         # need a minimum of 3 points to fit a circle
-        if self.pointListWidget.count() < 3:
+        if self.markerList.count() < 3:
             self.displayMessage("NOTICE: Less than 3 points to fit.")
             return
 
-        # check if start point was defined
-        if not self.pointListWidget.getStartPoint():
+        # return if the start point has not yet been defined
+        if not self.markerList.getStartPoint():
             self.displayMessage(
-                "NOTICE: Start track point must be selected first.")
+                "NOTICE: Track start point must be selected first.")
             return
 
-        # check if end point was defined
-        if not self.pointListWidget.getEndPoint():
+        # return if the end point has not yet been defined
+        if not self.markerList.getEndPoint():
             self.displayMessage(
-                "NOTICE: End track point must be selected first.")
+                "NOTICE: Track end point must be selected first.")
             return
 
         # remove the tangent line if it was drawn
@@ -401,136 +414,167 @@ class MainGui(skeleton.GuiSkeleton):
             self.tangentLine.scene().removeItem(self.tangentLine)
             self.tangentLine = None
 
-        # fit a circle to placed points.
-        self.fittedCircle = circlefit.circleFit(self.pointListWidget)
+        # fit a circle to the track markers and store the fit parameters
+        # in the fittedCircle attribute
+        self.fittedCircle = circlefit.fitCircle(self.markerList)
 
+        # print the fit parameters to the console
         self.displayMessage("---Fitted Circle---")
+        self.displayMessage(
+            "Center (x coord):\t{:.5f} +/- {:.5f} [px]".format(
+                self.fittedCircle['centerX'], 
+                self.fittedCircle['centerXErr']))
+        self.displayMessage(
+            "Center (y coord):\t{:.5f} +/- {:.5f} [px]".format(
+                self.fittedCircle['centerY'],
+                self.fittedCircle['centerYErr']))
+        self.displayMessage(
+            "Radius (px):\t{:.5f} +/- {:.5f} [px]".format(
+                self.fittedCircle['radius'],
+                self.fittedCircle['radiusErr']))
+        # convert the radius from px to cm and print to console
+        self.displayMessage(
+            "Radius (cm):\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [cm]".format(
+                self.fittedCircle['radius']*constants.CMPERPX, 
+                self.fittedCircle['radiusErr']*constants.CMPERPX, 
+                self.fittedCircle['radius']*constants.ERRCMPERPX))
 
-        self.displayMessage(
-            str("Center (x coord):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[0][0],
-                                                        self.fittedCircle[0][1])))
-        self.displayMessage(
-            str("Center (y coord):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[1][0],
-                                                        self.fittedCircle[1][1])))
-        self.displayMessage(
-            str("Radius (px):\t{:.5f} +/- {:.5f} [px]".format(self.fittedCircle[2][0],
-                                                        self.fittedCircle[2][1])))
-        self.displayMessage(
-            str("Radius (cm):\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [cm]".format(
-                self.fittedCircle[2][0]*constants.CMPERPX, 
-                self.fittedCircle[2][1]*constants.CMPERPX, 
-                self.fittedCircle[2][0]*constants.ERRCMPERPX)))
-
+        # compute the track momentum from the track radius and print to
+        # console. Given a track radius, R, in cm, a magnetic field, B,
+        # in kG and the speed of light, c, in Giga metres per second, the
+        # track momentum in MeV/c can be computed as p = c*B*R
         self.displayMessage("---Track Momentum---")
-
-        # http://www.lancaster.ac.uk/users/spc/resources/alevel/motmag.pdf
         self.displayMessage(
-            str("Track Momentum:\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [MeV/c]".format(
-                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][0]*constants.CMPERPX,
-                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][1]*constants.CMPERPX, 
-                constants.C*constants.MAGNETICFIELD*self.fittedCircle[2][0]*constants.ERRCMPERPX)))
+            "Track Momentum:\t{:.5f} +/- {:.5f} (Stat) +/- {:.5f} (Cal) [MeV/c]".format(
+                constants.C*constants.MAGNETICFIELD* \
+                self.fittedCircle['radius']*constants.CMPERPX,
+                constants.C*constants.MAGNETICFIELD* \
+                self.fittedCircle['radiusErr']*constants.CMPERPX, 
+                constants.C*constants.MAGNETICFIELD* \
+                self.fittedCircle['radius']*constants.ERRCMPERPX))
 
-        startAngle = self.pointListWidget.getStartPoint().getAngle(
-                         (self.fittedCircle[0][0], self.fittedCircle[1][0]))
-        spanAngle = self.pointListWidget.getEndPoint().getAngle(
-                        (self.fittedCircle[0][0], self.fittedCircle[1][0]), 
-                        self.pointListWidget.getStartPoint())
+        # compute the start and span angles of the momentum arc using the start
+        # and end markers and the fitted circle center
+        startAngle = self.markerList.getStartPoint().getAngle(
+                         (self.fittedCircle['centerX'],
+                          self.fittedCircle['centerY']))
+        spanAngle = self.markerList.getEndPoint().getAngle(
+                        (self.fittedCircle['centerX'], 
+                         self.fittedCircle['centerY']), 
+                        self.markerList.getStartPoint())
 
+        # get the dL value from the dL text box. If the box is empty, use
+        # a value of 0
         if self.dlLineEdit.text():
             dl = float(self.dlLineEdit.text())
         else:
             dl = 0
 
+        # draw the momentum arc using the parameters of the fitted circle, the
+        # start and span angles and the dL
         self.momentumArc.draw(
-            self.fittedCircle[0][0], self.fittedCircle[1][0], self.fittedCircle[2][0],
-            startAngle, spanAngle, dl, self.lineWidth, self.scene)
+            self.fittedCircle['centerX'], self.fittedCircle['centerY'],
+            self.fittedCircle['radius'], startAngle, spanAngle, dl,
+            self.lineWidth, self.scene)
 
-    def calcOptDen(self):
-        """The following function is used to calculate optical density of
-        drawn points on image with a specified dL."""
+    def calcOptDensity(self):
+        """Calculate the optical density of the portion of a track that is
+        covered by the momentum arc and print it to the console.
+        """
 
-        # Return if track momentum has NOT been calculated.
+        # return if track momentum has not yet been calculated
         if not self.momentumArc.centralArc:
             self.displayMessage(
                 "NOTICE: Track momentum must be calculated first.")
             return
 
+        # get the dL value from the dL text box. If the box is empty, use
+        # a value of zero
         if self.dlLineEdit.text():
             dl = float(self.dlLineEdit.text())
         else:
             dl = 0
 
+        # if the dl is 0, return
         if dl == 0:
             self.displayMessage("NOTICE: dL must be non-zero.")
             return
 
-        # Check if start point was defined.
-        if not self.pointListWidget.getStartPoint():
-            self.displayMessage(
-                "NOTICE: Start track point must be selected first.")
-            return
-
-        # Check if end point was defined
-        if not self.pointListWidget.getEndPoint():
-            self.displayMessage(
-                "NOTICE: End track point must be selected first.")
-            return
-
-        # Call function to compute optical density
-        optDens, errOptDens, trackLengthPx  = optdensity.calcOptDensity(
+        # compute the total blackness of all the pixels contained within the
+        # portion of the sceneImage that is covered by the momentum arc
+        # note: ArcItems have start and span angles in units of 16th of a
+        # degree, so divide them by 16
+        blackness, blacknessErr = optdensity.calcBlackness(
             self.sceneImage, self.fittedCircle, dl,
-            self.pointListWidget.getStartPoint(),
-            self.pointListWidget.getEndPoint())
+            self.momentumArc.centralArc.startAngle() / 16,
+            self.momentumArc.centralArc.spanAngle() / 16)
 
-        #self.displayMessage("Total track blackness:\t{:.5f} +/- {:.5f}".format(optDens, errOptDens))
-        self.displayMessage("---Track Length & Optical Density---")
-        self.displayMessage("Track Length (px):\t{:.5f} [px]".format(trackLengthPx))
+        # calculate the length of the momentum arc in px
+        trackLengthPx = self.fittedCircle['radius'] * \
+                 self.momentumArc.centralArc.spanAngle() / 16 * (math.pi / 180)
 
-        # Calculation of Variables
-        trackLengthCm = trackLengthPx * constants.CMPERPX;
-        trackLengthErr = trackLengthPx * constants.ERRCMPERPX;
-        optDensPerCm = optDens/trackLengthCm;
-        optDensPerCmErr = optDensPerCm * (
-                (trackLengthErr/trackLengthCm)**2+(errOptDens/optDens)**2)**0.5
+        # convert track length from px to cm
+        trackLengthCm = trackLengthPx * constants.CMPERPX
+        trackLengthCmErr = trackLengthPx * constants.ERRCMPERPX
 
-        self.displayMessage(
-            "Track Length (cm):\t{:.5f} +/- {:.5f} [cm]".format(
-                trackLengthCm, trackLengthErr))
+        # calculate optical density - total blackness per unit length
+        optDensity = blackness / trackLengthCm
+        optDensityErr = optDensity * (
+                (trackLengthCmErr / trackLengthCm)**2 + \
+                (blacknessErr / blackness)**2)**0.5
+
+        # print the optical density to the console
+        self.displayMessage("---Optical Density---")
         self.displayMessage(
             "Optical density:\t{:.5f} +/- {:.5f} [1/cm] (with dL={})".format(
-                optDensPerCm, optDensPerCmErr, dl))
+                optDensity, optDensityErr, dl))
 
     def calcAngle(self):
-        """The following function is used to calculate the angle between
-        intial tangent and specified references"""
+        """Calculate the angle between the reference line and the tangent to
+        the fitted circle at the designated start point and print it to the
+        console.
+        """
 
+        # return if track momentum has not yet been calculated
         if not self.momentumArc.centralArc:
             self.displayMessage(
                 "NOTICE: Track momentum must be calculated first.")
             return
 
-        if not self.pointListWidget.getStartPoint():
+        # return if the start point has not yet been defined
+        if not self.markerList.getStartPoint():
             self.displayMessage(
                 "NOTICE: Start track point must be selected first.")
             return
 
+        # return if the angle reference line has not yet been drawn
         if not self.angleRefLine.finalPoint:
             self.displayMessage(
                 "NOTICE: Angle Reference Line must be drawn first.")
             return
 
-        tangentInfo = anglecalc.tangentCalc(self.fittedCircle,
-                          self.pointListWidget.getStartPoint())
+        # get the tangent line to the fitted circle at the start point along
+        # with the two lines that the tangent may lie between within error
+        tangentLine, tangentErrA, tangentErrB = anglecalc.tangentCalc(
+                          self.fittedCircle, self.markerList.getStartPoint())
 
+        # if a tangent line has been drawn before, remove the old tangent
         if self.tangentLine:
             self.tangentLine.scene().removeItem(self.tangentLine)
-        self.tangentLine = tangent.TangentLine(tangentInfo[0], self.lineWidth, self.scene)
+        # add the new tangent line to the graphics scene
+        self.tangentLine = tangent.TangentLine(tangentLine,
+                                               self.lineWidth, self.scene)
 
-        angleInfo = anglecalc.openingAngle(tangentInfo, self.angleRefLine.line)
+        # compute the angle between the tangent line and the reference line
+        # along with the error on the angle
+        angle, angleErr = anglecalc.openingAngle(tangentLine,
+                                                 tangentErrA, tangentErrB,
+                                                 self.angleRefLine)
 
+        # print the opening angle to the console
         self.displayMessage("---Opening Angle---")
-        self.displayMessage("Opening Angle:\t{:.5f} +/- {:.5f}".format(angleInfo[0],
-                                                             angleInfo[1]))
+        self.displayMessage("Opening Angle:\t{:.5f} +/- {:.5f}".format(angle,
+                                                                     angleErr))
 
     ##############################
     # Connection to Other Events
@@ -547,7 +591,7 @@ class MainGui(skeleton.GuiSkeleton):
         self.momentumArc.updateArcs(dl)
 
     def highlightPoint(self):
-        self.pointListWidget.highlightCurrent()
+        self.markerList.highlightCurrent()
 
     def placeMarkerButtonFunc(self):
         """The following helper function creates the changes when the
@@ -570,7 +614,7 @@ class MainGui(skeleton.GuiSkeleton):
         and clears point list and console output."""
 
         # remove all points, arcs and lines
-        self.pointListWidget.empty()
+        self.markerList.empty()
         self.angleRefLine.reset()
         self.momentumArc.reset()
         if self.tangentLine:

@@ -36,12 +36,12 @@ class GuiSkeleton(object):
         self.pointListLayout.addWidget(self.pointListLabel)
         self.pointListLabel.setText("Track Markers")
 
-        self.pointListWidget = markers.MarkerList(
+        self.markerList = markers.MarkerList(
             self.baseWidget)  # marker list widget
-        self.pointListLayout.addWidget(self.pointListWidget)
+        self.pointListLayout.addWidget(self.markerList)
         # don't focus on this widget when clicked
-        self.pointListWidget.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pointListWidget.setFixedWidth(100)
+        self.markerList.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.markerList.setFixedWidth(100)
 
         # first vertical gui segment divider in top half layout
         self.vLineDiv1 = QtWidgets.QFrame(
@@ -251,7 +251,7 @@ class GuiSkeleton(object):
 
         consoleHeight = self.userSelectionLayout.minimumSize().height() - \
                     self.openSaveLabel.height()
-        self.pointListWidget.setFixedHeight(consoleHeight)
+        self.markerList.setFixedHeight(consoleHeight)
         self.consoleTextBrowser.setFixedHeight(consoleHeight)
 
         # horizontal gui segment divider between top half and bottom half of ui

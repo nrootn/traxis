@@ -46,7 +46,7 @@ class MomentumArc(object):
 
     def draw(self, centerX, centerY, radius, startAngle,
              spanAngle, dl, width, scene):
-        """Reset the momentum arc if it has already been drawn before. Then 
+        """First, reset the momentum arc if it has already been drawn. Then 
         create three ArcItems, one with radius radius, the second with radius
         radius+dl and the third with radius radius-dl. Set each arc's center to
         (centerX, centerY), the start angle to startAngle and the span
