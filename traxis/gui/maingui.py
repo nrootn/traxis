@@ -502,16 +502,16 @@ class MainGui(skeleton.GuiSkeleton):
 
         # compute the total blackness of all the pixels contained within the
         # portion of the sceneImage that is covered by the momentum arc
-        # note: ArcItems have start and span angles in units of 16th of a
-        # degree, so divide them by 16
+        # note: ArcItems have start and span angles in units of millionths of a
+        # degree, so divide them by 1e6
         blackness, blacknessErr = optdensity.calcBlackness(
             self.sceneImage, self.fittedCircle, dl,
-            self.momentumArc.centralArc.startAngle() / 16,
-            self.momentumArc.centralArc.spanAngle() / 16)
+            self.momentumArc.centralArc.startAngle() / 1e6,
+            self.momentumArc.centralArc.spanAngle() / 1e6)
 
         # calculate the length of the momentum arc in px
         trackLengthPx = self.fittedCircle['radius'] * \
-                 self.momentumArc.centralArc.spanAngle() / 16 * (math.pi / 180)
+                 self.momentumArc.centralArc.spanAngle() / 1e6 * (math.pi / 180)
 
         # convert track length from px to cm
         trackLengthCm = trackLengthPx * constants.CMPERPX

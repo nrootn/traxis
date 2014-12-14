@@ -6,7 +6,9 @@ class ArcItem(QtWidgets.QGraphicsEllipseItem):
     
     """This class is a QGraphicsEllipseItem with a custom paint method.
     Instead a drawing an ellipse or a pie, an ArcItem object draws an arc
-    when added to a graphics scene. The start and span angles of an ArcItem
+    when added to a graphics scene. The start and span angles of the ArcItem
+    are specified in millionths of a degree instead of 16ths of a degree
+    for greater precision when drawing. The start and span angles of an ArcItem
     object must be specified before it is added to a graphics scene.
     """
 
@@ -22,7 +24,43 @@ class ArcItem(QtWidgets.QGraphicsEllipseItem):
         painter.setBrush(self.brush())
         # draw an arc, using the ArcItem object's rect, startAngle and
         # spanAngle
-        painter.drawArc(self.rect(), self.startAngle(), self.spanAngle())
+        path = QtGui.QPainterPath()
+        path.arcMoveTo(self.rect().normalized(), self.startAngle() / 1e6)
+        path.arcTo(self.rect().normalized(),
+                   self.startAngle() / 1e6, self.spanAngle() / 1e6)
+        painter.drawPath(path)
+
+    def shape(self):
+        """Reimplement the shape method to reflect the fact that ArcItem
+        object start and span angles are in millionths of a degree instead
+        of 16ths of a degree. This method is exactly the same of the default
+        shape() method but with all instances of '16' replaced with '1e6'.
+        """
+
+        path = QtGui.QPainterPath()
+        if self.rect().isNull():
+            return path
+
+        if self.spanAngle != 360 * 1e6:
+            path.moveTo(self.rect().center())
+            path.arcTo(self.rect(),
+                       self.startAngle() / 1e6, self.spanAngle() / 1e6)
+        else:
+             path.addEllipse(self.rect())
+
+        if path == QtGui.QPainterPath():
+            return path
+        ps = QtGui.QPainterPathStroker()
+        ps.setCapStyle(self.pen().capStyle())
+        if self.pen().widthF() <= 0.0:
+            ps.setWidth(0.00000001)
+        else:
+            ps.setWidth(self.pen().widthF())
+        ps.setJoinStyle(self.pen().joinStyle())
+        ps.setMiterLimit(self.pen().miterLimit())
+        p = ps.createStroke(path)
+        p.addPath(path)
+        return p
 
 class MomentumArc(object):
 
@@ -78,10 +116,10 @@ class MomentumArc(object):
         # as the momentum arc's centralArc attribute.
         self.centralArc = ArcItem(centralRect)
         # set the start and span angles of the central arc to the given values.
-        # the arc item's angle unit is 16ths of a degree so multiply the given
-        # angles (which are in degrees) by 16
-        self.centralArc.setStartAngle(16 * startAngle)
-        self.centralArc.setSpanAngle(16 * spanAngle)
+        # the arc item's angle unit is millionths of a degree so multiply the
+        # given angles (which are in degrees) by 1e6
+        self.centralArc.setStartAngle(1e6 * startAngle)
+        self.centralArc.setSpanAngle(1e6 * spanAngle)
         # set the central arc's pen to the pen created above
         self.centralArc.setPen(momentumPen)
 
@@ -101,10 +139,10 @@ class MomentumArc(object):
         # as the momentum arc's outerArc attribute.
         self.outerArc = ArcItem(outerRect)
         # set the start and span angles of the outer arc to the given values.
-        # the arc item's angle unit is 16ths of a degree so multiply the given
-        # angles (which are in degrees) by 16
-        self.outerArc.setStartAngle(16 * startAngle)
-        self.outerArc.setSpanAngle(16 * spanAngle)
+        # the arc item's angle unit is millionths of a degree so multiply the
+        # given angles (which are in degrees) by 1e6
+        self.outerArc.setStartAngle(1e6 * startAngle)
+        self.outerArc.setSpanAngle(1e6 * spanAngle)
         # set the outer arc's pen to the pen created above
         self.outerArc.setPen(momentumPen)
 
@@ -121,10 +159,10 @@ class MomentumArc(object):
         # as the momentum arc's innerArc attribute.
         self.innerArc = ArcItem(innerRect)
         # set the start and span angles of the inner arc to the given values.
-        # the arc item's angle unit is 16ths of a degree so multiply the given
-        # angles (which are in degrees) by 16
-        self.innerArc.setStartAngle(16 * startAngle)
-        self.innerArc.setSpanAngle(16 * spanAngle)
+        # the arc item's angle unit is millionths of a degree so multiply the
+        # given angles (which are in degrees) by 1e6
+        self.innerArc.setStartAngle(1e6 * startAngle)
+        self.innerArc.setSpanAngle(1e6 * spanAngle)
         # set the outer arc's pen to the pen created above
         self.innerArc.setPen(momentumPen)
 
