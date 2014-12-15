@@ -1,12 +1,10 @@
 #traxis
-####A Digital Framework for Track Analysis of HEP Particle Events
+####A Digital Framework for Analysis of Particle Bubble Chamber Tracks 
 
 
 ###Description
 
-Created for 4th Year Engineering Science Capstone Design Project.
-
-Python-based toolkit with GUI that computes track momentum and optical density of tracks on digitized bubble chamber images.
+Python-based toolkit with GUI that computes track momentum and optical density of tracks in digitized bubble chamber images.
 
 ###Installing and Running
 
@@ -28,10 +26,10 @@ Execute runtraxis with Python 3
 
 ####Dependencies
 
-- Python 3.3 or 3.4
+- Python (3.3+)
 - numpy
 - scipy
-- PyQt5
+- PyQt5 (5.3+)
 
 ###Authors
 
