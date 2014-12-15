@@ -18,11 +18,9 @@ cd traxis-1.0.0
 
 On Windows:
 
-```
-Extract traxis-1.0.0.zip
-Go to extracted traxis-1.0.0 folder
-Execute runtraxis with Python 3
-```
+- Extract traxis-1.0.0.zip
+- Go to extracted traxis-1.0.0 folder
+- Execute runtraxis with Python 3
 
 ####Dependencies
 
