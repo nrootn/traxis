@@ -1,8 +1,10 @@
 from PyQt5 import QtGui
 
+
 # calibration
-CMPERPX = 0.01188
-ERRCMPERPX = 0.00090
+CMPERPX = 0.01188 # the number of cm in the actual bubble chamber corresponding
+                  # to each pixel in a bubble chamber image scan
+ERRCMPERPX = 0.00090 # the error on the px to cm conversion
 
 # marker colours
 DEFAULTMARKERCOLOR = QtGui.QColor(176, 30, 125)

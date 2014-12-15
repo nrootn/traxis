@@ -160,8 +160,8 @@ class MarkerList(QtWidgets.QListWidget):
     def selectNext(self):
         """Set the currently selected marker to the next marker in the list."""
 
-        # if there are no markers in the list (currentRow() == -1) or if the
-        # currently select marker is the last one in the list, return
+        # if there are no markers selected (currentRow() == -1) or if the
+        # currently selected marker is the last one in the list, return
         if self.currentRow() == -1 or self.currentRow() == self.count() - 1:
             return
         # otherwise set the current selection to the next marker in the list
@@ -173,8 +173,8 @@ class MarkerList(QtWidgets.QListWidget):
         list.
         """
 
-        # if there are no markers in the list (currentRow() == -1) or if the
-        # currently select marker is the first one in the list, return
+        # if there are no markers selected (currentRow() == -1) or if the
+        # currently selected marker is the first one in the list, return
         if self.currentRow() == -1 or self.currentRow() == 0:
             return
         # otherwise set the current selection to the previous marker in the
