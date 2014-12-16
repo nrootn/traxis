@@ -468,7 +468,7 @@ class MainWidget(skeleton.GuiSkeleton):
         """Fit a circle to the track markers in markerList and print the 
         parameters of the fit along with the momentum computed from these
         parameters to the console. Draw the momentum arc using the fit
-        parameters.
+        parameters. Print the length of the momentum arc to the console.
         """
 
         # need a minimum of 3 points to fit a circle
@@ -555,6 +555,24 @@ class MainWidget(skeleton.GuiSkeleton):
             self.fittedCircle['centerX'], self.fittedCircle['centerY'],
             self.fittedCircle['radius'], startAngle, spanAngle, dl,
             self.lineWidth, self.scene)
+
+        # calculate the length of the momentum arc in px
+        # note: ArcItems have start and span angles in units of millionths of a
+        # degree, so divide them by 1e6
+        trackLengthPx = self.fittedCircle['radius'] * \
+                 self.momentumArc.centralArc.spanAngle() / 1e6 * (math.pi / 180)
+
+        # convert track length from px to cm
+        trackLengthCm = trackLengthPx * constants.CMPERPX
+        trackLengthCmErr = trackLengthPx * constants.ERRCMPERPX
+
+        # print the track length to the console
+        self.displayMessage("---Track Length---")
+        self.displayMessage(
+            "Track Length (px):\t{:.5f} [px]".format(trackLengthPx))
+        self.displayMessage(
+            "Track Length (cm):\t{:.5f} +/- {:.5f} [cm]".format(
+                trackLengthCm, trackLengthCmErr))
 
     def calcOptDensity(self):
         """Calculate the optical density of the portion of a track that is
