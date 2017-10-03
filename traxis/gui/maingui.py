@@ -377,7 +377,7 @@ class MainWidget(skeleton.GuiSkeleton):
                 try:
                     float(dl)
                     self.dlLineEdit.setText(dl)
-                except ValueError:
+                except (ValueError, TypeError):
                     pass
 
                 # get the data for the initial and final points for the
